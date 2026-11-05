@@ -35,12 +35,12 @@
             height: 100vh;
             overflow: hidden;
             display: flex;
-            justify-content: center; 
+            justify-content: center; /* Центрируем контейнер на ПК */
         }
 
         .app-container {
             width: 100%; 
-            max-width: 480px; 
+            max-width: 480px; /* Ограничиваем ширину для ПК */
             margin: 0 auto; 
             background-color: var(--bg-color);
             padding-bottom: 90px; 
@@ -48,7 +48,7 @@
             height: 100vh; 
             overflow-y: auto; 
             scrollbar-width: none; 
-            /* УБРАЛИ СДВИГ ВЛЕВО */
+            box-shadow: 0 0 20px rgba(0,0,0,0.5); /* Тень для рамки на ПК */
         }
         .app-container::-webkit-scrollbar { display: none; }
 
@@ -192,7 +192,6 @@
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px);
             display: flex; justify-content: space-around; align-items: center;
             padding: 10px 0 20px 0; border-top: 1px solid rgba(255,255,255,0.08); z-index: 100;
-            /* УБРАЛИ СДВИГ ВЛЕВО */
         }
         .tab-item {
             display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -232,7 +231,6 @@
             border-radius: 24px 24px 0 0; z-index: 1001; padding: 20px;
             transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
-            /* УБРАЛИ СДВИГ ВЛЕВО */
         }
         .bottom-sheet.active { bottom: 0; }
         
@@ -270,7 +268,6 @@
             z-index: 3000; padding: 24px; opacity: 0; pointer-events: none; transition: all 0.3s;
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
             max-height: 85vh; display: flex; flex-direction: column;
-            /* УБРАЛИ СДВИГ ВЛЕВО */
         }
         .address-modal.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
         .address-modal h3 { margin-bottom: 16px; font-size: 18px; color: #ffffff; }
@@ -343,17 +340,18 @@
 
         .placeholder-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: var(--hint-color); text-align: center; }
 
-        /* --- SIDEBAR --- */
+        /* --- SIDEBAR (Полностью скрыта) --- */
         .sidebar {
-            position: fixed; top: 0; left: 50%;
-            transform: translateX(-100%) translateX(240px) translateX(-100%);
+            position: fixed; top: 0; 
+            left: 50%; /* Центрируем базу */
+            transform: translateX(-100%) translateX(240px) translateX(-100%); /* Полностью прячем за левым краем контейнера */
             width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
             z-index: 2001; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             padding: 20px; display: flex; flex-direction: column; box-shadow: 5px 0 30px rgba(0,0,0,0.5);
             pointer-events: none;
         }
         .sidebar.active { 
-            transform: translateX(-100%) translateX(240px);
+            transform: translateX(-100%) translateX(240px); /* Выезжаем внутрь */
             pointer-events: auto;
         }
         
@@ -394,7 +392,6 @@
             z-index: 4000; padding: 24px; opacity: 0; pointer-events: none; transition: all 0.3s;
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
             max-height: 85vh; display: flex; flex-direction: column;
-            /* УБРАЛИ СДВИГ ВЛЕВО */
         }
         .admin-panel.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
         .admin-panel h3 { margin-bottom: 16px; font-size: 18px; color: #ffffff; }
