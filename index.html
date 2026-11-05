@@ -70,15 +70,15 @@
         }
         .tab-content::-webkit-scrollbar { display: none; }
 
-        /* --- ШАПКА (Область 1 - цвет исправлен, отступ добавлен) --- */
+        /* --- ШАПКА --- */
         .header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 16px;
-            background: rgba(28, 28, 30, 0.95); /* Цвет как у плашки */
+            background: rgba(28, 28, 30, 0.95); 
             backdrop-filter: blur(10px);
             position: relative; 
             margin-top: 90px; 
-            margin-bottom: 16px; /* Отступ от баннера (Область 2) */
+            margin-bottom: 16px; 
             width: 100%; z-index: 100;
             border-radius: 0 0 16px 16px;
         }
@@ -220,7 +220,7 @@
             margin-top: 120px;
         }
 
-        /* --- НИЖНЕЕ МЕНЮ (УВЕЛИЧЕНО) --- */
+        /* --- НИЖНЕЕ МЕНЮ --- */
         .tab-bar {
             position: fixed; bottom: 0; width: 100%; max-width: 480px;
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px);
@@ -303,11 +303,11 @@
         }
         .sheet-add-btn.added { background: var(--success-color); }
 
-        /* --- МОДАЛЬНОЕ ОКНО АДРЕСА (Опущено и сгруппировано) --- */
+        /* --- МОДАЛЬНОЕ ОКНО АДРЕСА --- */
         .address-modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
             width: 90%; max-width: 400px; background: #1c1c1e; border-radius: 20px;
-            z-index: 3000; padding: 30px 24px 15px 24px; /* Отступы */
+            z-index: 3000; padding: 30px 24px 15px 24px; 
             opacity: 0; pointer-events: none; transition: all 0.3s;
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
             max-height: 85vh; display: flex; flex-direction: column;
@@ -322,7 +322,6 @@
         .address-list::-webkit-scrollbar { width: 4px; }
         .address-list::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
 
-        /* Группировка станций */
         .metro-line-title {
             font-size: 12px;
             color: var(--hint-color);
@@ -492,7 +491,6 @@
                     <div class="promo-card" onclick="openAddressModal()">🚚 Доставка</div>
                 </div>
 
-                <!-- ЗАМЕНЕНО "Популярные бренды" на "Бренды" -->
                 <div class="section-title"><span>Бренды</span></div>
                 <div class="brands-scroll" id="brandsScroll"></div>
 
@@ -1357,7 +1355,7 @@
             setTimeout(() => { toast.remove(); }, 3000);
         }
 
-        // --- ПАМЯТЬ УСТРОЙСТВА (С ПОЛНЫМ СПИСКОМ СТАНЦИЙ) ---
+        // --- ПАМЯТЬ УСТРОЙСТВА (ЦВЕТНЫЕ ВЕТКИ) ---
         function initStorage() {
             const savedCart = localStorage.getItem('vape_cart');
             if (savedCart) cart = JSON.parse(savedCart);
@@ -1367,18 +1365,18 @@
                 document.getElementById('addressBtn').innerHTML = `📍 ${savedAddr}`;
             }
             
-            // Полный список станций, сгруппированный
+            // Обновленные названия веток
             const metroLines = [
                 {
-                    name: "Московская линия",
+                    name: "Синяя ветка",
                     stations: ["Малиновка", "Петровщина", "Михалово", "Грушевка", "Институт Культуры", "Площадь Ленина", "Октябрьская", "Площадь Победы", "Площадь Якуба Коласа", "Академия Наук", "Парк Челюскинцев", "Московская", "Восток", "Борисовский тракт", "Уручье"]
                 },
                 {
-                    name: "Автозаводская линия",
+                    name: "Красная ветка",
                     stations: ["Каменная Горка", "Кунцевщина", "Спортивная", "Пушкинская", "Молодежная", "Фрунзенская", "Немига", "Купаловская", "Первомайская", "Пролетарская", "Тракторный завод", "Партизанская", "Автозаводская", "Могилевская", "Шабаны"]
                 },
                 {
-                    name: "Зеленолужская линия",
+                    name: "Зеленая ветка",
                     stations: ["Слуцкий Гостинец", "Новаторская", "Вокзальная", "Ковальская Слобода", "Юбилейная площадь", "Площадь Франтишка Богушевича", "Аэродромная", "Неморшанский сад", "Серебряный бор"]
                 }
             ];
