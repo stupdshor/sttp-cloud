@@ -44,7 +44,7 @@
             margin: 0 auto; 
             background-color: var(--bg-color);
             padding-bottom: 90px; 
-            padding-top: env(safe-area-inset-top, 60px);
+            padding-top: 90px; /* Отступ сверху (примерно 2.5 см) */
             position: relative;
             height: 100vh; 
             overflow-y: auto; 
@@ -193,6 +193,7 @@
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px);
             display: flex; justify-content: space-around; align-items: center;
             padding: 10px 0 20px 0; border-top: 1px solid rgba(255,255,255,0.08); z-index: 100;
+            transition: transform 0.3s ease;
         }
         .tab-item {
             display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -235,7 +236,14 @@
         }
         .bottom-sheet.active { bottom: 0; }
         
-        .sheet-handle { width: 40px; height: 4px; background: #3a3a3c; border-radius: 2px; margin: 0 auto 16px auto; }
+        /* Кнопка закрытия в виде крестика */
+        .sheet-close-btn {
+            position: absolute; top: 15px; right: 15px;
+            background: #2a2a2d; border: none; color: #fff; width: 30px; height: 30px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 16px; z-index: 10;
+        }
+        
         .sheet-img { width: 100%; height: 200px; object-fit: contain; background: #2a2a2d; border-radius: 16px; margin-bottom: 16px; }
         
         .sheet-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
@@ -341,14 +349,15 @@
 
         .placeholder-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: var(--hint-color); text-align: center; }
 
-        /* --- SIDEBAR (ФИКС: УЕЗЖАЕТ ДАЛЕКО ВЛЕВО) --- */
+        /* --- SIDEBAR --- */
         .sidebar {
             position: fixed; top: 0; 
-            left: -150%; /* Уезжаем очень далеко влево, чтобы точно скрыть */
+            left: -150%; 
             width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
             z-index: 2001; 
-            transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); 
-            padding: 20px; display: flex; flex-direction: column; box-shadow: 5px 0 30px rgba(0,0,0,0.5);
+            transition: left 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); /* Чуть длиннее анимация */
+            padding: 20px; padding-top: 90px; /* Опускаем контент ниже */
+            display: flex; flex-direction: column; box-shadow: 5px 0 30px rgba(0,0,0,0.5);
             pointer-events: none;
         }
         
@@ -358,7 +367,6 @@
         }
         
         @media (min-width: 480px) {
-            /* На ПК центрируем шторку */
             .sidebar { left: 50%; transform: translateX(-50%) translateX(-150%); }
             .sidebar.active { transform: translateX(-50%) translateX(0); left: 50%; }
         }
@@ -524,7 +532,7 @@
 
     <!-- BOTTOM SHEET -->
     <div class="bottom-sheet" id="productSheet">
-        <div class="sheet-handle"></div>
+        <button class="sheet-close-btn" onclick="closeAllModals()">✕</button>
         <img src="" class="sheet-img" id="sheetImg">
         <div class="sheet-title" id="sheetTitle">Название</div>
         <div class="sheet-brand" id="sheetBrand">Бренд</div>
@@ -635,6 +643,50 @@
         } else { 
             document.getElementById('userName').innerText = "Гость"; 
             document.getElementById('sidebarName').innerText = "Гость"; 
+        }
+
+        // --- ОБРАБОТКА КЛАВИАТУРЫ (Скрытие нижнего меню) ---
+        tg.onEvent('viewportChanged', function() {
+            const tabBar = document.getElementById('tabBar');
+            if (tg.viewportStableHeight < window.innerHeight - 100) {
+                // Клавиатура открыта
+                tabBar.style.transform = 'translateY(100%)';
+            } else {
+                // Клавиатура закрыта
+                tabBar.style.transform = 'translateY(0)';
+            }
+        });
+
+        // --- СВАЙПЫ ---
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const tabs = ['home', 'catalog', 'cart', 'profile'];
+        let currentTabIndex = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            if (touchStartX - touchEndX > swipeThreshold) {
+                // Свайп влево (следующая вкладка)
+                if (currentTabIndex < tabs.length - 1) {
+                    currentTabIndex++;
+                    switchTab(tabs[currentTabIndex]);
+                }
+            } else if (touchEndX - touchStartX > swipeThreshold) {
+                // Свайп вправо (предыдущая вкладка)
+                if (currentTabIndex > 0) {
+                    currentTabIndex--;
+                    switchTab(tabs[currentTabIndex]);
+                }
+            }
         }
 
         // 2. Глобальные переменные
@@ -875,6 +927,10 @@
         function switchTab(tabName, element) {
             if (tabName !== 'profile') lastActiveTab = tabName;
 
+            // Обновляем индекс для свайпов
+            currentTabIndex = tabs.indexOf(tabName);
+            if (currentTabIndex === -1) currentTabIndex = 0;
+
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
             document.getElementById(`tab-${tabName}`).classList.add('active');
@@ -945,7 +1001,6 @@
 
         // --- ФИЛЬТРЫ АКЦИЙ ---
         function openDiscounts() {
-            // Сортируем по цене (от дешевых к дорогим)
             let sorted = [...allProducts].sort((a, b) => a.price - b.price);
             renderProducts(sorted, 'catalog-grid');
             switchTab('catalog');
@@ -953,7 +1008,6 @@
         }
 
         function openNewArrivals() {
-            // Сортируем по ID (от новых к старым)
             let sorted = [...allProducts].sort((a, b) => b.id - a.id);
             renderProducts(sorted, 'catalog-grid');
             switchTab('catalog');
