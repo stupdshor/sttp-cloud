@@ -18,6 +18,7 @@ app.add_middleware(
 def init_db():
     conn = sqlite3.connect('shop.db')
     cursor = conn.cursor()
+    
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,14 +29,17 @@ def init_db():
             type TEXT
         )
     ''')
+    
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS admins (
             user_id INTEGER PRIMARY KEY
         )
     ''')
+    
     cursor.execute('SELECT COUNT(*) FROM products')
     if cursor.fetchone()[0] == 0:
         cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES ('Персиковый йогурт', 'Annima', 22.0, 10, 'Жидкость')")
+    
     conn.commit()
     conn.close()
 
@@ -77,16 +81,21 @@ def add_product(title: str, brand: str, price: float, stock: int, type: str):
 def create_order(order: Order):
     conn = sqlite3.connect('shop.db')
     cursor = conn.cursor()
+    
     for item in order.items:
         cursor.execute("SELECT stock FROM products WHERE id = ?", (item.product_id,))
         row = cursor.fetchone()
+        
         if not row:
             conn.close()
             raise HTTPException(status_code=404, detail=f"Товар с ID {item.product_id} не найден")
+            
         if row[0] < item.quantity:
             conn.close()
             raise HTTPException(status_code=400, detail=f"Товара {item.product_id} недостаточно на складе")
+            
         cursor.execute("UPDATE products SET stock = stock - ? WHERE id = ?", (item.quantity, item.product_id))
+    
     conn.commit()
     conn.close()
     return {"status": "ok", "message": "Заказ оформлен, остатки списаны"}
@@ -117,5 +126,6 @@ def remove_admin(req: AdminRequest):
     conn.commit()
     conn.close()
     return {"status": "ok", "message": f"Пользователь {req.user_id} удален из админов"}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
