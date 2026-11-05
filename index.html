@@ -65,13 +65,12 @@
             height: 100%;
             overflow-y: auto;
             scrollbar-width: none;
-            /* Убираем padding-top: 180px, так как шапка теперь внутри главной */
             padding-bottom: 90px; 
             overscroll-behavior-y: contain;
         }
         .tab-content::-webkit-scrollbar { display: none; }
 
-        /* --- ШАПКА (Теперь только на Главной) --- */
+        /* --- ШАПКА (Только на Главной) --- */
         .header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 12px 16px;
@@ -181,9 +180,9 @@
         }
         .add-btn-circle.added { background: var(--success-color); transform: scale(1.1); }
 
-        /* --- КАТЕГОРИИ И ПОИСК (Опущен поиск) --- */
+        /* --- КАТЕГОРИИ И ПОИСК (Опущен на 3 см) --- */
         .catalog-header { 
-            padding: 15px 16px 16px 16px; /* Отступ сверху 15px (0.5 см) */
+            padding: 120px 16px 16px 16px; /* 3 см от верхнего края */
             touch-action: pan-y; 
         }
         
@@ -211,6 +210,11 @@
             cursor: pointer; white-space: nowrap; transition: all 0.2s;
         }
         .category-btn.active { background: #fff; color: #000; }
+
+        /* --- КОРЗИНА (Опущена на 3 см) --- */
+        #tab-cart .section-title {
+            margin-top: 120px; /* 3 см от верхнего края */
+        }
 
         /* --- НИЖНЕЕ МЕНЮ --- */
         .tab-bar {
@@ -734,16 +738,14 @@
                 const diff = currentX - startIndicatorX;
                 tabIndicator.style.transform = `translateX(${tabIndicator.offsetLeft + diff}px)`;
 
-                // Определяем, над какой вкладкой палец
                 const barRect = tabBar.getBoundingClientRect();
                 const relativeX = currentX - barRect.left;
                 const tabWidth = barRect.width / tabs.length;
                 
-                // Высокая чувствительность: делим ширину вкладки на 2, чтобы срабатывало быстрее
+                // Высокая чувствительность
                 const newIndex = Math.round(relativeX / (tabWidth / 2));
 
                 if (newIndex >= 0 && newIndex < tabs.length && newIndex !== currentTabIndex) {
-                    // Меняем страницу в реальном времени
                     updateCarousel(newIndex);
                 }
             }
@@ -754,7 +756,6 @@
                 isDragging = false;
                 tabIndicator.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
                 
-                // Определяем, на какую вкладку встать
                 const currentX = e.changedTouches[0].screenX;
                 const barRect = tabBar.getBoundingClientRect();
                 const relativeX = currentX - barRect.left;
@@ -769,7 +770,7 @@
             }
         }, { passive: true });
 
-        // --- УМНЫЕ СВАЙПЫ ПО ЭКРАНУ (НИЗКАЯ ЧУВСТВИТЕЛЬНОСТЬ) ---
+        // --- УМНЫЕ СВАЙПЫ ПО ЭКРАНУ (ОБНОВЛЕНО: ВЫШЕ ЧУВСТВИТЕЛЬНОСТЬ) ---
         let touchStartX = 0;
         let touchStartY = 0;
         let touchStartTime = 0;
@@ -789,14 +790,13 @@
             const deltaY = touchEndY - touchStartY;
             const time = touchEndTime - touchStartTime;
 
-            // Проверяем, что свайп горизонтальный
             if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                // Увеличиваем порог для срабатывания (чтобы не было случайных переключений)
-                const velocity = Math.abs(deltaX) / time; // пикселей в мс
-                const minDistance = 120; // Минимальная длина свайпа
-                const minVelocity = 0.8; // Минимальная скорость (флик)
+                const velocity = Math.abs(deltaX) / time; 
+                
+                // СНИЖЕНЫ ПОРОГИ ДЛЯ БОЛЕЕ ЛЕГКОГО СВАЙПА
+                const minDistance = 80; // Было 120
+                const minVelocity = 0.5; // Было 0.8
 
-                // Срабатывает только если свайп быстрый и длинный
                 if (Math.abs(deltaX) > minDistance && velocity > minVelocity) {
                     if (deltaX < 0 && currentTabIndex < tabs.length - 1) {
                         updateCarousel(currentTabIndex + 1);
@@ -807,7 +807,6 @@
             }
         }, { passive: true });
 
-        // Функция для кликов по меню
         function switchTab(tabName, element) {
             const index = tabs.indexOf(tabName);
             if (index !== -1) {
@@ -815,7 +814,6 @@
             }
         }
 
-        // --- ИНДИКАТОР ---
         function moveIndicator(targetBtn) {
             if (!tabIndicator || !targetBtn) return;
             const rect = targetBtn.getBoundingClientRect();
@@ -824,7 +822,6 @@
             tabIndicator.style.transform = `translateX(${rect.left - barRect.left}px)`;
         }
 
-        // --- ПРОФИЛЬ ---
         function openProfile() {
             switchTab('profile');
         }
@@ -837,7 +834,7 @@
         function closeSidebar() {
             document.getElementById('sidebar').classList.remove('active');
             if (currentTabIndex === 3) {
-                updateCarousel(0); // Возврат на главную
+                updateCarousel(0);
             } else {
                 document.getElementById('overlay').classList.remove('active');
             }
