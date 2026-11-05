@@ -399,6 +399,15 @@
         }
         .admin-panel.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
         .admin-panel h3 { margin-bottom: 16px; font-size: 18px; color: #ffffff; }
+
+        .admin-product-list { max-height: 200px; overflow-y: auto; margin-bottom: 15px; background: #2a2a2d; border-radius: 12px; padding: 10px; }
+        .admin-product-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #444; }
+        .admin-product-item:last-child { border-bottom: none; }
+        .admin-product-info { font-size: 13px; }
+        .admin-product-actions { display: flex; gap: 5px; }
+        .admin-action-btn { background: #444; border: none; color: white; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .admin-delete-btn { background: var(--danger-color); }
+        .admin-action-btn:hover { opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -554,12 +563,18 @@
 
     <!-- АДМИН-ПАНЕЛЬ -->
     <div class="admin-panel" id="adminPanel">
-        <h3>Добавить новый товар</h3>
+        <h3>Управление товарами</h3>
         
-        <input type="text" class="form-input" id="admin-title" placeholder="Название (например, Monster V2)">
-        <input type="text" class="form-input" id="admin-brand" placeholder="Бренд (например, Monster)">
+        <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 5px;">Существующие товары:</div>
+        <div class="admin-product-list" id="adminProductList"></div>
+
+        <hr style="border-color: #333; margin: 15px 0;">
+
+        <h3>Добавить новый товар</h3>
+        <input type="text" class="form-input" id="admin-title" placeholder="Название">
+        <input type="text" class="form-input" id="admin-brand" placeholder="Бренд">
         <input type="number" class="form-input" id="admin-price" placeholder="Цена (BYN)" step="0.01">
-        <input type="number" class="form-input" id="admin-stock" placeholder="Количество (шт.)">
+        <input type="number" class="form-input" id="admin-stock" placeholder="Количество">
         
         <select class="form-input" id="admin-type">
             <option value="Жидкость">Жидкость</option>
@@ -569,7 +584,7 @@
         </select>
 
         <button class="checkout-btn" onclick="submitNewProduct()">Добавить товар</button>
-        <button class="sidebar-item sidebar-close" style="margin-top: 15px;" onclick="closeAllModals()">✕ Отмена</button>
+        <button class="sidebar-item sidebar-close" style="margin-top: 10px;" onclick="closeAllModals()">✕ Закрыть</button>
     </div>
 
     <!-- SIDEBAR -->
@@ -662,8 +677,79 @@
         // --- ОТКРЫТИЕ АДМИН-ПАНЕЛИ ---
         function openAdminPanel() {
             closeSidebar(); // Закрываем меню
+            renderAdminList(); // Отрисовываем список товаров
             document.getElementById('overlay').classList.add('active');
             document.getElementById('adminPanel').classList.add('active');
+        }
+
+        // --- ОТРИСОВКА СПИСКА ТОВАРОВ В АДМИНКЕ ---
+        function renderAdminList() {
+            const list = document.getElementById('adminProductList');
+            list.innerHTML = '';
+            allProducts.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'admin-product-item';
+                div.innerHTML = `
+                    <div class="admin-product-info"><b>${p.title}</b> (${p.stock} шт. - ${p.price} BYN)</div>
+                    <div class="admin-product-actions">
+                        <button class="admin-action-btn" onclick="editProduct(${p.id}, ${p.price}, ${p.stock})">Изм.</button>
+                        <button class="admin-action-btn admin-delete-btn" onclick="deleteProduct(${p.id})">Удал.</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // --- РЕДАКТИРОВАНИЕ ---
+        function editProduct(id, currentPrice, currentStock) {
+            const newPrice = prompt("Введите новую цену (BYN):", currentPrice);
+            if (newPrice === null) return;
+            const newStock = prompt("Введите новое количество (шт.):", currentStock);
+            if (newStock === null) return;
+            
+            const user = tg.initDataUnsafe?.user;
+            if (!user) return;
+
+            fetch(`${API_URL}/edit-product`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    product_id: id,
+                    new_price: parseFloat(newPrice),
+                    new_stock: parseInt(newStock),
+                    admin_id: user.id
+                })
+            }).then(res => {
+                if (res.ok) {
+                    showToast("✅ Товар обновлен!");
+                    fetchProducts().then(renderAdminList);
+                } else {
+                    showToast("❌ Ошибка");
+                }
+            });
+        }
+
+        // --- УДАЛЕНИЕ ---
+        function deleteProduct(id) {
+            if (!confirm("Точно удалить этот товар?")) return;
+            const user = tg.initDataUnsafe?.user;
+            if (!user) return;
+
+            fetch(`${API_URL}/delete-product`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    product_id: id,
+                    admin_id: user.id
+                })
+            }).then(res => {
+                if (res.ok) {
+                    showToast("🗑 Товар удален");
+                    fetchProducts().then(renderAdminList);
+                } else {
+                    showToast("❌ Ошибка");
+                }
+            });
         }
 
         // --- ДОБАВЛЕНИЕ ТОВАРА ---
@@ -705,7 +791,6 @@
 
                 showToast("✅ Товар успешно добавлен!");
                 
-                // Очищаем поля
                 document.getElementById('admin-title').value = '';
                 document.getElementById('admin-brand').value = '';
                 document.getElementById('admin-price').value = '';
@@ -1182,4 +1267,4 @@
         }
     </script>
 </body>
-</html> 
+</html>
