@@ -7,7 +7,7 @@ from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 # Берем токен из переменных окружения (для безопасности)
-BOT_TOKEN = os.getenv("BOT_TOKEN", "9028052598:AAHL2yUbEQBCLqygYfRY42K4XQ-a_nc3aYM")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 WEB_APP_URL = "https://sttp-cloud.vercel.app"
 API_URL = "https://sttp-api-new.onrender.com/api"
 OWNER_ID = 1340303313  # <-- ВАШ ID
