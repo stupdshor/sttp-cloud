@@ -340,25 +340,29 @@
 
         .placeholder-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: var(--hint-color); text-align: center; }
 
-        /* --- SIDEBAR (ВАРИАНТ 2: ПЛАВНЫЙ ВЫЕЗД) --- */
+        /* --- SIDEBAR (НОВАЯ ЛОГИКА) --- */
         .sidebar {
-            position: fixed; top: 0; left: 50%;
-            transform: translateX(-100%) translateX(240px) translateX(-100%);
+            position: fixed; top: 0; 
+            /* Стартовое положение: далеко за левым краем экрана */
+            left: -150%; 
             width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
             z-index: 2001; 
-            /* Плавная анимация 0.3 секунды */
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            /* Плавная анимация для выезда */
+            transition: left 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); 
             padding: 20px; display: flex; flex-direction: column; box-shadow: 5px 0 30px rgba(0,0,0,0.5);
             pointer-events: none;
         }
+        
+        /* Когда открываем, резко ставим left в 0 (мгновенный вылет), а потом доезжаем */
         .sidebar.active { 
-            transform: translateX(-100%) translateX(240px);
+            left: 0;
             pointer-events: auto;
         }
         
         @media (min-width: 480px) {
-            .sidebar { left: calc(50% - 240px); transform: translateX(-100%); }
-            .sidebar.active { transform: translateX(0); }
+            /* На ПК центрируем шторку */
+            .sidebar { left: 50%; transform: translateX(-50%) translateX(-150%); }
+            .sidebar.active { transform: translateX(-50%) translateX(0); left: 50%; }
         }
 
         .sidebar-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; }
