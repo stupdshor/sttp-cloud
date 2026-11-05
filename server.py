@@ -196,5 +196,18 @@ def edit_product(req: EditRequest):
     conn.close()
     return {"status": "ok", "message": "Товар обновлен"}
 
+# --- ПРОВЕРКА ДЛЯ БОТА (при /start) ---
+class CheckUserRequest(BaseModel):
+    user_id: int
+
+@app.post("/api/check-user")
+def check_user(req: CheckUserRequest):
+    conn = sqlite3.connect('shop.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM admins WHERE user_id = ?", (req.user_id,))
+    is_admin = cursor.fetchone() is not None
+    conn.close()
+    return {"is_admin": is_admin}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
