@@ -71,6 +71,16 @@ class ProductRequest(BaseModel):
     type: str
     admin_id: int
 
+class DeleteRequest(BaseModel):
+    product_id: int
+    admin_id: int
+
+class EditRequest(BaseModel):
+    product_id: int
+    new_price: float
+    new_stock: int
+    admin_id: int
+
 # --- API Эндпоинты ---
 
 # 1. Получить все товары
@@ -84,17 +94,7 @@ def get_products():
     conn.close()
     return [dict(row) for row in rows]
 
-# 2. Добавить товар (старый метод, для тестов)
-@app.post("/api/products")
-def add_product(title: str, brand: str, price: float, stock: int, type: str):
-    conn = sqlite3.connect('shop.db')
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES (?, ?, ?, ?, ?)", (title, brand, price, stock, type))
-    conn.commit()
-    conn.close()
-    return {"status": "ok", "message": "Товар добавлен"}
-
-# 3. Оформить заказ (списание остатков)
+# 2. Оформить заказ (списание остатков)
 @app.post("/api/order")
 def create_order(order: Order):
     conn = sqlite3.connect('shop.db')
@@ -118,7 +118,7 @@ def create_order(order: Order):
 
 # --- Управление админами ---
 
-# 4. Проверить, является ли пользователь админом
+# 3. Проверить, является ли пользователь админом
 @app.get("/api/check-admin/{user_id}")
 def check_admin(user_id: int):
     conn = sqlite3.connect('shop.db')
@@ -128,7 +128,7 @@ def check_admin(user_id: int):
     conn.close()
     return {"is_admin": is_admin}
 
-# 5. Назначить админа
+# 4. Назначить админа
 @app.post("/api/add-admin")
 def add_admin(req: AdminRequest):
     conn = sqlite3.connect('shop.db')
@@ -138,7 +138,7 @@ def add_admin(req: AdminRequest):
     conn.close()
     return {"status": "ok", "message": f"Пользователь {req.user_id} теперь админ"}
 
-# 6. Удалить админа
+# 5. Удалить админа
 @app.post("/api/remove-admin")
 def remove_admin(req: AdminRequest):
     conn = sqlite3.connect('shop.db')
@@ -148,23 +148,53 @@ def remove_admin(req: AdminRequest):
     conn.close()
     return {"status": "ok", "message": f"Пользователь {req.user_id} удален из админов"}
 
-# --- ДОБАВЛЕНИЕ ТОВАРА С САЙТА (АДМИНКА) ---
+# --- Управление товарами (АДМИНКА) ---
+
+# 6. Добавить товар
 @app.post("/api/add-product")
 def add_product_admin(req: ProductRequest):
-    # Проверяем, что это админ (для безопасности)
     conn = sqlite3.connect('shop.db')
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM admins WHERE user_id = ?", (req.admin_id,))
     if not cursor.fetchone():
         conn.close()
-        raise HTTPException(status_code=403, detail="У вас нет прав администратора")
+        raise HTTPException(status_code=403, detail="Нет прав администратора")
     
-    # Добавляем товар
     cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES (?, ?, ?, ?, ?)", 
                    (req.title, req.brand, req.price, req.stock, req.type))
     conn.commit()
     conn.close()
     return {"status": "ok", "message": "Товар успешно добавлен"}
+
+# 7. Удалить товар
+@app.post("/api/delete-product")
+def delete_product(req: DeleteRequest):
+    conn = sqlite3.connect('shop.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM admins WHERE user_id = ?", (req.admin_id,))
+    if not cursor.fetchone():
+        conn.close()
+        raise HTTPException(status_code=403, detail="Нет прав администратора")
+    
+    cursor.execute("DELETE FROM products WHERE id = ?", (req.product_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "ok", "message": "Товар удален"}
+
+# 8. Редактировать товар (цена/кол-во)
+@app.post("/api/edit-product")
+def edit_product(req: EditRequest):
+    conn = sqlite3.connect('shop.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM admins WHERE user_id = ?", (req.admin_id,))
+    if not cursor.fetchone():
+        conn.close()
+        raise HTTPException(status_code=403, detail="Нет прав администратора")
+    
+    cursor.execute("UPDATE products SET price = ?, stock = ? WHERE id = ?", (req.new_price, req.new_stock, req.product_id))
+    conn.commit()
+    conn.close()
+    return {"status": "ok", "message": "Товар обновлен"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
