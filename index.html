@@ -43,7 +43,6 @@
             max-width: 480px; 
             margin: 0 auto; 
             background-color: var(--bg-color);
-            padding-bottom: 90px; 
             position: relative;
             height: 100vh; 
             overflow: hidden; /* Скрываем горизонтальный скролл */
@@ -64,19 +63,20 @@
             overflow-y: auto;
             scrollbar-width: none;
             padding-top: 76px; /* Высота шапки */
+            padding-bottom: 90px; /* Отступ для нижнего меню, чтобы не было черной полосы */
         }
         .tab-content::-webkit-scrollbar { display: none; }
 
-        /* --- ШАПКА (Фиксирована только на главной) --- */
+        /* --- ШАПКА (Фиксирована) --- */
         .header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 12px 16px;
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px);
             position: fixed; top: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; z-index: 100;
-            transition: transform 0.3s ease; /* Плавное скрытие */
+            transition: transform 0.3s ease;
         }
-        .header.hidden { transform: translate(-50%, -100%); } /* Скрываем при скролле вниз */
+        .header.hidden { transform: translate(-50%, -100%); }
 
         .user-info { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         .user-avatar {
@@ -105,6 +105,7 @@
         .promo-scroll {
             display: flex; gap: 12px; padding: 0 16px 16px 16px;
             overflow-x: auto; scrollbar-width: none;
+            touch-action: pan-x; /* Разрешаем горизонтальный скролл */
         }
         .promo-scroll::-webkit-scrollbar { display: none; }
         
@@ -194,7 +195,10 @@
         }
         .search-input::placeholder { color: var(--hint-color); }
         
-        .catalog-categories { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+        .catalog-categories { 
+            display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; 
+            touch-action: pan-x;
+        }
         .catalog-categories::-webkit-scrollbar { display: none; }
         .category-btn {
             background: var(--card-bg); color: var(--text-color);
@@ -254,11 +258,9 @@
         }
         .bottom-sheet.active { bottom: 0; }
         
-        /* Кнопка закрытия (крестик) */
         .sheet-close-btn {
             position: absolute; top: 15px; right: 15px;
-            background: #2a2a2d; /* Темный фон */
-            border: none; color: #fff; width: 30px; height: 30px;
+            background: #2a2a2d; border: none; color: #fff; width: 30px; height: 30px;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
             cursor: pointer; font-size: 16px; z-index: 10;
         }
@@ -691,104 +693,119 @@
         // Функция переключения вкладок (визуальный сдвиг)
         function updateCarousel(index) {
             currentTabIndex = index;
-            // Сдвигаем карусель (25% - это ширина одной вкладки)
             tabsWrapper.style.transform = `translateX(-${index * 25}%)`;
             
-            // Обновляем нижнее меню
             document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
             const activeNav = document.getElementById(`nav-${tabs[index]}`);
             if (activeNav) activeNav.classList.add('active');
             
             moveIndicator(activeNav);
 
-            // Скрываем/Показываем шапку (только на главной)
             if (tabs[index] === 'home') {
                 mainHeader.classList.remove('hidden');
             } else {
                 mainHeader.classList.add('hidden');
             }
 
-            // Если профиль - открываем шторку
             if (tabs[index] === 'profile') {
                 openSidebar();
             } else {
                 closeSidebar();
             }
 
-            // Загружаем данные для вкладок
             if (tabs[index] === 'catalog') loadCatalog(currentCategory);
             else if (tabs[index] === 'cart') renderCart();
         }
 
-        // --- СВАЙПЫ ПАЛЬЦЕМ ---
-        let touchStartX = 0;
-        let touchStartY = 0;
+        // --- ЛОГИКА ПЕРЕТАСКИВАНИЯ ТАБ-БАРА ---
         let isDragging = false;
         let startIndicatorX = 0;
+        let dragThreshold = 30; // Порог для смены вкладки при перетаскивании
 
-        // Начало касания на нижнем меню
         tabBar.addEventListener('touchstart', (e) => {
-            if (e.target.closest('.tab-item') || e.target.closest('.tab-indicator')) {
+            if (e.target.closest('.tab-indicator')) {
                 isDragging = true;
                 startIndicatorX = e.changedTouches[0].screenX;
-                tabIndicator.style.transition = 'none'; // Отключаем анимацию для перетаскивания
-            } else {
-                // Свайп по экрану
-                touchStartX = e.changedTouches[0].screenX;
-                touchStartY = e.changedTouches[0].screenY;
+                tabIndicator.style.transition = 'none';
             }
         }, { passive: true });
 
-        // Движение пальца
         tabBar.addEventListener('touchmove', (e) => {
             if (isDragging) {
                 const currentX = e.changedTouches[0].screenX;
                 const diff = currentX - startIndicatorX;
-                // Двигаем индикатор за пальцем
                 tabIndicator.style.transform = `translateX(${tabIndicator.offsetLeft + diff}px)`;
+
+                // Определяем, над какой вкладкой палец
+                const barRect = tabBar.getBoundingClientRect();
+                const relativeX = currentX - barRect.left;
+                const tabWidth = barRect.width / tabs.length;
+                const newIndex = Math.floor(relativeX / tabWidth);
+
+                if (newIndex >= 0 && newIndex < tabs.length && newIndex !== currentTabIndex) {
+                    // Меняем страницу в реальном времени
+                    updateCarousel(newIndex);
+                }
             }
         }, { passive: true });
 
-        // Конец касания
         tabBar.addEventListener('touchend', (e) => {
             if (isDragging) {
                 isDragging = false;
                 tabIndicator.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
-                const currentX = e.changedTouches[0].screenX;
-                const diff = currentX - startIndicatorX;
                 
-                // Определяем, на какую вкладку переключиться
-                if (diff > 50 && currentTabIndex > 0) {
-                    updateCarousel(currentTabIndex - 1);
-                } else if (diff < -50 && currentTabIndex < tabs.length - 1) {
-                    updateCarousel(currentTabIndex + 1);
+                // Определяем, на какую вкладку встать
+                const currentX = e.changedTouches[0].screenX;
+                const barRect = tabBar.getBoundingClientRect();
+                const relativeX = currentX - barRect.left;
+                const tabWidth = barRect.width / tabs.length;
+                const newIndex = Math.floor(relativeX / tabWidth);
+
+                if (newIndex >= 0 && newIndex < tabs.length) {
+                    updateCarousel(newIndex);
                 } else {
-                    // Возвращаем на место
+                    // Если отпустили вне зоны, возвращаем на текущую
                     moveIndicator(document.getElementById(`nav-${tabs[currentTabIndex]}`));
                 }
-            } else {
-                // Обычный свайп по экрану
-                const touchEndX = e.changedTouches[0].screenX;
-                const touchEndY = e.changedTouches[0].screenY;
-                handleSwipe(touchStartX, touchEndX, touchStartY, touchEndY);
             }
         }, { passive: true });
 
-        function handleSwipe(startX, endX, startY, endY) {
-            const swipeThreshold = 50;
-            const deltaX = endX - startX;
-            const deltaY = endY - startY;
+        // --- УМНЫЕ СВАЙПЫ ПО ЭКРАНУ ---
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchStartTime = 0;
 
-            // Проверяем, что свайп горизонтальный (а не вертикальный скролл)
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > swipeThreshold) {
-                // ИНВЕРСИЯ: Свайп влево -> следующая, вправо -> предыдущая
-                if (deltaX < 0 && currentTabIndex < tabs.length - 1) {
-                    updateCarousel(currentTabIndex + 1);
-                } else if (deltaX > 0 && currentTabIndex > 0) {
-                    updateCarousel(currentTabIndex - 1);
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+            touchStartTime = Date.now();
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].screenX;
+            const touchEndY = e.changedTouches[0].screenY;
+            const touchEndTime = Date.now();
+            
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            const time = touchEndTime - touchStartTime;
+
+            // Проверяем, что свайп горизонтальный
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Проверяем, что это "флик" (быстрый свайп)
+                const velocity = Math.abs(deltaX) / time; // пикселей в мс
+
+                // Если свайп быстрый (флик) или длинный
+                if (velocity > 0.5 || Math.abs(deltaX) > 100) {
+                    // ИНВЕРСИЯ: Свайп влево -> следующая, вправо -> предыдущая
+                    if (deltaX < 0 && currentTabIndex < tabs.length - 1) {
+                        updateCarousel(currentTabIndex + 1);
+                    } else if (deltaX > 0 && currentTabIndex > 0) {
+                        updateCarousel(currentTabIndex - 1);
+                    }
                 }
             }
-        }
+        }, { passive: true });
 
         // Функция для кликов по меню
         function switchTab(tabName, element) {
@@ -810,7 +827,6 @@
         // --- ПРОФИЛЬ ---
         function openProfile() {
             switchTab('profile');
-            // openSidebar(); // Уже вызывается внутри updateCarousel
         }
 
         function openSidebar() {
@@ -820,8 +836,10 @@
 
         function closeSidebar() {
             document.getElementById('sidebar').classList.remove('active');
-            // Не убираем overlay, если открыт профиль, чтобы фон был затемнен
-            if (currentTabIndex !== 3) {
+            // Если закрываем профиль - возвращаемся на главную или каталог
+            if (currentTabIndex === 3) {
+                updateCarousel(0); // Возврат на главную
+            } else {
                 document.getElementById('overlay').classList.remove('active');
             }
         }
@@ -1070,7 +1088,6 @@
             
             checkAdminStatus(); 
             
-            // Начальное состояние
             updateCarousel(0);
         };
         
@@ -1175,9 +1192,8 @@
             document.getElementById('addressModal').classList.remove('active');
             document.getElementById('adminPanel').classList.remove('active');
             
-            // Возвращаемся на главную или каталог, если были в профиле
             if (currentTabIndex === 3) {
-                updateCarousel(0); // Возврат на главную
+                updateCarousel(0);
             }
         }
 
@@ -1322,7 +1338,7 @@
                 
                 fetchProducts(); 
 
-                setTimeout(() => { updateCarousel(0); }, 1500); // На главную
+                setTimeout(() => { updateCarousel(0); }, 1500);
 
             } catch (error) {
                 showToast(`❌ ${error.message}`);
