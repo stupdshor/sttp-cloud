@@ -7,7 +7,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Разрешаем запросы с любых сайтов (для теста)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,11 +15,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Инициализация БД ---
 def init_db():
     conn = sqlite3.connect('shop.db')
     cursor = conn.cursor()
-    # Таблица товаров
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +28,11 @@ def init_db():
             type TEXT
         )
     ''')
-    # Добавим тестовый товар, если база пустая
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS admins (
+            user_id INTEGER PRIMARY KEY
+        )
+    ''')
     cursor.execute('SELECT COUNT(*) FROM products')
     if cursor.fetchone()[0] == 0:
         cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES ('Персиковый йогурт', 'Annima', 22.0, 10, 'Жидкость')")
@@ -40,7 +41,6 @@ def init_db():
 
 init_db()
 
-# --- Модели данных для API ---
 class OrderItem(BaseModel):
     product_id: int
     quantity: int
@@ -50,9 +50,10 @@ class Order(BaseModel):
     name: str
     phone: str
 
-# --- API Эндпоинты ---
+class AdminRequest(BaseModel):
+    user_id: int
+    owner_id: int
 
-# 1. Получить все товары (для витрины)
 @app.get("/api/products")
 def get_products():
     conn = sqlite3.connect('shop.db')
@@ -63,7 +64,6 @@ def get_products():
     conn.close()
     return [dict(row) for row in rows]
 
-# 2. Добавить товар (для админки)
 @app.post("/api/products")
 def add_product(title: str, brand: str, price: float, stock: int, type: str):
     conn = sqlite3.connect('shop.db')
@@ -73,13 +73,10 @@ def add_product(title: str, brand: str, price: float, stock: int, type: str):
     conn.close()
     return {"status": "ok", "message": "Товар добавлен"}
 
-# 3. Оформить заказ (списание остатков)
 @app.post("/api/order")
 def create_order(order: Order):
     conn = sqlite3.connect('shop.db')
     cursor = conn.cursor()
-    
-    # Проверяем наличие и списываем
     for item in order.items:
         cursor.execute("SELECT stock FROM products WHERE id = ?", (item.product_id,))
         row = cursor.fetchone()
@@ -89,13 +86,28 @@ def create_order(order: Order):
         if row[0] < item.quantity:
             conn.close()
             raise HTTPException(status_code=400, detail=f"Товара {item.product_id} недостаточно на складе")
-        
-        # Списываем
         cursor.execute("UPDATE products SET stock = stock - ? WHERE id = ?", (item.quantity, item.product_id))
-    
     conn.commit()
     conn.close()
     return {"status": "ok", "message": "Заказ оформлен, остатки списаны"}
+
+@app.get("/api/check-admin/{user_id}")
+def check_admin(user_id: int):
+    conn = sqlite3.connect('shop.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM admins WHERE user_id = ?", (user_id,))
+    is_admin = cursor.fetchone() is not None
+    conn.close()
+    return {"is_admin": is_admin}
+
+@app.post("/api/add-admin")
+def add_admin(req: AdminRequest):
+    conn = sqlite3.connect('shop.db')
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR IGNORE INTO admins (user_id) VALUES (?)", (req.user_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "ok", "message": f"Пользователь {req.user_id} теперь админ"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
