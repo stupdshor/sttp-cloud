@@ -48,7 +48,7 @@
             height: 100vh; 
             overflow-y: auto; 
             scrollbar-width: none; 
-            transform: translateX(-15px); /* Фикс для Telegram ПК */
+            transform: translateX(-15px);
         }
         .app-container::-webkit-scrollbar { display: none; }
 
@@ -562,20 +562,19 @@
 
     <script>
         // --- НАСТРОЙКИ API ---
-        const API_URL = "http://127.0.0.1:8000/api";
+        const API_URL = "https://sttp-api-yjw2.onrender.com/api";
 
         // 1. Инициализация Telegram
         const tg = window.Telegram.WebApp;
         tg.expand(); 
         tg.ready();
         
-        // Безопасный вызов Fullscreen (чтобы не было ошибки Uncaught)
         try {
             if (tg.requestFullscreen) {
                 tg.requestFullscreen();
             }
         } catch (e) {
-            console.log("Fullscreen не поддерживается, работаем в обычном режиме.");
+            console.log("Fullscreen не поддерживается.");
         }
 
         const user = tg.initDataUnsafe?.user;
@@ -600,10 +599,33 @@
         let activeBrandFilter = null;
 
         let currentProductInSheet = null;
-        let selectedFlavor = null;
         let currentSheetQty = 1;
         let editingCartIndex = -1;
         let lastActiveTab = 'home'; 
+        let isAdmin = false;
+
+        // --- ПРОВЕРКА НА АДМИНА ---
+        async function checkAdminStatus() {
+            const user = tg.initDataUnsafe?.user;
+            if (!user) return;
+            
+            try {
+                const resp = await fetch(`${API_URL}/check-admin/${user.id}`);
+                const data = await resp.json();
+                isAdmin = data.is_admin;
+                
+                if (isAdmin) {
+                    const menu = document.querySelector('.sidebar-menu');
+                    const adminBtn = document.createElement('button');
+                    adminBtn.className = 'sidebar-item';
+                    adminBtn.innerHTML = '<span>⚙️</span> Админ-панель';
+                    adminBtn.onclick = () => alert('Здесь будет форма добавления товара!');
+                    menu.prepend(adminBtn);
+                }
+            } catch (e) {
+                console.log("Ошибка проверки админа:", e);
+            }
+        }
 
         // --- ЗАГРУЗКА ТОВАРОВ С СЕРВЕРА ---
         async function fetchProducts() {
@@ -730,10 +752,11 @@
             initStorage();
             updateCartBadge();
             
-            // ГЛАВНОЕ: Загружаем товары и ждем, пока они загрузятся, чтобы отрисовать бренды
             fetchProducts().then(() => {
                 renderBrands();
             });
+            
+            checkAdminStatus(); // <-- ВЫЗОВ ПРОВЕРКИ АДМИНА
             
             const activeTab = document.querySelector('.tab-item.active');
             if (activeTab) setTimeout(() => moveIndicator(activeTab), 50);
@@ -789,9 +812,8 @@
             document.getElementById('sheetBrand').innerText = product.brand;
             
             const flavorContainer = document.getElementById('flavorContainer');
-            flavorContainer.style.display = 'none'; // Временно скрыто, так как нет в БД
-            selectedFlavor = null;
-
+            flavorContainer.style.display = 'none'; 
+            
             if (cartIndex > -1) {
                 currentSheetQty = cart[cartIndex].quantity;
             } else {
@@ -1047,7 +1069,6 @@
                 document.getElementById('addressBtn').innerHTML = `📍 ${savedAddr}`;
             }
             
-            // Заполняем список метро
             const metroStations = ["Малиновка", "Петровщина", "Михалово", "Грушевка", "Институт Культуры", "Площадь Ленина", "Октябрьская", "Площадь Победы"];
             const list = document.getElementById('metroList');
             list.innerHTML = '';
