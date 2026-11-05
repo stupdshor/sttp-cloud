@@ -70,24 +70,26 @@
         }
         .tab-content::-webkit-scrollbar { display: none; }
 
-        /* --- ШАПКА (Опущена и увеличена) --- */
+        /* --- ШАПКА (Область 1 - цвет исправлен, отступ добавлен) --- */
         .header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 16px; /* Чуть больше отступы */
-            background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px);
+            padding: 16px;
+            background: rgba(28, 28, 30, 0.95); /* Цвет как у плашки */
+            backdrop-filter: blur(10px);
             position: relative; 
-            margin-top: 110px; /* Опустили еще ниже (3 см + запас) */
+            margin-top: 90px; 
+            margin-bottom: 16px; /* Отступ от баннера (Область 2) */
             width: 100%; z-index: 100;
             border-radius: 0 0 16px 16px;
         }
 
         .user-info { display: flex; align-items: center; gap: 14px; cursor: pointer; }
         .user-avatar {
-            width: 48px; height: 48px; /* Увеличили аватар */
+            width: 48px; height: 48px;
             border-radius: 50%; background: #2a2a2a;
             display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #333;
         }
-        .user-name { font-weight: 700; font-size: 17px; color: #ffffff; } /* Увеличили шрифт и сделали жирнее */
+        .user-name { font-weight: 700; font-size: 17px; color: #ffffff; }
         
         .address-btn {
             background: var(--accent-color); color: white; border: none; padding: 8px 14px;
@@ -182,7 +184,7 @@
         }
         .add-btn-circle.added { background: var(--success-color); transform: scale(1.1); }
 
-        /* --- КАТЕГОРИИ И ПОИСК (Опущен на 3 см) --- */
+        /* --- КАТЕГОРИИ И ПОИСК --- */
         .catalog-header { 
             padding: 120px 16px 16px 16px; 
             touch-action: pan-y; 
@@ -213,7 +215,7 @@
         }
         .category-btn.active { background: #fff; color: #000; }
 
-        /* --- КОРЗИНА (Опущена на 3 см) --- */
+        /* --- КОРЗИНА --- */
         #tab-cart .section-title {
             margin-top: 120px;
         }
@@ -223,22 +225,21 @@
             position: fixed; bottom: 0; width: 100%; max-width: 480px;
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px);
             display: flex; justify-content: space-around; align-items: center;
-            padding: 12px 0 25px 0; /* Увеличили высоту меню */
+            padding: 12px 0 25px 0; 
             border-top: 1px solid rgba(255,255,255,0.08); z-index: 100;
             transition: transform 0.3s ease;
         }
         .tab-item {
             display: flex; flex-direction: column; align-items: center; gap: 6px;
-            color: var(--hint-color); font-size: 12px; font-weight: 600; /* Увеличили шрифт */
+            color: var(--hint-color); font-size: 12px; font-weight: 600; 
             cursor: pointer; transition: color 0.3s; z-index: 2; flex: 1; position: relative;
         }
-        .tab-icon { font-size: 26px; line-height: 1; transition: transform 0.3s; } /* Увеличили иконки */
+        .tab-icon { font-size: 26px; line-height: 1; transition: transform 0.3s; } 
         .tab-item.active { color: #fff; }
         .tab-item.active .tab-icon { transform: translateY(-3px); }
 
-        /* Индикатор (Бабл) */
         .tab-indicator {
-            position: absolute; bottom: 15px; height: 55px; /* Увеличили бабл */
+            position: absolute; bottom: 15px; height: 55px; 
             background: var(--active-tab-bg); border-radius: 18px;
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), width 0.3s;
             z-index: 1; pointer-events: none; left: 0;
@@ -302,17 +303,17 @@
         }
         .sheet-add-btn.added { background: var(--success-color); }
 
-        /* --- МОДАЛЬНОЕ ОКНО АДРЕСА --- */
+        /* --- МОДАЛЬНОЕ ОКНО АДРЕСА (Опущено и сгруппировано) --- */
         .address-modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
             width: 90%; max-width: 400px; background: #1c1c1e; border-radius: 20px;
-            z-index: 3000; padding: 15px 24px;
+            z-index: 3000; padding: 30px 24px 15px 24px; /* Отступы */
             opacity: 0; pointer-events: none; transition: all 0.3s;
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
             max-height: 85vh; display: flex; flex-direction: column;
         }
         .address-modal.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
-        .address-modal h3 { margin-bottom: 12px; font-size: 18px; color: #ffffff; }
+        .address-modal h3 { margin-bottom: 16px; font-size: 18px; color: #ffffff; }
         
         .address-list {
             overflow-y: auto; flex-grow: 1; margin-bottom: 10px; padding-right: 5px;
@@ -321,16 +322,27 @@
         .address-list::-webkit-scrollbar { width: 4px; }
         .address-list::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
 
+        /* Группировка станций */
+        .metro-line-title {
+            font-size: 12px;
+            color: var(--hint-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 15px 0 5px 5px;
+            font-weight: 600;
+        }
+        .metro-line-title:first-child { margin-top: 0; }
+
         .address-item {
-            padding: 14px; background: #2a2a2d; border-radius: 12px; margin-bottom: 8px;
+            padding: 12px 14px; background: #2a2a2d; border-radius: 10px; margin-bottom: 6px;
             cursor: pointer; display: flex; justify-content: space-between; align-items: center;
             border: 1px solid transparent; transition: border 0.2s;
         }
         .address-item.active { border-color: var(--accent-color); }
         
-        .address-item span { font-weight: 600; font-size: 14px; color: #ffffff; }
+        .address-item span { font-weight: 500; font-size: 14px; color: #ffffff; }
 
-        .delivery-section { margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; flex-shrink: 0; }
+        .delivery-section { margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; flex-shrink: 0; }
         .delivery-section h4 { margin-bottom: 10px; font-size: 15px; color: var(--hint-color); }
         .delivery-input {
             width: 100%; background: #2a2a2d; border: 1px solid rgba(255,255,255,0.05);
@@ -389,7 +401,7 @@
             width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
             z-index: 2001; 
             transition: left 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-            padding: 20px; padding-top: 110px; /* Опустили контент в шторке */
+            padding: 20px; padding-top: 110px;
             display: flex; flex-direction: column; box-shadow: 5px 0 30px rgba(0,0,0,0.5);
             pointer-events: none;
         }
@@ -460,7 +472,6 @@
             <!-- 1. ГЛАВНАЯ -->
             <div id="tab-home" class="tab-content active">
                 
-                <!-- Шапка теперь ТОЛЬКО здесь -->
                 <header class="header" id="mainHeader">
                     <div class="user-info" onclick="openProfile()">
                         <div class="user-avatar" id="userAvatar"><span style="font-size: 22px;">👤</span></div>
@@ -481,7 +492,8 @@
                     <div class="promo-card" onclick="openAddressModal()">🚚 Доставка</div>
                 </div>
 
-                <div class="section-title"><span>Популярные бренды</span></div>
+                <!-- ЗАМЕНЕНО "Популярные бренды" на "Бренды" -->
+                <div class="section-title"><span>Бренды</span></div>
                 <div class="brands-scroll" id="brandsScroll"></div>
 
                 <div class="section-title">
@@ -695,18 +707,15 @@
             }
         });
 
-        // --- ЛОГИКА КАРУСЕЛИ (ТОЛЬКО КЛИКИ, БЕЗ ПЕРЕТАСКИВАНИЯ) ---
+        // --- ЛОГИКА КАРУСЕЛИ ---
         const tabs = ['home', 'catalog', 'cart', 'profile'];
         let currentTabIndex = 0;
         const tabsWrapper = document.getElementById('tabsWrapper');
         const tabBar = document.getElementById('tabBar');
         const tabIndicator = document.getElementById('tabIndicator');
-        
-        // Запоминаем, откуда пришли в профиль
         let previousTabIndex = 0;
 
         function updateCarousel(index) {
-            // Если мы уходим в профиль, запоминаем предыдущую вкладку
             if (index === 3 && currentTabIndex !== 3) {
                 previousTabIndex = currentTabIndex;
             }
@@ -730,7 +739,7 @@
             else if (tabs[index] === 'cart') renderCart();
         }
 
-        // Умные свайпы (оставлены, но чувствительность низкая, чтобы не мешать)
+        // --- СВАЙПЫ (НИЗКАЯ ЧУВСТВИТЕЛЬНОСТЬ) ---
         let touchStartX = 0;
         let touchStartY = 0;
         let touchStartTime = 0;
@@ -744,16 +753,15 @@
         document.addEventListener('touchend', (e) => {
             const touchEndX = e.changedTouches[0].screenX;
             const touchEndY = e.changedTouches[0].screenY;
-            const touchEndTime = Date.now();
+            const time = Date.now() - touchStartTime;
             
             const deltaX = touchEndX - touchStartX;
             const deltaY = touchEndY - touchStartY;
-            const time = touchEndTime - touchStartTime;
 
             if (Math.abs(deltaX) > Math.abs(deltaY)) {
                 const velocity = Math.abs(deltaX) / time;
-                const minDistance = 150; // Очень длинный свайп
-                const minVelocity = 1.0; // Очень быстрый
+                const minDistance = 150; 
+                const minVelocity = 1.0; 
 
                 if (Math.abs(deltaX) > minDistance && velocity > minVelocity) {
                     if (deltaX < 0 && currentTabIndex < tabs.length - 1) {
@@ -765,7 +773,6 @@
             }
         }, { passive: true });
 
-        // Функция для кликов
         function switchTab(tabName, element) {
             const index = tabs.indexOf(tabName);
             if (index !== -1) {
@@ -773,7 +780,6 @@
             }
         }
 
-        // --- ИНДИКАТОР ---
         function moveIndicator(targetBtn) {
             if (!tabIndicator || !targetBtn) return;
             const rect = targetBtn.getBoundingClientRect();
@@ -782,7 +788,6 @@
             tabIndicator.style.transform = `translateX(${rect.left - barRect.left}px)`;
         }
 
-        // --- ПРОФИЛЬ ---
         function openProfile() {
             switchTab('profile');
         }
@@ -795,7 +800,6 @@
         function closeSidebar() {
             document.getElementById('sidebar').classList.remove('active');
             
-            // ВОЗВРАТ НА ПРЕДЫДУЩУЮ ВКЛАДКУ (ИСПРАВЛЕНИЕ БАГА)
             if (currentTabIndex === 3) {
                 updateCarousel(previousTabIndex); 
             } else {
@@ -1151,7 +1155,6 @@
             document.getElementById('addressModal').classList.remove('active');
             document.getElementById('adminPanel').classList.remove('active');
             
-            // Если мы были в профиле и закрываем шторку, возвращаемся на предыдущую вкладку
             if (currentTabIndex === 3) {
                 updateCarousel(previousTabIndex);
             }
@@ -1354,7 +1357,7 @@
             setTimeout(() => { toast.remove(); }, 3000);
         }
 
-        // --- ПАМЯТЬ УСТРОЙСТВА ---
+        // --- ПАМЯТЬ УСТРОЙСТВА (С ПОЛНЫМ СПИСКОМ СТАНЦИЙ) ---
         function initStorage() {
             const savedCart = localStorage.getItem('vape_cart');
             if (savedCart) cart = JSON.parse(savedCart);
@@ -1364,22 +1367,45 @@
                 document.getElementById('addressBtn').innerHTML = `📍 ${savedAddr}`;
             }
             
-            const metroStations = ["Малиновка", "Петровщина", "Михалово", "Грушевка", "Институт Культуры", "Площадь Ленина", "Октябрьская", "Площадь Победы"];
+            // Полный список станций, сгруппированный
+            const metroLines = [
+                {
+                    name: "Московская линия",
+                    stations: ["Малиновка", "Петровщина", "Михалово", "Грушевка", "Институт Культуры", "Площадь Ленина", "Октябрьская", "Площадь Победы", "Площадь Якуба Коласа", "Академия Наук", "Парк Челюскинцев", "Московская", "Восток", "Борисовский тракт", "Уручье"]
+                },
+                {
+                    name: "Автозаводская линия",
+                    stations: ["Каменная Горка", "Кунцевщина", "Спортивная", "Пушкинская", "Молодежная", "Фрунзенская", "Немига", "Купаловская", "Первомайская", "Пролетарская", "Тракторный завод", "Партизанская", "Автозаводская", "Могилевская", "Шабаны"]
+                },
+                {
+                    name: "Зеленолужская линия",
+                    stations: ["Слуцкий Гостинец", "Новаторская", "Вокзальная", "Ковальская Слобода", "Юбилейная площадь", "Площадь Франтишка Богушевича", "Аэродромная", "Неморшанский сад", "Серебряный бор"]
+                }
+            ];
+
             const list = document.getElementById('metroList');
             list.innerHTML = '';
-            metroStations.forEach(station => {
-                const div = document.createElement('div');
-                div.className = 'address-item';
-                div.onclick = () => {
-                    document.querySelectorAll('.address-item').forEach(i => i.classList.remove('active'));
-                    div.classList.add('active');
-                    document.getElementById('addressBtn').innerHTML = `📍 ${station}`;
-                    localStorage.setItem('vape_addr', station);
-                    showToast(`📍 Станция: ${station}`);
-                    setTimeout(() => closeAllModals(), 500);
-                };
-                div.innerHTML = `<div><span>${station}</span></div><div style="color:var(--success-color); display:none;">✓</div>`;
-                list.appendChild(div);
+            
+            metroLines.forEach(line => {
+                const title = document.createElement('div');
+                title.className = 'metro-line-title';
+                title.innerText = line.name;
+                list.appendChild(title);
+
+                line.stations.forEach(station => {
+                    const div = document.createElement('div');
+                    div.className = 'address-item';
+                    div.onclick = () => {
+                        document.querySelectorAll('.address-item').forEach(i => i.classList.remove('active'));
+                        div.classList.add('active');
+                        document.getElementById('addressBtn').innerHTML = `📍 ${station}`;
+                        localStorage.setItem('vape_addr', station);
+                        showToast(`📍 Станция: ${station}`);
+                        setTimeout(() => closeAllModals(), 500);
+                    };
+                    div.innerHTML = `<div><span>${station}</span></div><div style="color:var(--success-color); display:none;">✓</div>`;
+                    list.appendChild(div);
+                });
             });
         }
     </script>
