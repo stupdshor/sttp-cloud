@@ -340,14 +340,14 @@
 
         .placeholder-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: var(--hint-color); text-align: center; }
 
-        /* --- SIDEBAR (ВАРИАНТ 1: РЕЗКИЙ ВЫЛЕТ) --- */
+        /* --- SIDEBAR (ВАРИАНТ 2: ПЛАВНЫЙ ВЫЕЗД) --- */
         .sidebar {
             position: fixed; top: 0; left: 50%;
             transform: translateX(-100%) translateX(240px) translateX(-100%);
             width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
             z-index: 2001; 
-            /* Анимация: мгновенный вылет, затем плавное доведение */
-            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            /* Плавная анимация 0.3 секунды */
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
             padding: 20px; display: flex; flex-direction: column; box-shadow: 5px 0 30px rgba(0,0,0,0.5);
             pointer-events: none;
         }
