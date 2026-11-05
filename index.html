@@ -70,28 +70,30 @@
         }
         .tab-content::-webkit-scrollbar { display: none; }
 
-        /* --- ШАПКА (Только на Главной) --- */
+        /* --- ШАПКА (Опущена и увеличена) --- */
         .header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 16px;
+            padding: 16px; /* Чуть больше отступы */
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px);
             position: relative; 
-            margin-top: 90px; /* 3 см от верхнего края Mini App */
+            margin-top: 110px; /* Опустили еще ниже (3 см + запас) */
             width: 100%; z-index: 100;
             border-radius: 0 0 16px 16px;
         }
 
-        .user-info { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .user-info { display: flex; align-items: center; gap: 14px; cursor: pointer; }
         .user-avatar {
-            width: 38px; height: 38px; border-radius: 50%; background: #2a2a2a;
+            width: 48px; height: 48px; /* Увеличили аватар */
+            border-radius: 50%; background: #2a2a2a;
             display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #333;
         }
-        .user-name { font-weight: 600; font-size: 14px; color: #ffffff; }
+        .user-name { font-weight: 700; font-size: 17px; color: #ffffff; } /* Увеличили шрифт и сделали жирнее */
+        
         .address-btn {
-            background: var(--accent-color); color: white; border: none; padding: 6px 12px;
-            border-radius: 16px; font-weight: 600; font-size: 12px; cursor: pointer;
+            background: var(--accent-color); color: white; border: none; padding: 8px 14px;
+            border-radius: 16px; font-weight: 600; font-size: 13px; cursor: pointer;
             display: flex; align-items: center; gap: 6px; transition: opacity 0.2s;
-            max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .address-btn:active { opacity: 0.8; }
 
@@ -182,7 +184,7 @@
 
         /* --- КАТЕГОРИИ И ПОИСК (Опущен на 3 см) --- */
         .catalog-header { 
-            padding: 120px 16px 16px 16px; /* 3 см от верхнего края */
+            padding: 120px 16px 16px 16px; 
             touch-action: pan-y; 
         }
         
@@ -213,38 +215,39 @@
 
         /* --- КОРЗИНА (Опущена на 3 см) --- */
         #tab-cart .section-title {
-            margin-top: 120px; /* 3 см от верхнего края */
+            margin-top: 120px;
         }
 
-        /* --- НИЖНЕЕ МЕНЮ --- */
+        /* --- НИЖНЕЕ МЕНЮ (УВЕЛИЧЕНО) --- */
         .tab-bar {
             position: fixed; bottom: 0; width: 100%; max-width: 480px;
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px);
             display: flex; justify-content: space-around; align-items: center;
-            padding: 10px 0 20px 0; border-top: 1px solid rgba(255,255,255,0.08); z-index: 100;
+            padding: 12px 0 25px 0; /* Увеличили высоту меню */
+            border-top: 1px solid rgba(255,255,255,0.08); z-index: 100;
             transition: transform 0.3s ease;
         }
         .tab-item {
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-            color: var(--hint-color); font-size: 10px; font-weight: 500;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            color: var(--hint-color); font-size: 12px; font-weight: 600; /* Увеличили шрифт */
             cursor: pointer; transition: color 0.3s; z-index: 2; flex: 1; position: relative;
         }
-        .tab-icon { font-size: 22px; line-height: 1; transition: transform 0.3s; }
+        .tab-icon { font-size: 26px; line-height: 1; transition: transform 0.3s; } /* Увеличили иконки */
         .tab-item.active { color: #fff; }
-        .tab-item.active .tab-icon { transform: translateY(-2px); }
+        .tab-item.active .tab-icon { transform: translateY(-3px); }
 
         /* Индикатор (Бабл) */
         .tab-indicator {
-            position: absolute; bottom: 12px; height: 48px;
-            background: var(--active-tab-bg); border-radius: 16px;
+            position: absolute; bottom: 15px; height: 55px; /* Увеличили бабл */
+            background: var(--active-tab-bg); border-radius: 18px;
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), width 0.3s;
             z-index: 1; pointer-events: none; left: 0;
         }
 
         .cart-badge {
-            position: absolute; top: -5px; right: 20px;
-            background: var(--danger-color); color: white; font-size: 10px; font-weight: bold;
-            width: 18px; height: 18px; border-radius: 50%;
+            position: absolute; top: -8px; right: 15px;
+            background: var(--danger-color); color: white; font-size: 11px; font-weight: bold;
+            width: 20px; height: 20px; border-radius: 50%;
             display: none; align-items: center; justify-content: center;
             border: 2px solid var(--bg-color);
         }
@@ -386,7 +389,7 @@
             width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
             z-index: 2001; 
             transition: left 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-            padding: 20px; padding-top: 90px;
+            padding: 20px; padding-top: 110px; /* Опустили контент в шторке */
             display: flex; flex-direction: column; box-shadow: 5px 0 30px rgba(0,0,0,0.5);
             pointer-events: none;
         }
@@ -402,11 +405,11 @@
         }
 
         .sidebar-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; }
-        .sidebar-avatar { width: 70px; height: 70px; border-radius: 50%; background: #2a2a2d; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #333; }
+        .sidebar-avatar { width: 80px; height: 80px; border-radius: 50%; background: #2a2a2d; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #333; }
         
-        .sidebar-name { font-size: 18px; font-weight: 700; color: #ffffff; }
+        .sidebar-name { font-size: 20px; font-weight: 700; color: #ffffff; }
         
-        .sidebar-status { font-size: 13px; color: var(--hint-color); margin-top: 4px; }
+        .sidebar-status { font-size: 14px; color: var(--hint-color); margin-top: 4px; }
         
         .sidebar-menu { display: flex; flex-direction: column; gap: 5px; }
         .sidebar-item {
@@ -460,7 +463,7 @@
                 <!-- Шапка теперь ТОЛЬКО здесь -->
                 <header class="header" id="mainHeader">
                     <div class="user-info" onclick="openProfile()">
-                        <div class="user-avatar" id="userAvatar"><span style="font-size: 18px;">👤</span></div>
+                        <div class="user-avatar" id="userAvatar"><span style="font-size: 22px;">👤</span></div>
                         <div><div class="user-name" id="userName">Загрузка...</div></div>
                     </div>
                     <button class="address-btn" id="addressBtn" onclick="openAddressModal()">📍 Выбрать адрес</button>
@@ -692,15 +695,22 @@
             }
         });
 
-        // --- ЛОГИКА КАРУСЕЛИ И СВАЙПОВ ---
+        // --- ЛОГИКА КАРУСЕЛИ (ТОЛЬКО КЛИКИ, БЕЗ ПЕРЕТАСКИВАНИЯ) ---
         const tabs = ['home', 'catalog', 'cart', 'profile'];
         let currentTabIndex = 0;
         const tabsWrapper = document.getElementById('tabsWrapper');
         const tabBar = document.getElementById('tabBar');
         const tabIndicator = document.getElementById('tabIndicator');
+        
+        // Запоминаем, откуда пришли в профиль
+        let previousTabIndex = 0;
 
-        // Функция переключения вкладок (визуальный сдвиг)
         function updateCarousel(index) {
+            // Если мы уходим в профиль, запоминаем предыдущую вкладку
+            if (index === 3 && currentTabIndex !== 3) {
+                previousTabIndex = currentTabIndex;
+            }
+
             currentTabIndex = index;
             tabsWrapper.style.transform = `translateX(-${index * 25}%)`;
             
@@ -720,57 +730,7 @@
             else if (tabs[index] === 'cart') renderCart();
         }
 
-        // --- ЛОГИКА ПЕРЕТАСКИВАНИЯ ТАБ-БАРА (ВЫСОКАЯ ЧУВСТВИТЕЛЬНОСТЬ) ---
-        let isDragging = false;
-        let startIndicatorX = 0;
-
-        tabBar.addEventListener('touchstart', (e) => {
-            if (e.target.closest('.tab-indicator')) {
-                isDragging = true;
-                startIndicatorX = e.changedTouches[0].screenX;
-                tabIndicator.style.transition = 'none';
-            }
-        }, { passive: true });
-
-        tabBar.addEventListener('touchmove', (e) => {
-            if (isDragging) {
-                const currentX = e.changedTouches[0].screenX;
-                const diff = currentX - startIndicatorX;
-                tabIndicator.style.transform = `translateX(${tabIndicator.offsetLeft + diff}px)`;
-
-                const barRect = tabBar.getBoundingClientRect();
-                const relativeX = currentX - barRect.left;
-                const tabWidth = barRect.width / tabs.length;
-                
-                // Высокая чувствительность
-                const newIndex = Math.round(relativeX / (tabWidth / 2));
-
-                if (newIndex >= 0 && newIndex < tabs.length && newIndex !== currentTabIndex) {
-                    updateCarousel(newIndex);
-                }
-            }
-        }, { passive: true });
-
-        tabBar.addEventListener('touchend', (e) => {
-            if (isDragging) {
-                isDragging = false;
-                tabIndicator.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
-                
-                const currentX = e.changedTouches[0].screenX;
-                const barRect = tabBar.getBoundingClientRect();
-                const relativeX = currentX - barRect.left;
-                const tabWidth = barRect.width / tabs.length;
-                const newIndex = Math.floor(relativeX / tabWidth);
-
-                if (newIndex >= 0 && newIndex < tabs.length) {
-                    updateCarousel(newIndex);
-                } else {
-                    moveIndicator(document.getElementById(`nav-${tabs[currentTabIndex]}`));
-                }
-            }
-        }, { passive: true });
-
-        // --- УМНЫЕ СВАЙПЫ ПО ЭКРАНУ (ОБНОВЛЕНО: ВЫШЕ ЧУВСТВИТЕЛЬНОСТЬ) ---
+        // Умные свайпы (оставлены, но чувствительность низкая, чтобы не мешать)
         let touchStartX = 0;
         let touchStartY = 0;
         let touchStartTime = 0;
@@ -791,11 +751,9 @@
             const time = touchEndTime - touchStartTime;
 
             if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                const velocity = Math.abs(deltaX) / time; 
-                
-                // СНИЖЕНЫ ПОРОГИ ДЛЯ БОЛЕЕ ЛЕГКОГО СВАЙПА
-                const minDistance = 80; // Было 120
-                const minVelocity = 0.5; // Было 0.8
+                const velocity = Math.abs(deltaX) / time;
+                const minDistance = 150; // Очень длинный свайп
+                const minVelocity = 1.0; // Очень быстрый
 
                 if (Math.abs(deltaX) > minDistance && velocity > minVelocity) {
                     if (deltaX < 0 && currentTabIndex < tabs.length - 1) {
@@ -807,6 +765,7 @@
             }
         }, { passive: true });
 
+        // Функция для кликов
         function switchTab(tabName, element) {
             const index = tabs.indexOf(tabName);
             if (index !== -1) {
@@ -814,6 +773,7 @@
             }
         }
 
+        // --- ИНДИКАТОР ---
         function moveIndicator(targetBtn) {
             if (!tabIndicator || !targetBtn) return;
             const rect = targetBtn.getBoundingClientRect();
@@ -822,6 +782,7 @@
             tabIndicator.style.transform = `translateX(${rect.left - barRect.left}px)`;
         }
 
+        // --- ПРОФИЛЬ ---
         function openProfile() {
             switchTab('profile');
         }
@@ -833,8 +794,10 @@
 
         function closeSidebar() {
             document.getElementById('sidebar').classList.remove('active');
+            
+            // ВОЗВРАТ НА ПРЕДЫДУЩУЮ ВКЛАДКУ (ИСПРАВЛЕНИЕ БАГА)
             if (currentTabIndex === 3) {
-                updateCarousel(0);
+                updateCarousel(previousTabIndex); 
             } else {
                 document.getElementById('overlay').classList.remove('active');
             }
@@ -1188,8 +1151,9 @@
             document.getElementById('addressModal').classList.remove('active');
             document.getElementById('adminPanel').classList.remove('active');
             
+            // Если мы были в профиле и закрываем шторку, возвращаемся на предыдущую вкладку
             if (currentTabIndex === 3) {
-                updateCarousel(0);
+                updateCarousel(previousTabIndex);
             }
         }
 
