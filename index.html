@@ -44,23 +44,40 @@
             margin: 0 auto; 
             background-color: var(--bg-color);
             padding-bottom: 90px; 
-            padding-top: 60px; /* Высота для верхнего меню */
             position: relative;
             height: 100vh; 
-            overflow-y: auto; 
-            scrollbar-width: none; 
+            overflow: hidden; /* Скрываем горизонтальный скролл */
             box-shadow: 0 0 20px rgba(0,0,0,0.5); 
         }
-        .app-container::-webkit-scrollbar { display: none; }
 
-        /* --- ШАПКА (Фиксирована сверху) --- */
+        /* --- КАРУСЕЛЬ ВКЛАДОК --- */
+        .tabs-wrapper {
+            display: flex;
+            width: 400%; /* 4 вкладки */
+            height: 100%;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .tab-content {
+            width: 25%; /* 100% / 4 */
+            height: 100%;
+            overflow-y: auto;
+            scrollbar-width: none;
+            padding-top: 76px; /* Высота шапки */
+        }
+        .tab-content::-webkit-scrollbar { display: none; }
+
+        /* --- ШАПКА (Фиксирована только на главной) --- */
         .header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 16px; /* Уменьшили отступы */
+            padding: 12px 16px;
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px);
             position: fixed; top: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; z-index: 100;
+            transition: transform 0.3s ease; /* Плавное скрытие */
         }
+        .header.hidden { transform: translate(-50%, -100%); } /* Скрываем при скролле вниз */
+
         .user-info { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         .user-avatar {
             width: 38px; height: 38px; border-radius: 50%; background: #2a2a2a;
@@ -68,17 +85,12 @@
         }
         .user-name { font-weight: 600; font-size: 14px; color: #ffffff; }
         .address-btn {
-            background: var(--accent-color); color: white; border: none; padding: 6px 12px; /* Уменьшили кнопку */
+            background: var(--accent-color); color: white; border: none; padding: 6px 12px;
             border-radius: 16px; font-weight: 600; font-size: 12px; cursor: pointer;
             display: flex; align-items: center; gap: 6px; transition: opacity 0.2s;
             max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .address-btn:active { opacity: 0.8; }
-
-        /* --- КОНТЕНТ ВКЛАДОК --- */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(15px); } to { opacity: 1; transform: translateX(0); } }
 
         /* --- БАННЕР И АКЦИИ --- */
         .banner {
@@ -164,8 +176,11 @@
         }
         .add-btn-circle.added { background: var(--success-color); transform: scale(1.1); }
 
-        /* --- КАТЕГОРИИ И ПОИСК --- */
-        .catalog-header { padding: 0 16px 16px 16px; }
+        /* --- КАТЕГОРИИ И ПОИСК (Не свайпается) --- */
+        .catalog-header { 
+            padding: 0 16px 16px 16px; 
+            touch-action: pan-y; /* Запрет горизонтального свайпа на этом блоке */
+        }
         
         .search-wrapper { position: relative; margin-bottom: 12px; }
         .search-icon {
@@ -206,6 +221,7 @@
         .tab-item.active { color: #fff; }
         .tab-item.active .tab-icon { transform: translateY(-2px); }
 
+        /* Индикатор (Бабл) */
         .tab-indicator {
             position: absolute; bottom: 12px; height: 48px;
             background: var(--active-tab-bg); border-radius: 16px;
@@ -238,9 +254,11 @@
         }
         .bottom-sheet.active { bottom: 0; }
         
+        /* Кнопка закрытия (крестик) */
         .sheet-close-btn {
             position: absolute; top: 15px; right: 15px;
-            background: #2a2a2d; border: none; color: #fff; width: 30px; height: 30px;
+            background: #2a2a2d; /* Темный фон */
+            border: none; color: #fff; width: 30px; height: 30px;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
             cursor: pointer; font-size: 16px; z-index: 10;
         }
@@ -275,7 +293,7 @@
         .address-modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
             width: 90%; max-width: 400px; background: #1c1c1e; border-radius: 20px;
-            z-index: 3000; padding: 15px 24px; /* Уменьшили отступы сверху и снизу на 0.5 см */
+            z-index: 3000; padding: 15px 24px;
             opacity: 0; pointer-events: none; transition: all 0.3s;
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
             max-height: 85vh; display: flex; flex-direction: column;
@@ -423,7 +441,7 @@
 
     <div class="app-container" id="appContainer">
         
-        <header class="header">
+        <header class="header" id="mainHeader">
             <div class="user-info" onclick="openProfile()">
                 <div class="user-avatar" id="userAvatar"><span style="font-size: 18px;">👤</span></div>
                 <div><div class="user-name" id="userName">Загрузка...</div></div>
@@ -431,83 +449,88 @@
             <button class="address-btn" id="addressBtn" onclick="openAddressModal()">📍 Выбрать адрес</button>
         </header>
 
-        <!-- ГЛАВНАЯ -->
-        <div id="tab-home" class="tab-content active">
-            <div class="banner">
-                <h2>STTP SHOP</h2>
-                <p>Ждем ваших заказов 🔥</p>
-            </div>
-
-            <div class="section-title"><span>Акции</span></div>
-            <div class="promo-scroll" id="promoScroll">
-                <div class="promo-card" onclick="openDiscounts()">🎁 Скидки</div>
-                <div class="promo-card" onclick="openNewArrivals()">🔥 Новинки</div>
-                <div class="promo-card" onclick="openAddressModal()">🚚 Доставка</div>
-            </div>
-
-            <div class="section-title"><span>Популярные бренды</span></div>
-            <div class="brands-scroll" id="brandsScroll"></div>
-
-            <div class="section-title">
-                <span>Хиты продаж</span>
-                <span onclick="switchTab('catalog')">Все товары ›</span>
-            </div>
-            <div class="grid-container" id="home-grid-hits"></div>
-
-            <div class="section-title">
-                <span>Новинки</span>
-                <span onclick="switchTab('catalog')">Все товары ›</span>
-            </div>
-            <div class="grid-container" id="home-grid-new"></div>
-        </div>
-
-        <!-- КАТАЛОГ -->
-        <div id="tab-catalog" class="tab-content">
-            <div class="catalog-header">
-                <div class="search-wrapper">
-                    <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                    <input type="text" class="search-input" placeholder="Поиск по всем товарам..." oninput="filterCatalog(this.value)">
-                </div>
-                
-                <div class="catalog-categories">
-                    <button class="category-btn active" onclick="changeCategory('Жидкость', this)">Жидкости</button>
-                    <button class="category-btn" onclick="changeCategory('Устройство', this)">Устройства</button>
-                    <button class="category-btn" onclick="changeCategory('Расходник', this)">Расходники</button>
-                    <button class="category-btn" onclick="changeCategory('Снюс', this)">Снюс</button>
-                </div>
-                <div id="activeBrandFilter" style="display:none; margin-top: 10px; font-size: 14px; color: var(--accent-color);">
-                    Бренд: <b id="activeBrandName"></b> 
-                    <span onclick="resetBrandFilter()" style="cursor:pointer; text-decoration:underline; margin-left:5px; color:var(--hint-color);">(Сбросить)</span>
-                </div>
-            </div>
-            <div class="grid-container" id="catalog-grid"></div>
-        </div>
-
-        <!-- КОРЗИНА -->
-        <div id="tab-cart" class="tab-content">
-            <div class="section-title"><span>Ваша корзина</span></div>
-            <div id="cart-items-container" style="padding: 0 16px;"></div>
+        <!-- КАРУСЕЛЬ -->
+        <div class="tabs-wrapper" id="tabsWrapper">
             
-            <div id="cart-empty" class="placeholder-page">
-                <h2>Пусто</h2><p>Добавьте товары из каталога.</p>
+            <!-- 1. ГЛАВНАЯ -->
+            <div id="tab-home" class="tab-content active">
+                <div class="banner">
+                    <h2>STTP SHOP</h2>
+                    <p>Ждем ваших заказов 🔥</p>
+                </div>
+
+                <div class="section-title"><span>Акции</span></div>
+                <div class="promo-scroll" id="promoScroll">
+                    <div class="promo-card" onclick="openDiscounts()">🎁 Скидки</div>
+                    <div class="promo-card" onclick="openNewArrivals()">🔥 Новинки</div>
+                    <div class="promo-card" onclick="openAddressModal()">🚚 Доставка</div>
+                </div>
+
+                <div class="section-title"><span>Популярные бренды</span></div>
+                <div class="brands-scroll" id="brandsScroll"></div>
+
+                <div class="section-title">
+                    <span>Хиты продаж</span>
+                    <span onclick="switchTab('catalog')">Все товары ›</span>
+                </div>
+                <div class="grid-container" id="home-grid-hits"></div>
+
+                <div class="section-title">
+                    <span>Новинки</span>
+                    <span onclick="switchTab('catalog')">Все товары ›</span>
+                </div>
+                <div class="grid-container" id="home-grid-new"></div>
             </div>
 
-            <div id="checkout-section" style="display: none;">
-                <div class="cart-total">
-                    <span>Итого:</span>
-                    <span id="cart-total-price">0.00 BYN</span>
+            <!-- 2. КАТАЛОГ -->
+            <div id="tab-catalog" class="tab-content">
+                <div class="catalog-header">
+                    <div class="search-wrapper">
+                        <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                        <input type="text" class="search-input" placeholder="Поиск по всем товарам..." oninput="filterCatalog(this.value)">
+                    </div>
+                    
+                    <div class="catalog-categories">
+                        <button class="category-btn active" onclick="changeCategory('Жидкость', this)">Жидкости</button>
+                        <button class="category-btn" onclick="changeCategory('Устройство', this)">Устройства</button>
+                        <button class="category-btn" onclick="changeCategory('Расходник', this)">Расходники</button>
+                        <button class="category-btn" onclick="changeCategory('Снюс', this)">Снюс</button>
+                    </div>
+                    <div id="activeBrandFilter" style="display:none; margin-top: 10px; font-size: 14px; color: var(--accent-color);">
+                        Бренд: <b id="activeBrandName"></b> 
+                        <span onclick="resetBrandFilter()" style="cursor:pointer; text-decoration:underline; margin-left:5px; color:var(--hint-color);">(Сбросить)</span>
+                    </div>
                 </div>
-                <div class="checkout-form">
-                    <input type="text" class="form-input" placeholder="Ваше имя" id="checkout-name">
-                    <input type="tel" class="form-input" placeholder="Номер телефона" id="checkout-phone">
-                    <button class="checkout-btn" onclick="submitOrder()">Оформить заказ</button>
+                <div class="grid-container" id="catalog-grid"></div>
+            </div>
+
+            <!-- 3. КОРЗИНА -->
+            <div id="tab-cart" class="tab-content">
+                <div class="section-title"><span>Ваша корзина</span></div>
+                <div id="cart-items-container" style="padding: 0 16px;"></div>
+                
+                <div id="cart-empty" class="placeholder-page">
+                    <h2>Пусто</h2><p>Добавьте товары из каталога.</p>
+                </div>
+
+                <div id="checkout-section" style="display: none;">
+                    <div class="cart-total">
+                        <span>Итого:</span>
+                        <span id="cart-total-price">0.00 BYN</span>
+                    </div>
+                    <div class="checkout-form">
+                        <input type="text" class="form-input" placeholder="Ваше имя" id="checkout-name">
+                        <input type="tel" class="form-input" placeholder="Номер телефона" id="checkout-phone">
+                        <button class="checkout-btn" onclick="submitOrder()">Оформить заказ</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- ПРОФИЛЬ -->
-        <div id="tab-profile" class="tab-content">
-            <div class="placeholder-page"><h2>Профиль</h2><p>Выберите пункт в меню слева.</p></div>
+            <!-- 4. ПРОФИЛЬ -->
+            <div id="tab-profile" class="tab-content">
+                <div class="placeholder-page"><h2>Профиль</h2><p>Выберите пункт в меню слева.</p></div>
+            </div>
+
         </div>
 
         <!-- НИЖНЕЕ МЕНЮ -->
@@ -647,7 +670,7 @@
             document.getElementById('sidebarName').innerText = "Гость"; 
         }
 
-        // --- ОБРАБОТКА КЛАВИАТУРЫ (Скрытие нижнего меню) ---
+        // --- ОБРАБОТКА КЛАВИАТУРЫ ---
         tg.onEvent('viewportChanged', function() {
             const tabBar = document.getElementById('tabBar');
             if (tg.viewportStableHeight < window.innerHeight - 100) {
@@ -657,35 +680,149 @@
             }
         });
 
-        // --- СВАЙПЫ (ИНВЕРТИРОВАНЫ) ---
-        let touchStartX = 0;
-        let touchEndX = 0;
+        // --- ЛОГИКА КАРУСЕЛИ И СВАЙПОВ ---
         const tabs = ['home', 'catalog', 'cart', 'profile'];
         let currentTabIndex = 0;
+        const tabsWrapper = document.getElementById('tabsWrapper');
+        const mainHeader = document.getElementById('mainHeader');
+        const tabBar = document.getElementById('tabBar');
+        const tabIndicator = document.getElementById('tabIndicator');
 
-        document.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        });
+        // Функция переключения вкладок (визуальный сдвиг)
+        function updateCarousel(index) {
+            currentTabIndex = index;
+            // Сдвигаем карусель (25% - это ширина одной вкладки)
+            tabsWrapper.style.transform = `translateX(-${index * 25}%)`;
+            
+            // Обновляем нижнее меню
+            document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
+            const activeNav = document.getElementById(`nav-${tabs[index]}`);
+            if (activeNav) activeNav.classList.add('active');
+            
+            moveIndicator(activeNav);
 
-        document.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        });
+            // Скрываем/Показываем шапку (только на главной)
+            if (tabs[index] === 'home') {
+                mainHeader.classList.remove('hidden');
+            } else {
+                mainHeader.classList.add('hidden');
+            }
 
-        function handleSwipe() {
+            // Если профиль - открываем шторку
+            if (tabs[index] === 'profile') {
+                openSidebar();
+            } else {
+                closeSidebar();
+            }
+
+            // Загружаем данные для вкладок
+            if (tabs[index] === 'catalog') loadCatalog(currentCategory);
+            else if (tabs[index] === 'cart') renderCart();
+        }
+
+        // --- СВАЙПЫ ПАЛЬЦЕМ ---
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isDragging = false;
+        let startIndicatorX = 0;
+
+        // Начало касания на нижнем меню
+        tabBar.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.tab-item') || e.target.closest('.tab-indicator')) {
+                isDragging = true;
+                startIndicatorX = e.changedTouches[0].screenX;
+                tabIndicator.style.transition = 'none'; // Отключаем анимацию для перетаскивания
+            } else {
+                // Свайп по экрану
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }
+        }, { passive: true });
+
+        // Движение пальца
+        tabBar.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                const currentX = e.changedTouches[0].screenX;
+                const diff = currentX - startIndicatorX;
+                // Двигаем индикатор за пальцем
+                tabIndicator.style.transform = `translateX(${tabIndicator.offsetLeft + diff}px)`;
+            }
+        }, { passive: true });
+
+        // Конец касания
+        tabBar.addEventListener('touchend', (e) => {
+            if (isDragging) {
+                isDragging = false;
+                tabIndicator.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                const currentX = e.changedTouches[0].screenX;
+                const diff = currentX - startIndicatorX;
+                
+                // Определяем, на какую вкладку переключиться
+                if (diff > 50 && currentTabIndex > 0) {
+                    updateCarousel(currentTabIndex - 1);
+                } else if (diff < -50 && currentTabIndex < tabs.length - 1) {
+                    updateCarousel(currentTabIndex + 1);
+                } else {
+                    // Возвращаем на место
+                    moveIndicator(document.getElementById(`nav-${tabs[currentTabIndex]}`));
+                }
+            } else {
+                // Обычный свайп по экрану
+                const touchEndX = e.changedTouches[0].screenX;
+                const touchEndY = e.changedTouches[0].screenY;
+                handleSwipe(touchStartX, touchEndX, touchStartY, touchEndY);
+            }
+        }, { passive: true });
+
+        function handleSwipe(startX, endX, startY, endY) {
             const swipeThreshold = 50;
-            if (touchStartX - touchEndX > swipeThreshold) {
-                // Свайп влево (следующая вкладка)
-                if (currentTabIndex < tabs.length - 1) {
-                    currentTabIndex++;
-                    switchTab(tabs[currentTabIndex]);
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+
+            // Проверяем, что свайп горизонтальный (а не вертикальный скролл)
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > swipeThreshold) {
+                // ИНВЕРСИЯ: Свайп влево -> следующая, вправо -> предыдущая
+                if (deltaX < 0 && currentTabIndex < tabs.length - 1) {
+                    updateCarousel(currentTabIndex + 1);
+                } else if (deltaX > 0 && currentTabIndex > 0) {
+                    updateCarousel(currentTabIndex - 1);
                 }
-            } else if (touchEndX - touchStartX > swipeThreshold) {
-                // Свайп вправо (предыдущая вкладка)
-                if (currentTabIndex > 0) {
-                    currentTabIndex--;
-                    switchTab(tabs[currentTabIndex]);
-                }
+            }
+        }
+
+        // Функция для кликов по меню
+        function switchTab(tabName, element) {
+            const index = tabs.indexOf(tabName);
+            if (index !== -1) {
+                updateCarousel(index);
+            }
+        }
+
+        // --- ИНДИКАТОР ---
+        function moveIndicator(targetBtn) {
+            if (!tabIndicator || !targetBtn) return;
+            const rect = targetBtn.getBoundingClientRect();
+            const barRect = tabBar.getBoundingClientRect();
+            tabIndicator.style.width = `${targetBtn.offsetWidth}px`;
+            tabIndicator.style.transform = `translateX(${rect.left - barRect.left}px)`;
+        }
+
+        // --- ПРОФИЛЬ ---
+        function openProfile() {
+            switchTab('profile');
+            // openSidebar(); // Уже вызывается внутри updateCarousel
+        }
+
+        function openSidebar() {
+            document.getElementById('overlay').classList.add('active');
+            document.getElementById('sidebar').classList.add('active');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('active');
+            // Не убираем overlay, если открыт профиль, чтобы фон был затемнен
+            if (currentTabIndex !== 3) {
+                document.getElementById('overlay').classList.remove('active');
             }
         }
 
@@ -699,7 +836,6 @@
         let currentProductInSheet = null;
         let currentSheetQty = 1;
         let editingCartIndex = -1;
-        let lastActiveTab = 'home'; 
         let isAdmin = false;
 
         // --- ПРОВЕРКА НА АДМИНА ---
@@ -864,7 +1000,7 @@
                 console.log("Товары загружены с сервера:", allProducts);
                 
                 renderHome();
-                if(document.getElementById('tab-catalog').classList.contains('active')) {
+                if(currentTabIndex === 1) {
                     loadCatalog(currentCategory);
                 }
             } catch (error) {
@@ -923,62 +1059,6 @@
             renderProducts(filtered, 'catalog-grid');
         }
 
-        // --- НАВИГАЦИЯ ---
-        function switchTab(tabName, element) {
-            if (tabName !== 'profile') lastActiveTab = tabName;
-
-            // Обновляем индекс для свайпов
-            currentTabIndex = tabs.indexOf(tabName);
-            if (currentTabIndex === -1) currentTabIndex = 0;
-
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            
-            let targetBtn = element;
-            if (!targetBtn) {
-                targetBtn = Array.from(document.querySelectorAll('.tab-item')).find(i => i.getAttribute('onclick') && i.getAttribute('onclick').includes(tabName));
-            }
-            if (targetBtn) targetBtn.classList.add('active');
-
-            moveIndicator(targetBtn);
-
-            if (tabName === 'catalog') {
-                if(activeBrandFilter) filterByBrand(activeBrandFilter);
-                else loadCatalog(currentCategory);
-            }
-            else if (tabName === 'cart') renderCart();
-
-            document.getElementById('appContainer').scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function moveIndicator(targetBtn) {
-            const indicator = document.getElementById('tabIndicator');
-            if (!indicator || !targetBtn) return;
-            indicator.style.width = `${targetBtn.offsetWidth}px`;
-            indicator.style.transform = `translateX(${targetBtn.offsetLeft}px)`;
-        }
-
-        function openProfile() {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
-            document.getElementById('tab-profile').classList.add('active');
-            
-            const profileBtn = document.getElementById('nav-profile');
-            profileBtn.classList.add('active');
-            moveIndicator(profileBtn);
-
-            openSidebar();
-        }
-
-        function closeSidebar() {
-            document.getElementById('sidebar').classList.remove('active');
-            document.getElementById('overlay').classList.remove('active');
-            setTimeout(() => {
-                switchTab(lastActiveTab, document.getElementById(`nav-${lastActiveTab}`));
-            }, 300);
-        }
-
         // --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ---
         window.onload = () => {
             initStorage();
@@ -990,13 +1070,12 @@
             
             checkAdminStatus(); 
             
-            const activeTab = document.querySelector('.tab-item.active');
-            if (activeTab) setTimeout(() => moveIndicator(activeTab), 50);
+            // Начальное состояние
+            updateCarousel(0);
         };
         
         window.addEventListener('resize', () => {
-            const activeTab = document.querySelector('.tab-item.active');
-            if (activeTab) moveIndicator(activeTab);
+            moveIndicator(document.getElementById(`nav-${tabs[currentTabIndex]}`));
         });
 
         // --- ФИЛЬТРЫ АКЦИЙ ---
@@ -1096,12 +1175,9 @@
             document.getElementById('addressModal').classList.remove('active');
             document.getElementById('adminPanel').classList.remove('active');
             
-            if(document.getElementById('sidebar').classList.contains('active')) {
-                closeSidebar();
-            } else {
-                if(lastActiveTab !== 'profile' && document.getElementById('tab-profile').classList.contains('active')) {
-                     switchTab(lastActiveTab, document.getElementById(`nav-${lastActiveTab}`));
-                }
+            // Возвращаемся на главную или каталог, если были в профиле
+            if (currentTabIndex === 3) {
+                updateCarousel(0); // Возврат на главную
             }
         }
 
@@ -1246,7 +1322,7 @@
                 
                 fetchProducts(); 
 
-                setTimeout(() => { switchTab('home'); }, 1500);
+                setTimeout(() => { updateCarousel(0); }, 1500); // На главную
 
             } catch (error) {
                 showToast(`❌ ${error.message}`);
@@ -1274,11 +1350,6 @@
             showToast(`🚚 Курьер приедет по адресу: ${input}`);
             localStorage.setItem('vape_addr', 'Доставка: ' + input);
             setTimeout(() => closeAllModals(), 500);
-        }
-
-        function openSidebar() {
-            document.getElementById('overlay').classList.add('active');
-            document.getElementById('sidebar').classList.add('active');
         }
 
         // --- ПОДДЕРЖКА И УВЕДОМЛЕНИЯ ---
