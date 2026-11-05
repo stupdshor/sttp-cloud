@@ -48,7 +48,7 @@
             height: 100vh; 
             overflow-y: auto; 
             scrollbar-width: none; 
-            transform: translateX(-15px);
+            transform: translateX(-15px); 
         }
         .app-container::-webkit-scrollbar { display: none; }
 
@@ -561,8 +561,8 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        // --- НАСТРОЙКИ API ---
-        const API_URL = "https://sttp-api-yjw2.onrender.com/api";
+        // --- НАСТРОЙКИ API (НОВАЯ ССЫЛКА НА RENDER) ---
+        const API_URL = "https://sttp-api-new.onrender.com/api";
 
         // 1. Инициализация Telegram
         const tg = window.Telegram.WebApp;
@@ -756,7 +756,7 @@
                 renderBrands();
             });
             
-            checkAdminStatus(); // <-- ВЫЗОВ ПРОВЕРКИ АДМИНА
+            checkAdminStatus(); 
             
             const activeTab = document.querySelector('.tab-item.active');
             if (activeTab) setTimeout(() => moveIndicator(activeTab), 50);
