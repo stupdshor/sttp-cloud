@@ -387,6 +387,18 @@
             display: inline-block; margin-top: 10px; padding: 10px 20px;
             background: rgba(46, 166, 255, 0.1); border-radius: 10px; border: 1px solid rgba(46, 166, 255, 0.2);
         }
+
+        /* --- АДМИН-ПАНЕЛЬ --- */
+        .admin-panel {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+            width: 90%; max-width: 400px; background: #1c1c1e; border-radius: 20px;
+            z-index: 4000; padding: 24px; opacity: 0; pointer-events: none; transition: all 0.3s;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            max-height: 85vh; display: flex; flex-direction: column;
+            margin-left: -15px;
+        }
+        .admin-panel.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        .admin-panel h3 { margin-bottom: 16px; font-size: 18px; color: #ffffff; }
     </style>
 </head>
 <body>
@@ -540,6 +552,26 @@
         </div>
     </div>
 
+    <!-- АДМИН-ПАНЕЛЬ -->
+    <div class="admin-panel" id="adminPanel">
+        <h3>Добавить новый товар</h3>
+        
+        <input type="text" class="form-input" id="admin-title" placeholder="Название (например, Monster V2)">
+        <input type="text" class="form-input" id="admin-brand" placeholder="Бренд (например, Monster)">
+        <input type="number" class="form-input" id="admin-price" placeholder="Цена (BYN)" step="0.01">
+        <input type="number" class="form-input" id="admin-stock" placeholder="Количество (шт.)">
+        
+        <select class="form-input" id="admin-type">
+            <option value="Жидкость">Жидкость</option>
+            <option value="Устройство">Устройство</option>
+            <option value="Расходник">Расходник</option>
+            <option value="Снюс">Снюс</option>
+        </select>
+
+        <button class="checkout-btn" onclick="submitNewProduct()">Добавить товар</button>
+        <button class="sidebar-item sidebar-close" style="margin-top: 15px;" onclick="closeAllModals()">✕ Отмена</button>
+    </div>
+
     <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -561,7 +593,7 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        // --- НАСТРОЙКИ API (НОВАЯ ССЫЛКА НА RENDER) ---
+        // --- НАСТРОЙКИ API ---
         const API_URL = "https://sttp-api-new.onrender.com/api";
 
         // 1. Инициализация Telegram
@@ -619,11 +651,71 @@
                     const adminBtn = document.createElement('button');
                     adminBtn.className = 'sidebar-item';
                     adminBtn.innerHTML = '<span>⚙️</span> Админ-панель';
-                    adminBtn.onclick = () => alert('Здесь будет форма добавления товара!');
+                    adminBtn.onclick = () => openAdminPanel();
                     menu.prepend(adminBtn);
                 }
             } catch (e) {
                 console.log("Ошибка проверки админа:", e);
+            }
+        }
+
+        // --- ОТКРЫТИЕ АДМИН-ПАНЕЛИ ---
+        function openAdminPanel() {
+            closeSidebar(); // Закрываем меню
+            document.getElementById('overlay').classList.add('active');
+            document.getElementById('adminPanel').classList.add('active');
+        }
+
+        // --- ДОБАВЛЕНИЕ ТОВАРА ---
+        async function submitNewProduct() {
+            const user = tg.initDataUnsafe?.user;
+            if (!user) return;
+
+            const title = document.getElementById('admin-title').value;
+            const brand = document.getElementById('admin-brand').value;
+            const price = parseFloat(document.getElementById('admin-price').value);
+            const stock = parseInt(document.getElementById('admin-stock').value);
+            const type = document.getElementById('admin-type').value;
+
+            if (!title || !brand || isNaN(price) || isNaN(stock)) {
+                showToast("⚠️ Заполните все поля корректно");
+                return;
+            }
+
+            const productData = {
+                title: title,
+                brand: brand,
+                price: price,
+                stock: stock,
+                type: type,
+                admin_id: user.id
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/add-product`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(productData)
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || "Ошибка сервера");
+                }
+
+                showToast("✅ Товар успешно добавлен!");
+                
+                // Очищаем поля
+                document.getElementById('admin-title').value = '';
+                document.getElementById('admin-brand').value = '';
+                document.getElementById('admin-price').value = '';
+                document.getElementById('admin-stock').value = '';
+
+                closeAllModals();
+                fetchProducts(); // Обновляем витрину
+
+            } catch (error) {
+                showToast(`❌ ${error.message}`);
             }
         }
 
@@ -847,6 +939,7 @@
             document.getElementById('overlay').classList.remove('active');
             document.getElementById('productSheet').classList.remove('active');
             document.getElementById('addressModal').classList.remove('active');
+            document.getElementById('adminPanel').classList.remove('active');
             
             if(document.getElementById('sidebar').classList.contains('active')) {
                 closeSidebar();
