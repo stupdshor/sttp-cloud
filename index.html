@@ -33,10 +33,10 @@
             background-color: #000; 
             color: var(--text-color);
             height: 100vh;
-            overflow: hidden; /* Убираем скролл body */
+            overflow: hidden;
             display: flex;
             justify-content: center; 
-            overscroll-behavior: none; /* Убираем pull-to-refresh */
+            overscroll-behavior: none;
         }
 
         .app-container {
@@ -54,36 +54,33 @@
         /* --- КАРУСЕЛЬ ВКЛАДОК --- */
         .tabs-wrapper {
             display: flex;
-            width: 400%; /* 4 вкладки */
+            width: 400%;
             height: 100%;
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             will-change: transform;
         }
 
         .tab-content {
-            width: 25%; /* 100% / 4 */
+            width: 25%;
             height: 100%;
             overflow-y: auto;
             scrollbar-width: none;
-            padding-top: 180px; /* Отступ сверху 3 см + высота шапки */
+            /* Убираем padding-top: 180px, так как шапка теперь внутри главной */
             padding-bottom: 90px; 
-            overscroll-behavior-y: contain; /* Запрет скролла родителя */
+            overscroll-behavior-y: contain;
         }
         .tab-content::-webkit-scrollbar { display: none; }
 
-        /* --- ШАПКА (Опущена на 3 см) --- */
+        /* --- ШАПКА (Теперь только на Главной) --- */
         .header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 12px 16px;
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px);
-            position: fixed; 
-            top: 90px; /* Опускаем на 3 см от верхнего края */
-            left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 480px; z-index: 100;
-            transition: transform 0.3s ease;
-            border-radius: 0 0 16px 16px; /* Скругление снизу для красоты */
+            position: relative; 
+            margin-top: 90px; /* 3 см от верхнего края Mini App */
+            width: 100%; z-index: 100;
+            border-radius: 0 0 16px 16px;
         }
-        .header.hidden { transform: translate(-50%, -150%); } /* Скрываем при уходе с главной */
 
         .user-info { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         .user-avatar {
@@ -112,7 +109,7 @@
         .promo-scroll {
             display: flex; gap: 12px; padding: 0 16px 16px 16px;
             overflow-x: auto; scrollbar-width: none;
-            touch-action: pan-x; /* Разрешаем только горизонтальный скролл */
+            touch-action: pan-x;
         }
         .promo-scroll::-webkit-scrollbar { display: none; }
         
@@ -450,19 +447,21 @@
 
     <div class="app-container" id="appContainer">
         
-        <header class="header" id="mainHeader">
-            <div class="user-info" onclick="openProfile()">
-                <div class="user-avatar" id="userAvatar"><span style="font-size: 18px;">👤</span></div>
-                <div><div class="user-name" id="userName">Загрузка...</div></div>
-            </div>
-            <button class="address-btn" id="addressBtn" onclick="openAddressModal()">📍 Выбрать адрес</button>
-        </header>
-
         <!-- КАРУСЕЛЬ -->
         <div class="tabs-wrapper" id="tabsWrapper">
             
             <!-- 1. ГЛАВНАЯ -->
             <div id="tab-home" class="tab-content active">
+                
+                <!-- Шапка теперь ТОЛЬКО здесь -->
+                <header class="header" id="mainHeader">
+                    <div class="user-info" onclick="openProfile()">
+                        <div class="user-avatar" id="userAvatar"><span style="font-size: 18px;">👤</span></div>
+                        <div><div class="user-name" id="userName">Загрузка...</div></div>
+                    </div>
+                    <button class="address-btn" id="addressBtn" onclick="openAddressModal()">📍 Выбрать адрес</button>
+                </header>
+
                 <div class="banner">
                     <h2>STTP SHOP</h2>
                     <p>Ждем ваших заказов 🔥</p>
@@ -693,7 +692,6 @@
         const tabs = ['home', 'catalog', 'cart', 'profile'];
         let currentTabIndex = 0;
         const tabsWrapper = document.getElementById('tabsWrapper');
-        const mainHeader = document.getElementById('mainHeader');
         const tabBar = document.getElementById('tabBar');
         const tabIndicator = document.getElementById('tabIndicator');
 
@@ -708,12 +706,6 @@
             
             moveIndicator(activeNav);
 
-            if (tabs[index] === 'home') {
-                mainHeader.classList.remove('hidden');
-            } else {
-                mainHeader.classList.add('hidden');
-            }
-
             if (tabs[index] === 'profile') {
                 openSidebar();
             } else {
@@ -724,7 +716,7 @@
             else if (tabs[index] === 'cart') renderCart();
         }
 
-        // --- ЛОГИКА ПЕРЕТАСКИВАНИЯ ТАБ-БАРА (ИНВЕРСИЯ) ---
+        // --- ЛОГИКА ПЕРЕТАСКИВАНИЯ ТАБ-БАРА (ВЫСОКАЯ ЧУВСТВИТЕЛЬНОСТЬ) ---
         let isDragging = false;
         let startIndicatorX = 0;
 
@@ -746,7 +738,9 @@
                 const barRect = tabBar.getBoundingClientRect();
                 const relativeX = currentX - barRect.left;
                 const tabWidth = barRect.width / tabs.length;
-                const newIndex = Math.floor(relativeX / tabWidth);
+                
+                // Высокая чувствительность: делим ширину вкладки на 2, чтобы срабатывало быстрее
+                const newIndex = Math.round(relativeX / (tabWidth / 2));
 
                 if (newIndex >= 0 && newIndex < tabs.length && newIndex !== currentTabIndex) {
                     // Меняем страницу в реальном времени
