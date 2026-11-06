@@ -51,7 +51,7 @@
             overscroll-behavior: none;
         }
 
-        /* --- КАРУСЕЛЬ ВКЛАДОК --- */
+        /* --- КАРУСЕЛЬ --- */
         .tabs-wrapper {
             display: flex;
             width: 400%;
@@ -70,7 +70,6 @@
         }
         .tab-content::-webkit-scrollbar { display: none; }
 
-        /* --- ШАПКА --- */
         .header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 16px;
@@ -99,7 +98,7 @@
         }
         .address-btn:active { opacity: 0.8; }
 
-        /* --- БАННЕР И АКЦИИ --- */
+        /* --- ГЛАВНАЯ --- */
         .banner {
             margin: 0 16px 16px 16px; border-radius: 16px;
             background: linear-gradient(135deg, #ff3b30, #ff9500);
@@ -138,7 +137,6 @@
         }
         .brand-card:active { transform: scale(0.95); }
 
-        /* --- СЕТКА ТОВАРОВ --- */
         .section-title {
             padding: 0 16px; font-size: 17px; font-weight: 700;
             margin: 20px 0 12px 0; display: flex; justify-content: space-between; align-items: center;
@@ -184,7 +182,7 @@
         }
         .add-btn-circle.added { background: var(--success-color); transform: scale(1.1); }
 
-        /* --- КАТЕГОРИИ И ПОИСК --- */
+        /* --- КАТАЛОГ --- */
         .catalog-header { 
             padding: 120px 16px 16px 16px; 
             touch-action: pan-y; 
@@ -252,7 +250,7 @@
         }
         .cart-badge.show { display: flex; }
 
-        /* --- BOTTOM SHEET --- */
+        /* --- BOTTOM SHEET (КАРТОЧКА ТОВАРА) --- */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
@@ -263,11 +261,17 @@
             position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; background: #1c1c1e;
             border-radius: 24px 24px 0 0; z-index: 1001; padding: 20px;
-            transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: bottom 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+            touch-action: none; /* Отключаем скролл для свайпа */
         }
         .bottom-sheet.active { bottom: 0; }
         
+        .drag-handle {
+            width: 40px; height: 5px; background: #444; border-radius: 5px;
+            margin: 0 auto 15px auto; cursor: grab;
+        }
+
         .sheet-close-btn {
             position: absolute; top: 15px; right: 15px;
             background: #2a2a2d; border: none; color: #fff; width: 30px; height: 30px;
@@ -275,7 +279,7 @@
             cursor: pointer; font-size: 16px; z-index: 10;
         }
         
-        .sheet-img { width: 100%; height: 200px; object-fit: contain; background: #2a2a2d; border-radius: 16px; margin-bottom: 16px; }
+        .sheet-img { width: 100%; height: 200px; object-fit: contain; background: #2a2a2d; border-radius: 16px; margin-bottom: 16px; pointer-events: none; }
         
         .sheet-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
         .sheet-brand { font-size: 14px; color: #8e8e93; margin-bottom: 16px; }
@@ -301,7 +305,7 @@
         }
         .sheet-add-btn.added { background: var(--success-color); }
 
-        /* --- МОДАЛЬНОЕ ОКНО АДРЕСА --- */
+        /* --- МОДАЛКА АДРЕСА --- */
         .address-modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
             width: 90%; max-width: 400px; background: #1c1c1e; border-radius: 20px;
@@ -347,7 +351,7 @@
             padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;
         }
 
-        /* --- КОРЗИНА --- */
+        /* --- КОРЗИНА (СПИСОК) --- */
         .cart-item { display: flex; gap: 12px; background: var(--card-bg); padding: 12px; border-radius: 12px; margin-bottom: 12px; align-items: center; }
         .cart-item-img { width: 60px; height: 60px; background: #2a2a2d; border-radius: 8px; object-fit: contain; }
         .cart-item-info { flex-grow: 1; cursor: pointer; }
@@ -368,11 +372,14 @@
             width: 100%; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05);
             padding: 14px 16px; border-radius: 12px; color: #ffffff; font-size: 14px; margin-bottom: 12px; outline: none;
         }
+        
         .checkout-btn {
             width: 100%; background: var(--success-color); color: white; border: none;
             padding: 16px; border-radius: 14px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px;
+            transition: background 0.3s, opacity 0.3s;
         }
         .checkout-btn:active { opacity: 0.8; }
+        .checkout-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
 
         /* --- TOASTS --- */
         .toast-container { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 4000; display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; pointer-events: none; }
@@ -527,9 +534,7 @@
                         <span id="cart-total-price">0.00 BYN</span>
                     </div>
                     <div class="checkout-form">
-                        <input type="text" class="form-input" placeholder="Ваше имя" id="checkout-name">
-                        <input type="tel" class="form-input" placeholder="Номер телефона" id="checkout-phone">
-                        <button class="checkout-btn" onclick="submitOrder()">Оформить заказ</button>
+                        <button class="checkout-btn" id="checkoutBtn" onclick="submitOrder()" disabled>Оформить заказ</button>
                     </div>
                 </div>
             </div>
@@ -565,6 +570,7 @@
 
     <!-- BOTTOM SHEET -->
     <div class="bottom-sheet" id="productSheet">
+        <div class="drag-handle" id="dragHandle"></div>
         <button class="sheet-close-btn" onclick="closeAllModals()">✕</button>
         <img src="" class="sheet-img" id="sheetImg">
         <div class="sheet-title" id="sheetTitle">Название</div>
@@ -650,19 +656,15 @@
     <script>
         // --- НАСТРОЙКИ API ---
         const API_URL = "https://sttp-api-new.onrender.com/api";
+        const SUPPORT_TG = "vsqw2d2"; // Ник менеджера
 
-        // 1. Инициализация Telegram
         const tg = window.Telegram.WebApp;
         tg.expand(); 
         tg.ready();
         
         try {
-            if (tg.requestFullscreen) {
-                tg.requestFullscreen();
-            }
-        } catch (e) {
-            console.log("Fullscreen не поддерживается.");
-        }
+            if (tg.requestFullscreen) tg.requestFullscreen();
+        } catch (e) {}
 
         const user = tg.initDataUnsafe?.user;
         if (user) {
@@ -678,9 +680,10 @@
             document.getElementById('sidebarName').innerText = "Гость"; 
         }
 
-        // --- ОБРАБОТКА КЛАВИАТУРЫ ---
+        // --- СКРЫТИЕ TAB BAR ПРИ КЛАВИАТУРЕ ---
         tg.onEvent('viewportChanged', function() {
             const tabBar = document.getElementById('tabBar');
+            // Если высота вьюпорта уменьшилась (открылась клавиатура)
             if (tg.viewportStableHeight < window.innerHeight - 100) {
                 tabBar.style.transform = 'translateY(100%)';
             } else {
@@ -688,7 +691,7 @@
             }
         });
 
-        // --- ЛОГИКА КАРУСЕЛИ ---
+        // --- КАРУСЕЛЬ И СВАЙПЫ (КАК В TG) ---
         const tabs = ['home', 'catalog', 'cart', 'profile'];
         let currentTabIndex = 0;
         const tabsWrapper = document.getElementById('tabsWrapper');
@@ -697,10 +700,7 @@
         let previousTabIndex = 0;
 
         function updateCarousel(index) {
-            if (index === 3 && currentTabIndex !== 3) {
-                previousTabIndex = currentTabIndex;
-            }
-
+            if (index === 3 && currentTabIndex !== 3) previousTabIndex = currentTabIndex;
             currentTabIndex = index;
             tabsWrapper.style.transform = `translateX(-${index * 25}%)`;
             
@@ -710,21 +710,15 @@
             
             moveIndicator(activeNav);
 
-            if (tabs[index] === 'profile') {
-                openSidebar();
-            } else {
-                closeSidebar();
-            }
+            if (tabs[index] === 'profile') openSidebar();
+            else closeSidebar();
 
             if (tabs[index] === 'catalog') loadCatalog(currentCategory);
             else if (tabs[index] === 'cart') renderCart();
         }
 
-        // --- СВАЙПЫ ---
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchStartTime = 0;
-
+        let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
+        
         document.addEventListener('touchstart', (e) => {
             touchStartX = e.changedTouches[0].screenX;
             touchStartY = e.changedTouches[0].screenY;
@@ -732,6 +726,11 @@
         }, { passive: true });
 
         document.addEventListener('touchend', (e) => {
+            // Если открыта карточка товара или модалка, игнорируем свайп вкладок
+            if (document.getElementById('productSheet').classList.contains('active') || 
+                document.getElementById('addressModal').classList.contains('active') ||
+                document.getElementById('adminPanel').classList.contains('active')) return;
+
             const touchEndX = e.changedTouches[0].screenX;
             const touchEndY = e.changedTouches[0].screenY;
             const time = Date.now() - touchStartTime;
@@ -739,26 +738,16 @@
             const deltaX = touchEndX - touchStartX;
             const deltaY = touchEndY - touchStartY;
 
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                const velocity = Math.abs(deltaX) / time;
-                const minDistance = 150; 
-                const minVelocity = 1.0; 
-
-                if (Math.abs(deltaX) > minDistance && velocity > minVelocity) {
-                    if (deltaX < 0 && currentTabIndex < tabs.length - 1) {
-                        updateCarousel(currentTabIndex + 1);
-                    } else if (deltaX > 0 && currentTabIndex > 0) {
-                        updateCarousel(currentTabIndex - 1);
-                    }
-                }
+            // Нативная чувствительность: не менее 30px и быстрый свайп
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40 && time < 400) {
+                if (deltaX < 0 && currentTabIndex < tabs.length - 1) updateCarousel(currentTabIndex + 1);
+                else if (deltaX > 0 && currentTabIndex > 0) updateCarousel(currentTabIndex - 1);
             }
         }, { passive: true });
 
-        function switchTab(tabName, element) {
+        function switchTab(tabName) {
             const index = tabs.indexOf(tabName);
-            if (index !== -1) {
-                updateCarousel(index);
-            }
+            if (index !== -1) updateCarousel(index);
         }
 
         function moveIndicator(targetBtn) {
@@ -769,9 +758,7 @@
             tabIndicator.style.transform = `translateX(${rect.left - barRect.left}px)`;
         }
 
-        function openProfile() {
-            switchTab('profile');
-        }
+        function openProfile() { switchTab('profile'); }
 
         function openSidebar() {
             document.getElementById('overlay').classList.add('active');
@@ -780,15 +767,48 @@
 
         function closeSidebar() {
             document.getElementById('sidebar').classList.remove('active');
-            
-            if (currentTabIndex === 3) {
-                updateCarousel(previousTabIndex); 
-            } else {
-                document.getElementById('overlay').classList.remove('active');
-            }
+            if (currentTabIndex === 3) updateCarousel(previousTabIndex); 
+            else document.getElementById('overlay').classList.remove('active');
         }
 
-        // 2. Глобальные переменные
+        // --- СВАЙП ВНИЗ ДЛЯ BOTTOM SHEET ---
+        let sheetStartY = 0;
+        const bottomSheet = document.getElementById('productSheet');
+        
+        bottomSheet.addEventListener('touchstart', (e) => {
+            // Свайпаем только за верхнюю часть
+            if (e.target.closest('.sheet-img') || e.target.closest('.drag-handle') || e.target.closest('.sheet-close-btn') || e.target.closest('.sheet-title')) {
+                sheetStartY = e.touches[0].clientY;
+            } else {
+                sheetStartY = null;
+            }
+        }, { passive: true });
+
+        bottomSheet.addEventListener('touchmove', (e) => {
+            if (sheetStartY === null) return;
+            const deltaY = e.touches[0].clientY - sheetStartY;
+            if (deltaY > 0) {
+                bottomSheet.style.transition = 'none';
+                bottomSheet.style.transform = `translateX(-50%) translateY(${deltaY}px)`;
+            }
+        }, { passive: true });
+
+        bottomSheet.addEventListener('touchend', (e) => {
+            if (sheetStartY === null) return;
+            const deltaY = e.changedTouches[0].clientY - sheetStartY;
+            bottomSheet.style.transition = 'bottom 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
+            
+            if (deltaY > 100) { // Порог свайпа
+                bottomSheet.style.transform = '';
+                closeAllModals();
+            } else {
+                bottomSheet.style.transform = 'translateX(-50%) translateY(0)';
+            }
+            sheetStartY = null;
+        }, { passive: true });
+
+
+        // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
         let allProducts = []; 
         let currentCategory = 'Жидкость';
         let cart = []; 
@@ -800,7 +820,7 @@
         let editingCartIndex = -1;
         let isAdmin = false;
 
-        // --- ПРОВЕРКА НА АДМИНА (С ПОДПИСЬЮ) ---
+        // --- АДМИНКА ---
         async function checkAdminStatus() {
             const user = tg.initDataUnsafe?.user;
             if (!user) return;
@@ -820,12 +840,9 @@
                     adminBtn.onclick = () => openAdminPanel();
                     menu.prepend(adminBtn);
                 }
-            } catch (e) {
-                console.log("Ошибка проверки админа:", e);
-            }
+            } catch (e) {}
         }
 
-        // --- ОТКРЫТИЕ АДМИН-ПАНЕЛИ ---
         function openAdminPanel() {
             closeSidebar(); 
             renderAdminList(); 
@@ -833,7 +850,6 @@
             document.getElementById('adminPanel').classList.add('active');
         }
 
-        // --- ОТРИСОВКА СПИСКА ТОВАРОВ В АДМИНКЕ ---
         function renderAdminList() {
             const list = document.getElementById('adminProductList');
             list.innerHTML = '';
@@ -851,7 +867,6 @@
             });
         }
 
-        // --- РЕДАКТИРОВАНИЕ ---
         function editProduct(id, currentPrice, currentStock) {
             const newPrice = prompt("Введите новую цену (BYN):", currentPrice);
             if (newPrice === null) return;
@@ -860,49 +875,30 @@
 
             fetch(`${API_URL}/edit-product`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-Init-Data': tg.initData 
-                },
-                body: JSON.stringify({
-                    product_id: id,
-                    new_price: parseFloat(newPrice),
-                    new_stock: parseInt(newStock)
-                })
+                headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
+                body: JSON.stringify({ product_id: id, new_price: parseFloat(newPrice), new_stock: parseInt(newStock) })
             }).then(res => {
                 if (res.ok) {
                     showToast("✅ Товар обновлен!");
                     fetchProducts().then(renderAdminList);
-                } else {
-                    showToast("❌ Ошибка");
-                }
+                } else showToast("❌ Ошибка");
             });
         }
 
-        // --- УДАЛЕНИЕ ---
         function deleteProduct(id) {
             if (!confirm("Точно удалить этот товар?")) return;
-
             fetch(`${API_URL}/delete-product`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-Init-Data': tg.initData 
-                },
-                body: JSON.stringify({
-                    product_id: id
-                })
+                headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
+                body: JSON.stringify({ product_id: id })
             }).then(res => {
                 if (res.ok) {
                     showToast("🗑 Товар удален");
                     fetchProducts().then(renderAdminList);
-                } else {
-                    showToast("❌ Ошибка");
-                }
+                } else showToast("❌ Ошибка");
             });
         }
 
-        // --- ДОБАВЛЕНИЕ ТОВАРА ---
         async function submitNewProduct() {
             const title = document.getElementById('admin-title').value;
             const brand = document.getElementById('admin-brand').value;
@@ -915,63 +911,47 @@
                 return;
             }
 
-            const productData = {
-                title: title,
-                brand: brand,
-                price: price,
-                stock: stock,
-                type: type
-            };
-
             try {
                 const response = await fetch(`${API_URL}/add-product`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-Init-Data': tg.initData 
-                    },
-                    body: JSON.stringify(productData)
+                    headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
+                    body: JSON.stringify({ title, brand, price, stock, type })
                 });
 
-                if (!response.ok) {
-                    const err = await response.json();
-                    throw new Error(err.detail || "Ошибка сервера");
-                }
+                if (!response.ok) throw new Error("Ошибка сервера");
 
                 showToast("✅ Товар успешно добавлен!");
                 
+                // Скрываем клавиатуру
+                document.activeElement.blur();
+                
+                // Очищаем поля
                 document.getElementById('admin-title').value = '';
                 document.getElementById('admin-brand').value = '';
                 document.getElementById('admin-price').value = '';
                 document.getElementById('admin-stock').value = '';
 
-                closeAllModals();
-                fetchProducts(); 
+                // Обновляем список товаров, не закрывая панель
+                fetchProducts().then(renderAdminList);
 
             } catch (error) {
                 showToast(`❌ ${error.message}`);
             }
         }
 
-        // --- ЗАГРУЗКА ТОВАРОВ С СЕРВЕРА ---
+        // --- ЗАГРУЗКА ТОВАРОВ ---
         async function fetchProducts() {
             try {
                 const response = await fetch(`${API_URL}/products`);
                 if (!response.ok) throw new Error('Ошибка сети');
                 allProducts = await response.json();
-                console.log("Товары загружены с сервера:", allProducts);
-                
                 renderHome();
-                if(currentTabIndex === 1) {
-                    loadCatalog(currentCategory);
-                }
+                if(currentTabIndex === 1) loadCatalog(currentCategory);
             } catch (error) {
-                console.error("Не удалось загрузить товары:", error);
                 showToast("⚠️ Сервер недоступен");
             }
         }
 
-        // --- ОТРИСОВКА ---
         function renderHome() {
             renderProducts(allProducts.slice(0, 2), 'home-grid-hits');
             renderProducts(allProducts.slice(2, 4), 'home-grid-new');
@@ -1021,17 +1001,11 @@
             renderProducts(filtered, 'catalog-grid');
         }
 
-        // --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ---
         window.onload = () => {
             initStorage();
             updateCartBadge();
-            
-            fetchProducts().then(() => {
-                renderBrands();
-            });
-            
+            fetchProducts().then(renderBrands);
             checkAdminStatus(); 
-            
             updateCarousel(0);
         };
         
@@ -1039,7 +1013,6 @@
             moveIndicator(document.getElementById(`nav-${tabs[currentTabIndex]}`));
         });
 
-        // --- ФИЛЬТРЫ АКЦИЙ ---
         function openDiscounts() {
             let sorted = [...allProducts].sort((a, b) => a.price - b.price);
             renderProducts(sorted, 'catalog-grid');
@@ -1054,7 +1027,6 @@
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
         }
 
-        // --- КАТЕГОРИИ И ФИЛЬТРЫ ---
         function changeCategory(category, btn) {
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -1089,7 +1061,7 @@
             renderProducts(filtered, 'catalog-grid');
         }
 
-        // --- КАРТОЧКА ТОВАРА (BOTTOM SHEET) ---
+        // --- КАРТОЧКА ТОВАРА ---
         function openProductSheet(product, cartIndex = -1) {
             editingCartIndex = cartIndex;
             currentProductInSheet = product;
@@ -1098,15 +1070,7 @@
             document.getElementById('sheetTitle').innerText = product.title;
             document.getElementById('sheetBrand').innerText = product.brand;
             
-            const flavorContainer = document.getElementById('flavorContainer');
-            flavorContainer.style.display = 'none'; 
-            
-            if (cartIndex > -1) {
-                currentSheetQty = cart[cartIndex].quantity;
-            } else {
-                currentSheetQty = 1;
-            }
-            
+            currentSheetQty = cartIndex > -1 ? cart[cartIndex].quantity : 1;
             document.getElementById('sheetQtyVal').innerText = currentSheetQty;
             updateSheetPrice();
             
@@ -1115,7 +1079,8 @@
             addBtn.classList.remove('added');
             
             document.getElementById('overlay').classList.add('active');
-            document.getElementById('productSheet').classList.add('active');
+            bottomSheet.classList.add('active');
+            bottomSheet.style.transform = 'translateX(-50%) translateY(0)'; // Сброс свайпа
         }
 
         function changeSheetQty(delta) {
@@ -1132,22 +1097,18 @@
 
         function closeAllModals() {
             document.getElementById('overlay').classList.remove('active');
-            document.getElementById('productSheet').classList.remove('active');
+            bottomSheet.classList.remove('active');
             document.getElementById('addressModal').classList.remove('active');
             document.getElementById('adminPanel').classList.remove('active');
             
-            if (currentTabIndex === 3) {
-                updateCarousel(previousTabIndex);
-            }
+            if (currentTabIndex === 3) updateCarousel(previousTabIndex);
         }
 
         // --- КОРЗИНА ---
         function quickAdd(productId, btn) {
             const product = allProducts.find(p => p.id === productId);
             if(!product) return;
-            
             addToCartLogic(product, 1);
-            
             if(btn) {
                 btn.classList.add('added'); btn.innerHTML = '✓';
                 setTimeout(() => { btn.classList.remove('added'); btn.innerHTML = '+'; }, 800);
@@ -1156,7 +1117,6 @@
 
         function addToCartFromSheet() {
             if(!currentProductInSheet) return;
-            
             if (editingCartIndex > -1) {
                 cart[editingCartIndex].quantity = currentSheetQty;
                 showToast('Корзина обновлена');
@@ -1164,14 +1124,12 @@
                 addToCartLogic(currentProductInSheet, currentSheetQty);
                 quickAddAnimationBtn(currentProductInSheet.id);
             }
-            
             updateCartBadge();
             renderCart();
             
             const addBtn = document.getElementById('sheetAddBtn');
             addBtn.innerText = "Готово ✓";
             addBtn.classList.add('added');
-            
             setTimeout(() => { closeAllModals(); }, 800);
         }
 
@@ -1185,11 +1143,8 @@
 
         function addToCartLogic(product, qty) {
             const existingItem = cart.find(item => item.id === product.id);
-            if (existingItem) {
-                existingItem.quantity += qty;
-            } else {
-                cart.push({ ...product, quantity: qty });
-            }
+            if (existingItem) existingItem.quantity += qty;
+            else cart.push({ ...product, quantity: qty });
             updateCartBadge();
             showToast(`✅ Добавлено: ${product.title}`);
         }
@@ -1199,6 +1154,16 @@
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
             if(totalItems > 0) { badge.innerText = totalItems; badge.classList.add('show'); } 
             else { badge.classList.remove('show'); }
+
+            // Блокировка кнопки оформления
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            if (cart.length > 0) {
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerText = "Оформить заказ";
+            } else {
+                checkoutBtn.disabled = true;
+                checkoutBtn.innerText = "Корзина пуста";
+            }
 
             localStorage.setItem('vape_cart', JSON.stringify(cart));
         }
@@ -1251,41 +1216,67 @@
 
         // --- ОФОРМЛЕНИЕ ЗАКАЗА ---
         async function submitOrder() {
-            const name = document.getElementById('checkout-name').value;
-            const phone = document.getElementById('checkout-phone').value;
-            if(!name || !phone) { showToast('⚠️ Заполните имя и телефон'); return; }
+            if (cart.length === 0) return;
             
+            const btn = document.getElementById('checkoutBtn');
+            btn.disabled = true;
+            btn.innerText = "Отправка...";
+
+            // Формируем текст для Telegram
+            const addr = localStorage.getItem('vape_addr') || "Не выбрана";
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            
+            let text = `Здравствуйте! Хочу оформить заказ:\n\n`;
+            text += `📍 Локация: ${addr}\n`;
+            text += `🕒 Время: ${timeStr}\n\n`;
+            text += `🛒 Товары:\n`;
+            
+            let total = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                text += `• ${item.type} "${item.title}" - ${item.quantity} шт. = ${itemTotal.toFixed(2)} BYN\n`;
+            });
+            
+            text += `\n💰 Итого: ${total.toFixed(2)} BYN`;
+
             const orderData = {
                 items: cart.map(item => ({ product_id: item.id, quantity: item.quantity })),
-                name: name,
-                phone: phone
+                name: user ? user.first_name : "Клиент",
+                phone: "Telegram"
             };
 
             try {
+                // 1. Списываем остатки на сервере
                 const response = await fetch(`${API_URL}/order`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(orderData)
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Ошибка при оформлении');
-                }
+                if (!response.ok) throw new Error("Ошибка при списании");
 
+                // 2. Очищаем корзину
                 cart = [];
                 updateCartBadge();
                 renderCart();
-                showToast('🎉 Заказ оформлен, остатки списаны!');
-                document.getElementById('checkout-name').value = '';
-                document.getElementById('checkout-phone').value = '';
                 
+                // 3. Показываем короткий тост
+                showToast('🎉 Заказ оформлен!');
                 fetchProducts(); 
 
-                setTimeout(() => { updateCarousel(0); }, 1500);
+                // 4. Редирект в Telegram
+                setTimeout(() => { 
+                    const url = `https://t.me/${SUPPORT_TG}?text=${encodeURIComponent(text)}`;
+                    tg.openTelegramLink(url);
+                    updateCarousel(0);
+                }, 1000);
 
             } catch (error) {
                 showToast(`❌ ${error.message}`);
+                btn.disabled = false;
+                btn.innerText = "Оформить заказ";
             }
         }
 
@@ -1312,21 +1303,30 @@
             setTimeout(() => closeAllModals(), 500);
         }
 
-        // --- ПОДДЕРЖКА И УВЕДОМЛЕНИЯ ---
+        // --- ПОДДЕРЖКА ---
         function showSupportLink() {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center;">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
                     <span>Связь с менеджером:</span>
-                    <a href="https://t.me/vsqw2d2" target="_blank" class="support-link">@vsqw2d2</a>
+                    <a href="https://t.me/${SUPPORT_TG}" target="_blank" class="support-link">@${SUPPORT_TG}</a>
+                    <button onclick="copySupportLink()" style="background:#444; border:none; color:white; padding:8px 16px; border-radius:8px; font-size:12px; cursor:pointer;">📋 Скопировать</button>
                 </div>
             `;
             toast.style.animation = 'slideUp 0.3s ease forwards';
             toast.style.pointerEvents = 'auto';
             container.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 5000);
+        }
+
+        function copySupportLink() {
+            navigator.clipboard.writeText(`@${SUPPORT_TG}`).then(() => {
+                showToast('✅ Скопировано!');
+            }).catch(() => {
+                showToast('❌ Ошибка копирования');
+            });
         }
 
         function showToast(message) {
@@ -1338,7 +1338,7 @@
             setTimeout(() => { toast.remove(); }, 3000);
         }
 
-        // --- ПАМЯТЬ УСТРОЙСТВА (ЦВЕТНЫЕ ВЕТКИ) ---
+        // --- ПАМЯТЬ УСТРОЙСТВА ---
         function initStorage() {
             const savedCart = localStorage.getItem('vape_cart');
             if (savedCart) cart = JSON.parse(savedCart);
