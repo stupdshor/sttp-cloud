@@ -216,9 +216,7 @@
         .category-btn.active { background: #fff; color: #000; }
 
         /* --- КОРЗИНА --- */
-        #tab-cart .section-title {
-            margin-top: 120px;
-        }
+        #tab-cart .section-title { margin-top: 120px; }
 
         /* --- НИЖНЕЕ МЕНЮ --- */
         .tab-bar {
@@ -323,12 +321,8 @@
         .address-list::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
 
         .metro-line-title {
-            font-size: 12px;
-            color: var(--hint-color);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 15px 0 5px 5px;
-            font-weight: 600;
+            font-size: 12px; color: var(--hint-color); text-transform: uppercase;
+            letter-spacing: 1px; margin: 15px 0 5px 5px; font-weight: 600;
         }
         .metro-line-title:first-child { margin-top: 0; }
 
@@ -338,7 +332,6 @@
             border: 1px solid transparent; transition: border 0.2s;
         }
         .address-item.active { border-color: var(--accent-color); }
-        
         .address-item span { font-weight: 500; font-size: 14px; color: #ffffff; }
 
         .delivery-section { margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; flex-shrink: 0; }
@@ -395,20 +388,12 @@
 
         /* --- SIDEBAR --- */
         .sidebar {
-            position: fixed; top: 0; 
-            left: -150%; 
-            width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
-            z-index: 2001; 
-            transition: left 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-            padding: 20px; padding-top: 110px;
-            display: flex; flex-direction: column; box-shadow: 5px 0 30px rgba(0,0,0,0.5);
+            position: fixed; top: 0; left: -150%; width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
+            z-index: 2001; transition: left 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            padding: 20px; padding-top: 110px; display: flex; flex-direction: column; box-shadow: 5px 0 30px rgba(0,0,0,0.5);
             pointer-events: none;
         }
-        
-        .sidebar.active { 
-            left: 0;
-            pointer-events: auto;
-        }
+        .sidebar.active { left: 0; pointer-events: auto; }
         
         @media (min-width: 480px) {
             .sidebar { left: 50%; transform: translateX(-50%) translateX(-150%); }
@@ -417,9 +402,7 @@
 
         .sidebar-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; }
         .sidebar-avatar { width: 80px; height: 80px; border-radius: 50%; background: #2a2a2d; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #333; }
-        
         .sidebar-name { font-size: 20px; font-weight: 700; color: #ffffff; }
-        
         .sidebar-status { font-size: 14px; color: var(--hint-color); margin-top: 4px; }
         
         .sidebar-menu { display: flex; flex-direction: column; gap: 5px; }
@@ -737,7 +720,7 @@
             else if (tabs[index] === 'cart') renderCart();
         }
 
-        // --- СВАЙПЫ (НИЗКАЯ ЧУВСТВИТЕЛЬНОСТЬ) ---
+        // --- СВАЙПЫ ---
         let touchStartX = 0;
         let touchStartY = 0;
         let touchStartTime = 0;
@@ -817,13 +800,15 @@
         let editingCartIndex = -1;
         let isAdmin = false;
 
-        // --- ПРОВЕРКА НА АДМИНА ---
+        // --- ПРОВЕРКА НА АДМИНА (С ПОДПИСЬЮ) ---
         async function checkAdminStatus() {
             const user = tg.initDataUnsafe?.user;
             if (!user) return;
             
             try {
-                const resp = await fetch(`${API_URL}/check-admin/${user.id}`);
+                const resp = await fetch(`${API_URL}/check-admin`, {
+                    headers: { 'X-Init-Data': tg.initData }
+                });
                 const data = await resp.json();
                 isAdmin = data.is_admin;
                 
@@ -872,18 +857,17 @@
             if (newPrice === null) return;
             const newStock = prompt("Введите новое количество (шт.):", currentStock);
             if (newStock === null) return;
-            
-            const user = tg.initDataUnsafe?.user;
-            if (!user) return;
 
             fetch(`${API_URL}/edit-product`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Init-Data': tg.initData 
+                },
                 body: JSON.stringify({
                     product_id: id,
                     new_price: parseFloat(newPrice),
-                    new_stock: parseInt(newStock),
-                    admin_id: user.id
+                    new_stock: parseInt(newStock)
                 })
             }).then(res => {
                 if (res.ok) {
@@ -898,15 +882,15 @@
         // --- УДАЛЕНИЕ ---
         function deleteProduct(id) {
             if (!confirm("Точно удалить этот товар?")) return;
-            const user = tg.initDataUnsafe?.user;
-            if (!user) return;
 
             fetch(`${API_URL}/delete-product`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Init-Data': tg.initData 
+                },
                 body: JSON.stringify({
-                    product_id: id,
-                    admin_id: user.id
+                    product_id: id
                 })
             }).then(res => {
                 if (res.ok) {
@@ -920,9 +904,6 @@
 
         // --- ДОБАВЛЕНИЕ ТОВАРА ---
         async function submitNewProduct() {
-            const user = tg.initDataUnsafe?.user;
-            if (!user) return;
-
             const title = document.getElementById('admin-title').value;
             const brand = document.getElementById('admin-brand').value;
             const price = parseFloat(document.getElementById('admin-price').value);
@@ -939,14 +920,16 @@
                 brand: brand,
                 price: price,
                 stock: stock,
-                type: type,
-                admin_id: user.id
+                type: type
             };
 
             try {
                 const response = await fetch(`${API_URL}/add-product`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Init-Data': tg.initData 
+                    },
                     body: JSON.stringify(productData)
                 });
 
@@ -1365,7 +1348,6 @@
                 document.getElementById('addressBtn').innerHTML = `📍 ${savedAddr}`;
             }
             
-            // Обновленные названия веток
             const metroLines = [
                 {
                     name: "Синяя ветка",
