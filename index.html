@@ -126,7 +126,7 @@
         /* АДМИНКА */
         .address-modal, .admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); width: 90%; max-width: 400px; background: #1e293b; border-radius: 24px; z-index: 3000; padding: 24px; opacity: 0; pointer-events: none; transition: all 0.3s; border: 1px solid var(--glass-border); display: flex; flex-direction: column; }
         .address-modal { height: 80vh; }
-        .admin-panel { height: 80vh; } /* Фикс высоты админки */
+        .admin-panel { height: 80vh; }
         .address-modal.active, .admin-panel.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
         .address-modal h3, .admin-panel h3 { margin-bottom: 20px; font-size: 20px; color: #fff; flex-shrink: 0; }
         
@@ -311,9 +311,9 @@
         <!-- ТОВАРЫ -->
         <div class="admin-tab-content active" id="admin-tab-products">
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button class="admin-action-btn" onclick="downloadCSV()" style="flex: 1; padding: 12px;">📥 Экспорт</button>
-                <button class="admin-action-btn" onclick="downloadCSVTemplate()" style="flex: 1; padding: 12px;">📄 Шаблон</button>
-                <button class="admin-action-btn" onclick="document.getElementById('csvFileInput').click()" style="flex: 1; padding: 12px; background: var(--success-color); color: white;">📤 Импорт</button>
+                <button type="button" class="admin-action-btn" onclick="downloadCSV()" style="flex: 1; padding: 12px;">📥 Экспорт</button>
+                <button type="button" class="admin-action-btn" onclick="downloadCSVTemplate()" style="flex: 1; padding: 12px;">📄 Шаблон</button>
+                <button type="button" class="admin-action-btn" onclick="triggerImport()" style="flex: 1; padding: 12px; background: var(--success-color); color: white;">📤 Импорт</button>
                 <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSVImport(event)">
             </div>
 
@@ -593,31 +593,34 @@
             showToast('📥 Экспорт готов');
         }
 
+        function triggerImport() {
+            document.getElementById('csvFileInput').click();
+        }
+
         function handleCSVImport(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = async function(e) {
-                const text = e.target.result;
-                const lines = text.split('\n').filter(line => line.trim() !== '');
-                const products = [];
-                // Пропускаем заголовок (i=1)
-                for (let i = 1; i < lines.length; i++) {
-                    const parts = lines[i].split(';');
-                    if (parts.length >= 5) {
-                        products.push({
-                            title: parts[0].trim(),
-                            brand: parts[1].trim(),
-                            price: parseFloat(parts[2].replace(',', '.')) || 0,
-                            stock: parseInt(parts[3]) || 0,
-                            type: parts[4].trim()
-                        });
-                    }
-                }
-                
-                if (products.length === 0) { showToast('⚠️ Файл пуст или неверный формат'); return; }
-
                 try {
+                    const text = e.target.result;
+                    const lines = text.split('\n').filter(line => line.trim() !== '');
+                    const products = [];
+                    for (let i = 1; i < lines.length; i++) {
+                        const parts = lines[i].split(';');
+                        if (parts.length >= 5) {
+                            products.push({
+                                title: parts[0].trim(),
+                                brand: parts[1].trim(),
+                                price: parseFloat(parts[2].replace(',', '.')) || 0,
+                                stock: parseInt(parts[3]) || 0,
+                                type: parts[4].trim()
+                            });
+                        }
+                    }
+                    
+                    if (products.length === 0) { showToast('⚠️ Файл пуст или неверный формат'); return; }
+
                     const res = await fetch(`${API_URL}/import-products`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
@@ -631,9 +634,10 @@
                         showToast('❌ Ошибка импорта');
                     }
                 } catch (err) {
-                    showToast('❌ Ошибка сети');
+                    showToast('❌ Ошибка обработки файла');
+                } finally {
+                    event.target.value = ''; // Сброс инпута безопасно
                 }
-                event.target.value = ''; // Сброс инпута
             };
             reader.readAsText(file, 'UTF-8');
         }
