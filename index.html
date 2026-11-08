@@ -40,52 +40,37 @@
         }
 
         .app-container {
-            width: 100%; 
-            max-width: 480px; 
-            margin: 0 auto; 
-            background-color: var(--bg-color);
-            position: relative;
-            height: 100vh; 
-            overflow: hidden; 
+            width: 100%; max-width: 480px; margin: 0 auto; 
+            background-color: var(--bg-color); position: relative;
+            height: 100vh; overflow: hidden; 
             box-shadow: 0 0 20px rgba(0,0,0,0.5); 
             overscroll-behavior: none;
         }
 
-        /* --- КАРУСЕЛЬ --- */
         .tabs-wrapper {
-            display: flex;
-            width: 400%;
-            height: 100%;
+            display: flex; width: 400%; height: 100%;
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             will-change: transform;
         }
 
         .tab-content {
-            width: 25%;
-            height: 100%;
-            overflow-y: auto;
-            scrollbar-width: none;
-            padding-bottom: 90px; 
+            width: 25%; height: 100%; overflow-y: auto;
+            scrollbar-width: none; padding-bottom: 90px; 
             overscroll-behavior-y: contain;
         }
         .tab-content::-webkit-scrollbar { display: none; }
 
         .header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 16px;
-            background: rgba(28, 28, 30, 0.95); 
-            backdrop-filter: blur(10px);
-            position: relative; 
-            margin-top: 90px; 
-            margin-bottom: 16px; 
-            width: 100%; z-index: 100;
-            border-radius: 0 0 16px 16px;
+            padding: 16px; background: rgba(28, 28, 30, 0.95); 
+            backdrop-filter: blur(10px); position: relative; 
+            margin-top: 90px; margin-bottom: 16px; 
+            width: 100%; z-index: 100; border-radius: 0 0 16px 16px;
         }
 
         .user-info { display: flex; align-items: center; gap: 14px; cursor: pointer; }
         .user-avatar {
-            width: 48px; height: 48px;
-            border-radius: 50%; background: #2a2a2a;
+            width: 48px; height: 48px; border-radius: 50%; background: #2a2a2a;
             display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #333;
         }
         .user-name { font-weight: 700; font-size: 17px; color: #ffffff; }
@@ -98,7 +83,6 @@
         }
         .address-btn:active { opacity: 0.8; }
 
-        /* --- ГЛАВНАЯ --- */
         .banner {
             margin: 0 16px 16px 16px; border-radius: 16px;
             background: linear-gradient(135deg, #ff3b30, #ff9500);
@@ -110,8 +94,7 @@
 
         .promo-scroll {
             display: flex; gap: 12px; padding: 0 16px 16px 16px;
-            overflow-x: auto; scrollbar-width: none;
-            touch-action: pan-x;
+            overflow-x: auto; scrollbar-width: none; touch-action: pan-x;
         }
         .promo-scroll::-webkit-scrollbar { display: none; }
         
@@ -158,8 +141,7 @@
         .product-image-wrapper {
             width: 100%; aspect-ratio: 1 / 1; background: #2a2a2d;
             border-radius: 10px; margin-bottom: 8px; display: flex;
-            align-items: center; justify-content: center; overflow: hidden;
-            position: relative;
+            align-items: center; justify-content: center; overflow: hidden; position: relative;
         }
         
         .product-image { 
@@ -182,11 +164,7 @@
         }
         .add-btn-circle.added { background: var(--success-color); transform: scale(1.1); }
 
-        /* --- КАТАЛОГ --- */
-        .catalog-header { 
-            padding: 120px 16px 16px 16px; 
-            touch-action: pan-y; 
-        }
+        .catalog-header { padding: 120px 16px 16px 16px; touch-action: pan-y; }
         
         .search-wrapper { position: relative; margin-bottom: 12px; }
         .search-icon {
@@ -195,14 +173,12 @@
         }
         .search-input {
             width: 100%; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05);
-            padding: 12px 16px 12px 42px; border-radius: 12px; color: #ffffff; font-size: 14px;
-            outline: none;
+            padding: 12px 16px 12px 42px; border-radius: 12px; color: #ffffff; font-size: 14px; outline: none;
         }
         .search-input::placeholder { color: var(--hint-color); }
         
         .catalog-categories { 
-            display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; 
-            touch-action: pan-x;
+            display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; touch-action: pan-x;
         }
         .catalog-categories::-webkit-scrollbar { display: none; }
         .category-btn {
@@ -213,17 +189,14 @@
         }
         .category-btn.active { background: #fff; color: #000; }
 
-        /* --- КОРЗИНА --- */
         #tab-cart .section-title { margin-top: 120px; }
 
-        /* --- НИЖНЕЕ МЕНЮ --- */
         .tab-bar {
             position: fixed; bottom: 0; width: 100%; max-width: 480px;
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px);
             display: flex; justify-content: space-around; align-items: center;
-            padding: 12px 0 25px 0; 
-            border-top: 1px solid rgba(255,255,255,0.08); z-index: 100;
-            transition: transform 0.3s ease;
+            padding: 12px 0 25px 0; border-top: 1px solid rgba(255,255,255,0.08); 
+            z-index: 100; transition: transform 0.3s ease;
         }
         .tab-item {
             display: flex; flex-direction: column; align-items: center; gap: 6px;
@@ -250,7 +223,6 @@
         }
         .cart-badge.show { display: flex; }
 
-        /* --- BOTTOM SHEET (КАРТОЧКА ТОВАРА) --- */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
@@ -262,8 +234,7 @@
             width: 100%; max-width: 480px; background: #1c1c1e;
             border-radius: 24px 24px 0 0; z-index: 1001; padding: 20px;
             transition: bottom 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
-            touch-action: none; /* Отключаем скролл для свайпа */
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5); touch-action: none;
         }
         .bottom-sheet.active { bottom: 0; }
         
@@ -284,16 +255,8 @@
         .sheet-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
         .sheet-brand { font-size: 14px; color: #8e8e93; margin-bottom: 16px; }
         
-        .flavor-selector { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-        .flavor-btn {
-            padding: 8px 16px; border-radius: 10px; background: #2a2a2d; border: 1px solid transparent;
-            color: white; font-size: 14px; cursor: pointer; transition: all 0.2s;
-        }
-        .flavor-btn.active { border-color: var(--accent-color); background: rgba(46, 166, 255, 0.1); }
-
         .qty-selector { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
         .qty-btn { width: 36px; height: 36px; border-radius: 10px; background: #2a2a2d; border: none; color: white; font-size: 18px; cursor: pointer; }
-        
         .qty-val { font-size: 18px; font-weight: 700; min-width: 24px; text-align: center; color: #ffffff; }
 
         .sheet-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; }
@@ -305,7 +268,6 @@
         }
         .sheet-add-btn.added { background: var(--success-color); }
 
-        /* --- МОДАЛКА АДРЕСА --- */
         .address-modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
             width: 90%; max-width: 400px; background: #1c1c1e; border-radius: 20px;
@@ -333,10 +295,17 @@
         .address-item {
             padding: 12px 14px; background: #2a2a2d; border-radius: 10px; margin-bottom: 6px;
             cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-            border: 1px solid transparent; transition: border 0.2s;
+            border: 1px solid transparent; transition: all 0.2s;
         }
         .address-item.active { border-color: var(--accent-color); }
         .address-item span { font-weight: 500; font-size: 14px; color: #ffffff; }
+        
+        /* Стиль для выключенной станции */
+        .address-item.disabled-station {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #1a1a1a;
+        }
 
         .delivery-section { margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; flex-shrink: 0; }
         .delivery-section h4 { margin-bottom: 10px; font-size: 15px; color: var(--hint-color); }
@@ -351,7 +320,6 @@
             padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;
         }
 
-        /* --- КОРЗИНА (СПИСОК) --- */
         .cart-item { display: flex; gap: 12px; background: var(--card-bg); padding: 12px; border-radius: 12px; margin-bottom: 12px; align-items: center; }
         .cart-item-img { width: 60px; height: 60px; background: #2a2a2d; border-radius: 8px; object-fit: contain; }
         .cart-item-info { flex-grow: 1; cursor: pointer; }
@@ -381,7 +349,6 @@
         .checkout-btn:active { opacity: 0.8; }
         .checkout-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
 
-        /* --- TOASTS --- */
         .toast-container { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 4000; display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; pointer-events: none; }
         .toast {
             background: #2a2a2d; color: white; padding: 12px 24px; border-radius: 30px;
@@ -393,7 +360,6 @@
 
         .placeholder-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: var(--hint-color); text-align: center; }
 
-        /* --- SIDEBAR --- */
         .sidebar {
             position: fixed; top: 0; left: -150%; width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
             z-index: 2001; transition: left 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -423,7 +389,6 @@
         
         .sidebar-close { margin-top: auto; color: var(--danger-color); justify-content: center; font-weight: 600; }
 
-        /* --- ССЫЛКИ ПОДДЕРЖКИ --- */
         .support-link {
             color: var(--accent-color); text-decoration: none; font-weight: 600;
             display: inline-block; margin-top: 10px; padding: 10px 20px;
@@ -439,28 +404,57 @@
             max-height: 85vh; display: flex; flex-direction: column;
         }
         .admin-panel.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        
+        /* Вкладки в админке */
+        .admin-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .admin-tab-btn {
+            flex: 1; padding: 10px; background: #2a2a2d; border: none; border-radius: 10px;
+            color: #888; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .admin-tab-btn.active { background: var(--accent-color); color: white; }
+        
+        .admin-tab-content { display: none; flex-direction: column; flex-grow: 1; overflow-y: auto; }
+        .admin-tab-content.active { display: flex; }
+
         .admin-panel h3 { margin-bottom: 16px; font-size: 18px; color: #ffffff; }
 
-        .admin-product-list { max-height: 200px; overflow-y: auto; margin-bottom: 15px; background: #2a2a2d; border-radius: 12px; padding: 10px; }
-        .admin-product-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #444; }
-        .admin-product-item:last-child { border-bottom: none; }
+        .admin-product-list, .admin-stations-list { 
+            max-height: 250px; overflow-y: auto; margin-bottom: 15px; background: #2a2a2d; border-radius: 12px; padding: 10px;
+            scrollbar-width: thin;
+        }
+        .admin-product-item, .admin-station-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #444; }
+        .admin-product-item:last-child, .admin-station-item:last-child { border-bottom: none; }
         .admin-product-info { font-size: 13px; }
         .admin-product-actions { display: flex; gap: 5px; }
         .admin-action-btn { background: #444; border: none; color: white; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; }
         .admin-delete-btn { background: var(--danger-color); }
         .admin-action-btn:hover { opacity: 0.8; }
+        
+        /* Переключатель станций */
+        .toggle-switch {
+            position: relative; display: inline-block; width: 44px; height: 24px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #444; transition: .4s; border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px;
+            left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--success-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
     </style>
 </head>
 <body>
 
     <div class="app-container" id="appContainer">
         
-        <!-- КАРУСЕЛЬ -->
         <div class="tabs-wrapper" id="tabsWrapper">
             
             <!-- 1. ГЛАВНАЯ -->
             <div id="tab-home" class="tab-content active">
-                
                 <header class="header" id="mainHeader">
                     <div class="user-info" onclick="openProfile()">
                         <div class="user-avatar" id="userAvatar"><span style="font-size: 22px;">👤</span></div>
@@ -576,10 +570,7 @@
         <div class="sheet-title" id="sheetTitle">Название</div>
         <div class="sheet-brand" id="sheetBrand">Бренд</div>
         
-        <div id="flavorContainer">
-            <div style="font-size: 14px; margin-bottom: 8px; color: var(--hint-color);">Выберите крепость:</div>
-            <div class="flavor-selector" id="flavorSelector"></div>
-        </div>
+        <div id="flavorContainer"></div>
 
         <div style="font-size: 14px; margin-bottom: 8px; color: var(--hint-color); margin-top: 15px;">Количество:</div>
         <div class="qty-selector">
@@ -609,27 +600,42 @@
 
     <!-- АДМИН-ПАНЕЛЬ -->
     <div class="admin-panel" id="adminPanel">
-        <h3>Управление товарами</h3>
-        
-        <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 5px;">Существующие товары:</div>
-        <div class="admin-product-list" id="adminProductList"></div>
+        <div class="admin-tabs">
+            <button class="admin-tab-btn active" onclick="switchAdminTab('products', this)">Товары</button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('stations', this)">Адреса</button>
+        </div>
 
-        <hr style="border-color: #333; margin: 15px 0;">
+        <!-- Вкладка Товары -->
+        <div class="admin-tab-content active" id="admin-tab-products">
+            <h3>Управление товарами</h3>
+            <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 5px;">Существующие товары:</div>
+            <div class="admin-product-list" id="adminProductList"></div>
 
-        <h3>Добавить новый товар</h3>
-        <input type="text" class="form-input" id="admin-title" placeholder="Название">
-        <input type="text" class="form-input" id="admin-brand" placeholder="Бренд">
-        <input type="number" class="form-input" id="admin-price" placeholder="Цена (BYN)" step="0.01">
-        <input type="number" class="form-input" id="admin-stock" placeholder="Количество">
-        
-        <select class="form-input" id="admin-type">
-            <option value="Жидкость">Жидкость</option>
-            <option value="Устройство">Устройство</option>
-            <option value="Расходник">Расходник</option>
-            <option value="Снюс">Снюс</option>
-        </select>
+            <hr style="border-color: #333; margin: 15px 0;">
 
-        <button class="checkout-btn" onclick="submitNewProduct()">Добавить товар</button>
+            <h3>Добавить товар</h3>
+            <input type="text" class="form-input" id="admin-title" placeholder="Название">
+            <input type="text" class="form-input" id="admin-brand" placeholder="Бренд">
+            <input type="number" class="form-input" id="admin-price" placeholder="Цена (BYN)" step="0.01">
+            <input type="number" class="form-input" id="admin-stock" placeholder="Количество">
+            
+            <select class="form-input" id="admin-type">
+                <option value="Жидкость">Жидкость</option>
+                <option value="Устройство">Устройство</option>
+                <option value="Расходник">Расходник</option>
+                <option value="Снюс">Снюс</option>
+            </select>
+
+            <button class="checkout-btn" onclick="submitNewProduct()">Добавить товар</button>
+        </div>
+
+        <!-- Вкладка Адреса -->
+        <div class="admin-tab-content" id="admin-tab-stations">
+            <h3>Управление станциями</h3>
+            <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 10px;">Включите или выключите станции, по которым вы работаете:</div>
+            <div class="admin-stations-list" id="adminStationsList"></div>
+        </div>
+
         <button class="sidebar-item sidebar-close" style="margin-top: 10px;" onclick="closeAllModals()">✕ Закрыть</button>
     </div>
 
@@ -654,17 +660,12 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        // --- НАСТРОЙКИ API ---
         const API_URL = "https://sttp-api-new.onrender.com/api";
-        const SUPPORT_TG = "vsqw2d2"; // Ник менеджера
+        const SUPPORT_TG = "vsqw2d2";
 
         const tg = window.Telegram.WebApp;
-        tg.expand(); 
-        tg.ready();
-        
-        try {
-            if (tg.requestFullscreen) tg.requestFullscreen();
-        } catch (e) {}
+        tg.expand(); tg.ready();
+        try { if (tg.requestFullscreen) tg.requestFullscreen(); } catch (e) {}
 
         const user = tg.initDataUnsafe?.user;
         if (user) {
@@ -680,18 +681,12 @@
             document.getElementById('sidebarName').innerText = "Гость"; 
         }
 
-        // --- СКРЫТИЕ TAB BAR ПРИ КЛАВИАТУРЕ ---
         tg.onEvent('viewportChanged', function() {
             const tabBar = document.getElementById('tabBar');
-            // Если высота вьюпорта уменьшилась (открылась клавиатура)
-            if (tg.viewportStableHeight < window.innerHeight - 100) {
-                tabBar.style.transform = 'translateY(100%)';
-            } else {
-                tabBar.style.transform = 'translateY(0)';
-            }
+            if (tg.viewportStableHeight < window.innerHeight - 100) tabBar.style.transform = 'translateY(100%)';
+            else tabBar.style.transform = 'translateY(0)';
         });
 
-        // --- КАРУСЕЛЬ И СВАЙПЫ (КАК В TG) ---
         const tabs = ['home', 'catalog', 'cart', 'profile'];
         let currentTabIndex = 0;
         const tabsWrapper = document.getElementById('tabsWrapper');
@@ -707,7 +702,6 @@
             document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
             const activeNav = document.getElementById(`nav-${tabs[index]}`);
             if (activeNav) activeNav.classList.add('active');
-            
             moveIndicator(activeNav);
 
             if (tabs[index] === 'profile') openSidebar();
@@ -726,7 +720,6 @@
         }, { passive: true });
 
         document.addEventListener('touchend', (e) => {
-            // Если открыта карточка товара или модалка, игнорируем свайп вкладок
             if (document.getElementById('productSheet').classList.contains('active') || 
                 document.getElementById('addressModal').classList.contains('active') ||
                 document.getElementById('adminPanel').classList.contains('active')) return;
@@ -734,11 +727,9 @@
             const touchEndX = e.changedTouches[0].screenX;
             const touchEndY = e.changedTouches[0].screenY;
             const time = Date.now() - touchStartTime;
-            
             const deltaX = touchEndX - touchStartX;
             const deltaY = touchEndY - touchStartY;
 
-            // Нативная чувствительность: не менее 30px и быстрый свайп
             if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40 && time < 400) {
                 if (deltaX < 0 && currentTabIndex < tabs.length - 1) updateCarousel(currentTabIndex + 1);
                 else if (deltaX > 0 && currentTabIndex > 0) updateCarousel(currentTabIndex - 1);
@@ -771,17 +762,13 @@
             else document.getElementById('overlay').classList.remove('active');
         }
 
-        // --- СВАЙП ВНИЗ ДЛЯ BOTTOM SHEET ---
         let sheetStartY = 0;
         const bottomSheet = document.getElementById('productSheet');
         
         bottomSheet.addEventListener('touchstart', (e) => {
-            // Свайпаем только за верхнюю часть
             if (e.target.closest('.sheet-img') || e.target.closest('.drag-handle') || e.target.closest('.sheet-close-btn') || e.target.closest('.sheet-title')) {
                 sheetStartY = e.touches[0].clientY;
-            } else {
-                sheetStartY = null;
-            }
+            } else sheetStartY = null;
         }, { passive: true });
 
         bottomSheet.addEventListener('touchmove', (e) => {
@@ -798,7 +785,7 @@
             const deltaY = e.changedTouches[0].clientY - sheetStartY;
             bottomSheet.style.transition = 'bottom 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
             
-            if (deltaY > 100) { // Порог свайпа
+            if (deltaY > 100) {
                 bottomSheet.style.transform = '';
                 closeAllModals();
             } else {
@@ -807,28 +794,21 @@
             sheetStartY = null;
         }, { passive: true });
 
-
-        // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
         let allProducts = []; 
         let currentCategory = 'Жидкость';
         let cart = []; 
         let selectedAddress = null;
         let activeBrandFilter = null;
-
         let currentProductInSheet = null;
         let currentSheetQty = 1;
         let editingCartIndex = -1;
         let isAdmin = false;
+        let disabledStations = []; // Массив выключенных станций
 
-        // --- АДМИНКА ---
         async function checkAdminStatus() {
-            const user = tg.initDataUnsafe?.user;
-            if (!user) return;
-            
+            if (!tg.initDataUnsafe?.user) return;
             try {
-                const resp = await fetch(`${API_URL}/check-admin`, {
-                    headers: { 'X-Init-Data': tg.initData }
-                });
+                const resp = await fetch(`${API_URL}/check-admin`, { headers: { 'X-Init-Data': tg.initData } });
                 const data = await resp.json();
                 isAdmin = data.is_admin;
                 
@@ -843,13 +823,26 @@
             } catch (e) {}
         }
 
+        // --- АДМИНКА: ВКЛАДКИ ---
+        function switchAdminTab(tabName, btn) {
+            document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`admin-tab-${tabName}`).classList.add('active');
+            
+            if (tabName === 'stations') loadAdminStations();
+        }
+
         function openAdminPanel() {
             closeSidebar(); 
             renderAdminList(); 
             document.getElementById('overlay').classList.add('active');
             document.getElementById('adminPanel').classList.add('active');
+            switchAdminTab('products', document.querySelector('.admin-tab-btn')); // Сброс на первую вкладку
         }
 
+        // --- АДМИНКА: ТОВАРЫ ---
         function renderAdminList() {
             const list = document.getElementById('adminProductList');
             list.innerHTML = '';
@@ -907,8 +900,7 @@
             const type = document.getElementById('admin-type').value;
 
             if (!title || !brand || isNaN(price) || isNaN(stock)) {
-                showToast("⚠️ Заполните все поля корректно");
-                return;
+                showToast("⚠️ Заполните все поля корректно"); return;
             }
 
             try {
@@ -921,21 +913,67 @@
                 if (!response.ok) throw new Error("Ошибка сервера");
 
                 showToast("✅ Товар успешно добавлен!");
-                
-                // Скрываем клавиатуру
                 document.activeElement.blur();
-                
-                // Очищаем поля
                 document.getElementById('admin-title').value = '';
                 document.getElementById('admin-brand').value = '';
                 document.getElementById('admin-price').value = '';
                 document.getElementById('admin-stock').value = '';
-
-                // Обновляем список товаров, не закрывая панель
                 fetchProducts().then(renderAdminList);
-
             } catch (error) {
                 showToast(`❌ ${error.message}`);
+            }
+        }
+
+        // --- АДМИНКА: СТАНЦИИ ---
+        async function loadAdminStations() {
+            try {
+                const resp = await fetch(`${API_URL}/stations`);
+                disabledStations = await resp.json();
+                renderAdminStations();
+            } catch (e) {
+                showToast("❌ Ошибка загрузки станций");
+            }
+        }
+
+        function renderAdminStations() {
+            const list = document.getElementById('adminStationsList');
+            list.innerHTML = '';
+            
+            // Все доступные станции (дублируем из initStorage)
+            const allStations = [
+                "Малиновка", "Петровщина", "Михалово", "Грушевка", "Институт Культуры", "Площадь Ленина", "Октябрьская", "Площадь Победы", "Площадь Якуба Коласа", "Академия Наук", "Парк Челюскинцев", "Московская", "Восток", "Борисовский тракт", "Уручье",
+                "Каменная Горка", "Кунцевщина", "Спортивная", "Пушкинская", "Молодежная", "Фрунзенская", "Немига", "Купаловская", "Первомайская", "Пролетарская", "Тракторный завод", "Партизанская", "Автозаводская", "Могилевская", "Шабаны",
+                "Слуцкий Гостинец", "Новаторская", "Вокзальная", "Ковальская Слобода", "Юбилейная площадь", "Площадь Франтишка Богушевича", "Аэродромная", "Неморшанский сад", "Серебряный бор"
+            ];
+
+            allStations.forEach(station => {
+                const isDisabled = disabledStations.includes(station);
+                const div = document.createElement('div');
+                div.className = 'admin-station-item';
+                div.innerHTML = `
+                    <span>${station}</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" ${!isDisabled ? 'checked' : ''} onchange="toggleStation('${station}', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        async function toggleStation(stationName, isChecked) {
+            const isDisabled = !isChecked;
+            try {
+                await fetch(`${API_URL}/toggle-station`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
+                    body: JSON.stringify({ station_name: stationName, is_disabled: isDisabled })
+                });
+                // Обновляем локальный массив
+                if (isDisabled) disabledStations.push(stationName);
+                else disabledStations = disabledStations.filter(s => s !== stationName);
+            } catch (e) {
+                showToast("❌ Ошибка сохранения");
             }
         }
 
@@ -1007,6 +1045,7 @@
             fetchProducts().then(renderBrands);
             checkAdminStatus(); 
             updateCarousel(0);
+            loadAdminStations(); // Подгружаем станции при старте
         };
         
         window.addEventListener('resize', () => {
@@ -1061,7 +1100,6 @@
             renderProducts(filtered, 'catalog-grid');
         }
 
-        // --- КАРТОЧКА ТОВАРА ---
         function openProductSheet(product, cartIndex = -1) {
             editingCartIndex = cartIndex;
             currentProductInSheet = product;
@@ -1080,7 +1118,7 @@
             
             document.getElementById('overlay').classList.add('active');
             bottomSheet.classList.add('active');
-            bottomSheet.style.transform = 'translateX(-50%) translateY(0)'; // Сброс свайпа
+            bottomSheet.style.transform = 'translateX(-50%) translateY(0)';
         }
 
         function changeSheetQty(delta) {
@@ -1104,7 +1142,6 @@
             if (currentTabIndex === 3) updateCarousel(previousTabIndex);
         }
 
-        // --- КОРЗИНА ---
         function quickAdd(productId, btn) {
             const product = allProducts.find(p => p.id === productId);
             if(!product) return;
@@ -1155,7 +1192,6 @@
             if(totalItems > 0) { badge.innerText = totalItems; badge.classList.add('show'); } 
             else { badge.classList.remove('show'); }
 
-            // Блокировка кнопки оформления
             const checkoutBtn = document.getElementById('checkoutBtn');
             if (cart.length > 0) {
                 checkoutBtn.disabled = false;
@@ -1214,7 +1250,6 @@
             showToast('Товар удален');
         }
 
-        // --- ОФОРМЛЕНИЕ ЗАКАЗА ---
         async function submitOrder() {
             if (cart.length === 0) return;
             
@@ -1222,7 +1257,6 @@
             btn.disabled = true;
             btn.innerText = "Отправка...";
 
-            // Формируем текст для Telegram
             const addr = localStorage.getItem('vape_addr') || "Не выбрана";
             const now = new Date();
             const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
@@ -1248,7 +1282,6 @@
             };
 
             try {
-                // 1. Списываем остатки на сервере
                 const response = await fetch(`${API_URL}/order`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1257,16 +1290,12 @@
 
                 if (!response.ok) throw new Error("Ошибка при списании");
 
-                // 2. Очищаем корзину
                 cart = [];
                 updateCartBadge();
                 renderCart();
-                
-                // 3. Показываем короткий тост
                 showToast('🎉 Заказ оформлен!');
                 fetchProducts(); 
 
-                // 4. Редирект в Telegram
                 setTimeout(() => { 
                     const url = `https://t.me/${SUPPORT_TG}?text=${encodeURIComponent(text)}`;
                     tg.openTelegramLink(url);
@@ -1285,13 +1314,14 @@
             document.getElementById('sidebar').classList.remove('active');
             document.getElementById('overlay').classList.add('active');
             document.getElementById('addressModal').classList.add('active');
+            renderClientStations();
         }
 
         function openAddressModalFromProfile() {
             document.getElementById('sidebar').classList.remove('active');
             document.getElementById('overlay').classList.add('active');
             document.getElementById('addressModal').classList.add('active');
-            window.addrOpenedFromProfile = true; 
+            renderClientStations();
         }
 
         function submitCourierAddress() {
@@ -1303,7 +1333,60 @@
             setTimeout(() => closeAllModals(), 500);
         }
 
-        // --- ПОДДЕРЖКА ---
+        // Отрисовка станций для клиента с учетом выключенных
+        function renderClientStations() {
+            const list = document.getElementById('metroList');
+            list.innerHTML = '';
+            
+            const metroLines = [
+                {
+                    name: "Синяя ветка",
+                    stations: ["Малиновка", "Петровщина", "Михалово", "Грушевка", "Институт Культуры", "Площадь Ленина", "Октябрьская", "Площадь Победы", "Площадь Якуба Коласа", "Академия Наук", "Парк Челюскинцев", "Московская", "Восток", "Борисовский тракт", "Уручье"]
+                },
+                {
+                    name: "Красная ветка",
+                    stations: ["Каменная Горка", "Кунцевщина", "Спортивная", "Пушкинская", "Молодежная", "Фрунзенская", "Немига", "Купаловская", "Первомайская", "Пролетарская", "Тракторный завод", "Партизанская", "Автозаводская", "Могилевская", "Шабаны"]
+                },
+                {
+                    name: "Зеленая ветка",
+                    stations: ["Слуцкий Гостинец", "Новаторская", "Вокзальная", "Ковальская Слобода", "Юбилейная площадь", "Площадь Франтишка Богушевича", "Аэродромная", "Неморшанский сад", "Серебряный бор"]
+                }
+            ];
+
+            const savedAddr = localStorage.getItem('vape_addr');
+
+            metroLines.forEach(line => {
+                const title = document.createElement('div');
+                title.className = 'metro-line-title';
+                title.innerText = line.name;
+                list.appendChild(title);
+
+                line.stations.forEach(station => {
+                    const isDisabled = disabledStations.includes(station);
+                    const div = document.createElement('div');
+                    div.className = 'address-item' + (isDisabled ? ' disabled-station' : '');
+                    
+                    if (savedAddr === station) div.classList.add('active');
+
+                    div.onclick = () => {
+                        if (isDisabled) {
+                            showToast('⚠️ По этой станции доставка временно не осуществляется');
+                            return;
+                        }
+                        document.querySelectorAll('.address-item').forEach(i => i.classList.remove('active'));
+                        div.classList.add('active');
+                        document.getElementById('addressBtn').innerHTML = `📍 ${station}`;
+                        localStorage.setItem('vape_addr', station);
+                        showToast(`📍 Станция: ${station}`);
+                        setTimeout(() => closeAllModals(), 500);
+                    };
+                    
+                    div.innerHTML = `<div><span>${station}</span></div><div style="color:var(--success-color); display:none;">✓</div>`;
+                    list.appendChild(div);
+                });
+            });
+        }
+
         function showSupportLink() {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
@@ -1338,7 +1421,6 @@
             setTimeout(() => { toast.remove(); }, 3000);
         }
 
-        // --- ПАМЯТЬ УСТРОЙСТВА ---
         function initStorage() {
             const savedCart = localStorage.getItem('vape_cart');
             if (savedCart) cart = JSON.parse(savedCart);
@@ -1347,46 +1429,7 @@
             if (savedAddr) {
                 document.getElementById('addressBtn').innerHTML = `📍 ${savedAddr}`;
             }
-            
-            const metroLines = [
-                {
-                    name: "Синяя ветка",
-                    stations: ["Малиновка", "Петровщина", "Михалово", "Грушевка", "Институт Культуры", "Площадь Ленина", "Октябрьская", "Площадь Победы", "Площадь Якуба Коласа", "Академия Наук", "Парк Челюскинцев", "Московская", "Восток", "Борисовский тракт", "Уручье"]
-                },
-                {
-                    name: "Красная ветка",
-                    stations: ["Каменная Горка", "Кунцевщина", "Спортивная", "Пушкинская", "Молодежная", "Фрунзенская", "Немига", "Купаловская", "Первомайская", "Пролетарская", "Тракторный завод", "Партизанская", "Автозаводская", "Могилевская", "Шабаны"]
-                },
-                {
-                    name: "Зеленая ветка",
-                    stations: ["Слуцкий Гостинец", "Новаторская", "Вокзальная", "Ковальская Слобода", "Юбилейная площадь", "Площадь Франтишка Богушевича", "Аэродромная", "Неморшанский сад", "Серебряный бор"]
-                }
-            ];
-
-            const list = document.getElementById('metroList');
-            list.innerHTML = '';
-            
-            metroLines.forEach(line => {
-                const title = document.createElement('div');
-                title.className = 'metro-line-title';
-                title.innerText = line.name;
-                list.appendChild(title);
-
-                line.stations.forEach(station => {
-                    const div = document.createElement('div');
-                    div.className = 'address-item';
-                    div.onclick = () => {
-                        document.querySelectorAll('.address-item').forEach(i => i.classList.remove('active'));
-                        div.classList.add('active');
-                        document.getElementById('addressBtn').innerHTML = `📍 ${station}`;
-                        localStorage.setItem('vape_addr', station);
-                        showToast(`📍 Станция: ${station}`);
-                        setTimeout(() => closeAllModals(), 500);
-                    };
-                    div.innerHTML = `<div><span>${station}</span></div><div style="color:var(--success-color); display:none;">✓</div>`;
-                    list.appendChild(div);
-                });
-            });
+            // Станции теперь рендерятся динамически в renderClientStations()
         }
     </script>
 </body>
