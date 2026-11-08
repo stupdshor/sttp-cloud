@@ -26,18 +26,9 @@
         .tab-content { width: 25%; height: 100%; overflow-y: auto; padding-bottom: 90px; overscroll-behavior-y: contain; }
         .tab-content::-webkit-scrollbar { display: none; }
 
-        /* Жесткое скрытие файлового инпута, чтобы он не ломал WebView */
         #csvFileInput {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
-            opacity: 0;
-            pointer-events: none;
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; opacity: 0; pointer-events: none;
         }
 
         .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; margin: 90px 16px 16px 16px; background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative; z-index: 100; animation: slideDown 0.5s ease; }
@@ -137,7 +128,6 @@
         .sheet-price { font-size: 26px; font-weight: 800; color: #fff; }
         .sheet-add-btn { background: var(--accent-color); color: white; border: none; padding: 16px 28px; border-radius: 16px; font-weight: 700; font-size: 16px; flex-grow: 1; margin-left: 20px; }
 
-        /* АДМИНКА */
         .address-modal, .admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); width: 90%; max-width: 400px; background: #1e293b; border-radius: 24px; z-index: 3000; padding: 24px; opacity: 0; pointer-events: none; transition: all 0.3s; border: 1px solid var(--glass-border); display: flex; flex-direction: column; }
         .address-modal { height: 80vh; }
         .admin-panel { height: 80vh; }
@@ -203,7 +193,6 @@
     <div class="app-container" id="appContainer">
         <div class="tabs-wrapper" id="tabsWrapper">
             
-            <!-- ГЛАВНАЯ -->
             <div id="tab-home" class="tab-content active">
                 <header class="header">
                     <div class="user-info" onclick="openProfile()">
@@ -230,7 +219,6 @@
                 <div class="grid-container" id="home-grid-new"></div>
             </div>
 
-            <!-- КАТАЛОГ -->
             <div id="tab-catalog" class="tab-content">
                 <div class="catalog-header">
                     <div class="search-wrapper">
@@ -251,7 +239,6 @@
                 <div class="grid-container" id="catalog-grid" style="display: none;"></div>
             </div>
 
-            <!-- КОРЗИНА -->
             <div id="tab-cart" class="tab-content">
                 <div class="section-title" style="margin-top: 90px;"><span>Ваша корзина</span></div>
                 <div id="cart-empty" class="cart-empty-state">
@@ -266,13 +253,11 @@
                 </div>
             </div>
 
-            <!-- ПРОФИЛЬ -->
             <div id="tab-profile" class="tab-content">
                 <div class="cart-empty-state"><h2>Профиль</h2><p>Выберите пункт в меню слева.</p></div>
             </div>
         </div>
 
-        <!-- НИЖНЕЕ МЕНЮ -->
         <nav class="tab-bar" id="tabBar">
             <div class="tab-indicator" id="tabIndicator"></div>
             <a class="tab-item active" id="nav-home" onclick="switchTab('home', this)"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Главная</span></a>
@@ -284,7 +269,6 @@
 
     <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
 
-    <!-- BOTTOM SHEET -->
     <div class="bottom-sheet" id="productSheet">
         <div class="drag-handle" id="dragHandle"></div>
         <button class="sheet-close-btn" onclick="closeAllModals()">✕</button>
@@ -303,7 +287,6 @@
         </div>
     </div>
 
-    <!-- МОДАЛКА АДРЕСА -->
     <div class="address-modal" id="addressModal">
         <h3>Выберите станцию метро</h3>
         <div class="address-list" id="metroList"></div>
@@ -314,7 +297,6 @@
         </div>
     </div>
 
-    <!-- АДМИН-ПАНЕЛЬ -->
     <div class="admin-panel" id="adminPanel">
         <div class="admin-tabs">
             <button class="admin-tab-btn active" onclick="switchAdminTab('products', this)">Товары</button>
@@ -322,7 +304,6 @@
             <button class="admin-tab-btn" onclick="switchAdminTab('content', this)">Контент</button>
         </div>
 
-        <!-- ТОВАРЫ -->
         <div class="admin-tab-content active" id="admin-tab-products">
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                 <button type="button" class="admin-action-btn" onclick="downloadCSV()" style="flex: 1; padding: 12px;">📥 Экспорт</button>
@@ -351,14 +332,12 @@
             <button class="checkout-btn" onclick="submitNewProduct()">Добавить товар</button>
         </div>
 
-        <!-- АДРЕСА -->
         <div class="admin-tab-content" id="admin-tab-stations">
             <h3>Управление станциями</h3>
             <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Включите или выключите станции:</div>
             <div class="admin-stations-list" id="adminStationsList"></div>
         </div>
 
-        <!-- КОНТЕНТ -->
         <div class="admin-tab-content" id="admin-tab-content">
             <h3>Управление контентом</h3>
             <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Настройте баннер на главной странице:</div>
@@ -370,7 +349,6 @@
         <button class="sidebar-item sidebar-close" style="margin-top: 15px; flex-shrink: 0;" onclick="closeAllModals()">✕ Закрыть</button>
     </div>
 
-    <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-avatar" id="sidebarAvatar">👤</div>
@@ -583,32 +561,19 @@
             });
         }
 
-        // --- БЕЗОПАСНЫЙ ЭКСПОРТ И ИМПОРТ ---
+        // --- ЭКСПОРТ ЧЕРЕЗ ВНЕШНИЙ БРАУЗЕР (чтобы Telegram не блокировал) ---
         function downloadFile(content, fileName, mimeType) {
-            const blob = new Blob(["\uFEFF" + content], { type: mimeType });
-            const url = URL.createObjectURL(blob);
+            const base64Content = btoa(unescape(encodeURIComponent("\uFEFF" + content)));
+            const dataUri = `data:${mimeType};base64,${base64Content}`;
             
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.downloadFile) {
-                window.Telegram.WebApp.downloadFile({ url: url, file_name: fileName });
-                setTimeout(() => URL.revokeObjectURL(url), 10000);
-            } else {
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 1000);
-            }
-            showToast('📥 Файл сформирован');
+            // Открываем в системном браузере через Telegram API
+            tg.openLink(dataUri);
+            showToast('📥 Файл отправлен в браузер');
         }
 
         function downloadCSVTemplate() {
             const csv = "Название;Бренд;Цена;Количество;Категория\nПример вкуса;Пример бренда;10.5;100;Жидкость";
-            downloadFile(csv, "sttp_template.csv", "text/csv;charset=utf-8;");
+            downloadFile(csv, "sttp_template.csv", "text/csv");
         }
 
         function downloadCSV() {
@@ -617,16 +582,12 @@
             allProducts.forEach(p => {
                 csv += `${p.title};${p.brand};${p.price};${p.stock};${p.type}\n`;
             });
-            downloadFile(csv, `sttp_export_${new Date().toISOString().slice(0,10)}.csv`, "text/csv;charset=utf-8;");
+            downloadFile(csv, `sttp_export_${new Date().toISOString().slice(0,10)}.csv`, "text/csv");
         }
 
         function triggerImport() {
             const fileInput = document.getElementById('csvFileInput');
-            if (fileInput) {
-                fileInput.click();
-            } else {
-                showToast('❌ Ошибка: инпут не найден');
-            }
+            if (fileInput) { fileInput.click(); } else { showToast('❌ Ошибка: инпут не найден'); }
         }
 
         function handleCSVImport(event) {
@@ -672,7 +633,6 @@
             reader.readAsText(file, 'UTF-8');
         }
 
-        // --- ОСТАЛЬНОЕ УПРАВЛЕНИЕ ---
         function editProduct(id, currentPrice, currentStock) {
             const newPrice = prompt("Введите новую цену (BYN):", currentPrice);
             if (newPrice === null) return;
