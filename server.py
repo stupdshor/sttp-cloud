@@ -29,13 +29,10 @@ def validate_telegram_data(init_data: str) -> Optional[dict]:
         parsed_data = dict(parse_qsl(init_data))
         if "hash" not in parsed_data:
             return None
-        
         hash_from_telegram = parsed_data.pop("hash")
         data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed_data.items()))
-        
         secret_key = hmac.new(b"WebAppData", BOT_TOKEN.encode(), hashlib.sha256).digest()
         calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
-        
         if calculated_hash == hash_from_telegram:
             if "user" in parsed_data:
                 return json.loads(parsed_data["user"])
@@ -69,17 +66,29 @@ def init_db():
         CREATE TABLE IF NOT EXISTS admins (user_id BIGINT PRIMARY KEY)
     ''')
     
-    # Выключенные станции (новая таблица)
+    # Выключенные станции
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS disabled_stations (
             station_name TEXT PRIMARY KEY
         )
     ''')
     
+    # Проверяем, пустая ли таблица товаров
     cursor.execute('SELECT COUNT(*) FROM products')
     if cursor.fetchone()['count'] == 0:
-        cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES (%s, %s, %s, %s, %s)", 
-                       ('Персиковый йогурт', 'Annima', 22.0, 10, 'Жидкость'))
+        # Список брендов из вашего скрина
+        start_brands = [
+            "Annima Love", "Bjorn", "Catswill", "Duall", "Elfliq", 
+            "Hotspot", "Isterika", "Monster", "OGGO prime", "Podonki", 
+            "Rick and Morty", "SKL", "Анархия V2", "Злая монашка", 
+            "Призрак 69", "Самоубийца"
+        ]
+        
+        # Добавляем стартовые бренды (по 0 остатка, чтобы они появились в каталоге)
+        for brand in start_brands:
+            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES (%s, %s, %s, %s, %s)", 
+                           ('Новый вкус', brand, 0.0, 0, 'Жидкость'))
+            
     conn.commit()
     cursor.close()
     conn.close()
@@ -148,7 +157,6 @@ def check_admin_rights(init_data: str):
     user_data = validate_telegram_data(init_data)
     if not user_data:
         raise HTTPException(status_code=401, detail="Неверная подпись Telegram")
-    
     user_id = user_data.get("id")
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -156,7 +164,6 @@ def check_admin_rights(init_data: str):
     is_admin = cursor.fetchone() is not None
     cursor.close()
     conn.close()
-    
     if not is_admin:
         raise HTTPException(status_code=403, detail="Вы не администратор")
     return user_id
