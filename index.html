@@ -13,14 +13,23 @@
 
     <style>
         :root {
-            --bg-color: #0a0a0a;
-            --text-color: var(--tg-theme-text-color, #ffffff);
-            --hint-color: var(--tg-theme-hint-color, #8e8e93);
-            --card-bg: #1c1c1e;
-            --active-tab-bg: rgba(255, 255, 255, 0.1);
-            --accent-color: #2ea6ff;
-            --success-color: #34c759;
-            --danger-color: #ff3b30;
+            /* Космическая палитра */
+            --bg-home: #0b1120;
+            --bg-catalog: #0f172a;
+            --bg-cart: #131c31;
+            --bg-profile: #1e293b;
+            --text-color: var(--tg-theme-text-color, #f8fafc);
+            --hint-color: var(--tg-theme-hint-color, #94a3b8);
+            --accent-color: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.4);
+            --success-color: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.4);
+            --danger-color: #ef4444;
+            
+            /* Стеклянные элементы */
+            --glass-bg: rgba(30, 41, 59, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --card-bg: rgba(30, 41, 59, 0.8);
         }
 
         * {
@@ -28,6 +37,11 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
+
+        /* Стилизация скроллбара */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 4px; }
 
         body {
             background-color: #000; 
@@ -41,10 +55,10 @@
 
         .app-container {
             width: 100%; max-width: 480px; margin: 0 auto; 
-            background-color: var(--bg-color); 
+            background-color: var(--bg-home); 
             position: relative;
             height: 100vh; overflow: hidden; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.5); 
+            box-shadow: 0 0 30px rgba(0,0,0,0.8); 
             overscroll-behavior: none;
             transition: background-color 0.5s ease;
         }
@@ -62,37 +76,53 @@
         }
         .tab-content::-webkit-scrollbar { display: none; }
 
+        /* Плавающая шапка (Стекло) */
         .header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 16px; background: rgba(28, 28, 30, 0.95); 
-            backdrop-filter: blur(10px); position: relative; 
-            margin-top: 90px; margin-bottom: 16px; 
-            width: 100%; z-index: 100; border-radius: 0 0 16px 16px;
+            padding: 12px 16px; margin: 16px; 
+            background: var(--glass-bg); backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: relative; z-index: 100;
+            animation: slideDown 0.5s ease;
         }
 
-        .user-info { display: flex; align-items: center; gap: 14px; cursor: pointer; }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .user-info { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         .user-avatar {
-            width: 48px; height: 48px; border-radius: 50%; background: #2a2a2a;
-            display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #333;
+            width: 42px; height: 42px; border-radius: 50%; background: #334155;
+            display: flex; align-items: center; justify-content: center; 
+            overflow: hidden; border: 2px solid var(--accent-color);
         }
-        .user-name { font-weight: 700; font-size: 17px; color: #ffffff; }
+        .user-name { font-weight: 700; font-size: 16px; color: #fff; }
         
         .address-btn {
-            background: var(--accent-color); color: white; border: none; padding: 8px 14px;
-            border-radius: 16px; font-weight: 600; font-size: 13px; cursor: pointer;
-            display: flex; align-items: center; gap: 6px; transition: opacity 0.2s;
-            max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); 
+            padding: 8px 12px; border-radius: 12px; font-weight: 600; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+            max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
-        .address-btn:active { opacity: 0.8; }
+        .address-btn:active { transform: scale(0.95); background: rgba(59, 130, 246, 0.3); }
 
         .banner {
-            margin: 0 16px 16px 16px; border-radius: 16px;
-            background: linear-gradient(135deg, #ff3b30, #ff9500);
+            margin: 0 16px 16px 16px; border-radius: 20px;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
             padding: 24px 16px; text-align: center; color: white;
-            box-shadow: 0 8px 16px rgba(255, 59, 48, 0.2);
+            box-shadow: 0 8px 25px var(--accent-glow);
+            animation: fadeUp 0.6s ease;
         }
-        .banner h2 { font-size: 20px; font-weight: 800; }
+        @keyframes fadeUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .banner h2 { font-size: 22px; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .banner p { font-size: 13px; margin-top: 6px; opacity: 0.9; }
+
+        .section-title {
+            padding: 0 16px; font-size: 18px; font-weight: 700; color: #f8fafc;
+            margin: 24px 0 12px 0; display: flex; justify-content: space-between; align-items: center;
+        }
+        .section-title span:last-child { cursor: pointer; color: var(--accent-color); font-size: 13px; font-weight: 600; }
 
         .promo-scroll {
             display: flex; gap: 12px; padding: 0 16px 16px 16px;
@@ -101,12 +131,14 @@
         .promo-scroll::-webkit-scrollbar { display: none; }
         
         .promo-card {
-            min-width: 200px; height: 100px; border-radius: 12px;
-            background: #1c1c1e; border: 1px solid rgba(255,255,255,0.05);
+            min-width: 140px; height: 90px; border-radius: 16px;
+            background: var(--card-bg); border: 1px solid var(--glass-border);
             display: flex; align-items: center; justify-content: center;
             color: var(--hint-color); font-weight: 600; font-size: 14px;
-            cursor: pointer;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
         }
+        .promo-card:active { transform: scale(0.95); }
 
         .brands-scroll {
             display: flex; gap: 12px; padding: 0 16px 16px 16px;
@@ -114,364 +146,370 @@
         }
         .brands-scroll::-webkit-scrollbar { display: none; }
         .brand-card {
-            min-width: 80px; height: 80px; border-radius: 50%;
-            background: #1c1c1e; border: 1px solid rgba(255,255,255,0.05);
+            min-width: 70px; height: 70px; border-radius: 50%;
+            background: var(--card-bg); border: 1px solid var(--glass-border);
             display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 600; font-size: 12px;
-            cursor: pointer; transition: transform 0.2s;
+            color: #fff; font-weight: 600; font-size: 11px;
+            cursor: pointer; transition: all 0.2s; text-align: center; padding: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-        .brand-card:active { transform: scale(0.95); }
+        .brand-card:active { transform: scale(0.9); }
 
-        .section-title {
-            padding: 0 16px; font-size: 17px; font-weight: 700;
-            margin: 20px 0 12px 0; display: flex; justify-content: space-between; align-items: center;
-        }
-        .section-title span:last-child { cursor: pointer; color: var(--accent-color); font-size: 13px; }
-
+        /* Сетка товаров */
         .grid-container {
             display: grid; grid-template-columns: repeat(2, 1fr);
-            gap: 10px; padding: 0 16px;
+            gap: 12px; padding: 0 16px;
         }
 
         .product-card {
-            background: var(--card-bg); border-radius: 14px; padding: 10px;
-            display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.03);
-            cursor: pointer; transition: transform 0.2s; position: relative;
+            background: var(--card-bg); border-radius: 18px; padding: 12px;
+            display: flex; flex-direction: column; border: 1px solid var(--glass-border);
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        .product-card:active { transform: scale(0.97); }
+        .product-card:active { transform: scale(0.96); box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         
         .product-image-wrapper {
-            width: 100%; aspect-ratio: 1 / 1; background: #2a2a2d;
-            border-radius: 10px; margin-bottom: 8px; display: flex;
+            width: 100%; aspect-ratio: 1 / 1; background: rgba(15, 23, 42, 0.5);
+            border-radius: 14px; margin-bottom: 10px; display: flex;
             align-items: center; justify-content: center; overflow: hidden; position: relative;
         }
         
         .product-image { 
-            width: 90%; height: 90%; object-fit: contain; 
+            width: 80%; height: 80%; object-fit: contain; 
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
             transition: transform 0.3s;
         }
-        .product-card:hover .product-image { transform: scale(1.05); }
+        .product-card:hover .product-image { transform: scale(1.1); }
 
-        .product-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
-        .product-brand { font-size: 11px; color: var(--hint-color); margin-bottom: 10px; }
+        .product-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; color: #f8fafc; }
+        .product-brand { font-size: 11px; color: var(--hint-color); margin-bottom: 12px; }
         
         .card-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
-        .product-price { font-size: 15px; font-weight: 700; }
+        
+        /* Неоновое свечение цены */
+        .product-price { 
+            font-size: 16px; font-weight: 800; color: #fff; 
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
         
         .add-btn-circle {
-            width: 28px; height: 28px; border-radius: 50%; background: var(--accent-color);
+            width: 32px; height: 32px; border-radius: 50%; background: var(--accent-color);
             color: white; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: bold; transition: all 0.2s; border: none; cursor: pointer;
+            font-size: 20px; font-weight: bold; transition: all 0.2s; border: none; cursor: pointer;
+            box-shadow: 0 0 15px var(--accent-glow);
         }
-        .add-btn-circle.added { background: var(--success-color); transform: scale(1.1); }
+        .add-btn-circle:active { transform: scale(0.85); }
+        .add-btn-circle.added { background: var(--success-color); box-shadow: 0 0 15px var(--success-glow); }
 
-        /* --- НОВЫЙ КАТАЛОГ --- */
-        .catalog-header { padding: 120px 16px 16px 16px; touch-action: pan-y; }
+        /* --- КАТАЛОГ --- */
+        .catalog-header { padding: 20px 16px 16px 16px; touch-action: pan-y; }
         
-        .search-wrapper { position: relative; margin-bottom: 12px; }
+        .search-wrapper { position: relative; margin-bottom: 16px; }
         .search-icon {
-            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
             width: 18px; height: 18px; fill: var(--hint-color); pointer-events: none;
         }
         .search-input {
-            width: 100%; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05);
-            padding: 12px 16px 12px 42px; border-radius: 12px; color: #ffffff; font-size: 14px; outline: none;
+            width: 100%; background: var(--glass-bg); border: 1px solid var(--glass-border);
+            padding: 14px 16px 14px 44px; border-radius: 16px; color: #fff; font-size: 14px; outline: none;
+            backdrop-filter: blur(10px); transition: border 0.3s;
         }
+        .search-input:focus { border-color: var(--accent-color); }
         .search-input::placeholder { color: var(--hint-color); }
         
-        /* Верхнее меню категорий */
+        /* Горизонтальное меню категорий с фиксом свайпа */
         .catalog-categories { 
-            display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; touch-action: pan-x;
-            margin-bottom: 15px;
+            display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; 
+            touch-action: pan-x; /* Предотвращает свайп страниц */
+            margin-bottom: 20px; padding-bottom: 4px;
         }
         .catalog-categories::-webkit-scrollbar { display: none; }
         .category-btn {
-            background: var(--card-bg); color: var(--text-color);
-            border: 1px solid rgba(255,255,255,0.05); padding: 8px 16px;
-            border-radius: 10px; font-weight: 600; font-size: 13px;
+            background: var(--glass-bg); color: var(--hint-color);
+            border: 1px solid var(--glass-border); padding: 10px 16px;
+            border-radius: 12px; font-weight: 600; font-size: 13px;
             cursor: pointer; white-space: nowrap; transition: all 0.2s;
+            display: flex; align-items: center; gap: 6px;
         }
-        .category-btn.active { background: #fff; color: #000; }
+        .category-btn.active { 
+            background: var(--accent-color); color: #fff; border-color: var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
 
         /* Списки (Бренды/Вкусы) */
-        .full-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .full-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; animation: fadeUp 0.4s ease; }
         .list-item {
-            background: var(--card-bg); padding: 15px 16px; border-radius: 12px;
-            font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.2s;
+            background: var(--glass-bg); padding: 16px; border-radius: 16px;
+            font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s;
             display: flex; justify-content: space-between; align-items: center;
-            border: 1px solid rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border); backdrop-filter: blur(10px);
         }
-        .list-item:active { background: #2a2a2d; }
-        .list-item-arrow { font-size: 18px; color: var(--hint-color); }
+        .list-item:active { transform: scale(0.98); background: rgba(59, 130, 246, 0.2); border-color: var(--accent-color); }
+        .list-item-arrow { font-size: 18px; color: var(--accent-color); }
 
         /* Кнопки Назад/Вперед */
         .nav-btn {
-            width: 100%; padding: 14px; background: #2a2a2d; border: none; border-radius: 12px;
-            color: white; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 10px;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 14px; background: var(--glass-bg); border: 1px solid var(--glass-border); 
+            border-radius: 16px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 8px; backdrop-filter: blur(10px);
         }
-        .nav-btn:active { background: #333; }
-
-        /* Кнопка Дальше (если выбран вкус, чтобы посмотреть карточку) */
+        .nav-btn:active { background: rgba(255,255,255,0.1); }
+        
         .view-products-btn {
-            background: var(--accent-color); color: white;
+            background: var(--accent-color); border-color: var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-glow);
         }
 
-        #tab-cart .section-title { margin-top: 120px; }
+        /* --- КОРЗИНА --- */
+        .cart-empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 50vh; text-align: center; padding: 0 20px; animation: fadeUp 0.5s ease;
+        }
+        .cart-empty-icon {
+            width: 80px; height: 80px; fill: var(--hint-color); opacity: 0.5; margin-bottom: 20px;
+        }
+        .cart-empty-state h2 { font-size: 20px; color: #fff; margin-bottom: 8px; }
+        .cart-empty-state p { font-size: 14px; color: var(--hint-color); }
 
+        .cart-item { 
+            display: flex; gap: 14px; background: var(--card-bg); padding: 14px; 
+            border-radius: 16px; margin-bottom: 12px; align-items: center; 
+            border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .cart-item-img { width: 60px; height: 60px; background: rgba(15, 23, 42, 0.5); border-radius: 10px; object-fit: contain; }
+        .cart-item-info { flex-grow: 1; cursor: pointer; }
+        .cart-item-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #f8fafc; }
+        .cart-item-price { font-size: 15px; font-weight: 800; color: #fff; text-shadow: 0 0 10px var(--accent-glow); }
+        
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.15); border: none; width: 36px; height: 36px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--danger-color); transition: all 0.2s;
+        }
+        .delete-btn:active { transform: scale(0.85); background: rgba(239, 68, 68, 0.3); }
+        .delete-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+        .cart-total { display: flex; justify-content: space-between; padding: 24px 16px; font-size: 20px; font-weight: 800; border-top: 1px solid var(--glass-border); margin-top: 16px; color: #fff; }
+        
+        .checkout-btn {
+            width: 100%; background: var(--success-color); color: white; border: none;
+            padding: 18px; border-radius: 16px; font-weight: 800; font-size: 16px; cursor: pointer; margin-top: 10px;
+            transition: all 0.2s; box-shadow: 0 0 20px var(--success-glow);
+        }
+        .checkout-btn:active { transform: scale(0.96); }
+        .checkout-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; box-shadow: none; }
+
+        /* --- НИЖНЕЕ МЕНЮ (Стекло) --- */
         .tab-bar {
             position: fixed; bottom: 0; width: 100%; max-width: 480px;
-            background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px);
+            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px);
             display: flex; justify-content: space-around; align-items: center;
-            padding: 12px 0 25px 0; border-top: 1px solid rgba(255,255,255,0.08); 
+            padding: 12px 0 25px 0; border-top: 1px solid var(--glass-border); 
             z-index: 100; transition: transform 0.3s ease;
         }
         .tab-item {
             display: flex; flex-direction: column; align-items: center; gap: 6px;
-            color: var(--hint-color); font-size: 12px; font-weight: 600; 
+            color: var(--hint-color); font-size: 11px; font-weight: 600; 
             cursor: pointer; transition: color 0.3s; z-index: 2; flex: 1; position: relative;
         }
-        .tab-icon { font-size: 26px; line-height: 1; transition: transform 0.3s; } 
-        .tab-item.active { color: #fff; }
-        .tab-item.active .tab-icon { transform: translateY(-3px); }
+        .tab-icon { width: 24px; height: 24px; fill: currentColor; transition: transform 0.3s; } 
+        .tab-item.active { color: var(--accent-color); }
+        .tab-item.active .tab-icon { transform: translateY(-4px) scale(1.1); filter: drop-shadow(0 0 8px var(--accent-glow)); }
 
         .tab-indicator {
             position: absolute; bottom: 15px; height: 55px; 
-            background: var(--active-tab-bg); border-radius: 18px;
+            background: rgba(59, 130, 246, 0.1); border-radius: 18px;
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), width 0.3s;
             z-index: 1; pointer-events: none; left: 0;
         }
 
         .cart-badge {
-            position: absolute; top: -8px; right: 15px;
-            background: var(--danger-color); color: white; font-size: 11px; font-weight: bold;
-            width: 20px; height: 20px; border-radius: 50%;
+            position: absolute; top: -6px; right: 12px;
+            background: var(--danger-color); color: white; font-size: 10px; font-weight: bold;
+            width: 18px; height: 18px; border-radius: 50%;
             display: none; align-items: center; justify-content: center;
-            border: 2px solid var(--bg-color);
+            border: 2px solid #0f172a;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
         }
         .cart-badge.show { display: flex; }
 
+        /* --- МОДАЛЬНЫЕ ОКНА --- */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            background: rgba(0,0,0,0.7); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            backdrop-filter: blur(4px);
         }
         .overlay.active { opacity: 1; pointer-events: auto; }
 
         /* ПЛАВНАЯ КАРТОЧКА ТОВАРА */
         .bottom-sheet {
             position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 480px; background: #1c1c1e;
-            border-radius: 24px 24px 0 0; z-index: 1001; padding: 20px;
+            width: 100%; max-width: 480px; background: #1e293b;
+            border-radius: 28px 28px 0 0; z-index: 1001; padding: 24px;
             transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.5); touch-action: none;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.6); touch-action: none;
+            border-top: 1px solid var(--glass-border);
         }
         .bottom-sheet.active { bottom: 0; }
         
         .drag-handle {
-            width: 40px; height: 5px; background: #444; border-radius: 5px;
-            margin: 0 auto 15px auto; cursor: grab;
+            width: 40px; height: 5px; background: #475569; border-radius: 5px;
+            margin: 0 auto 20px auto; cursor: grab;
         }
 
         .sheet-close-btn {
-            position: absolute; top: 15px; right: 15px;
-            background: #2a2a2d; border: none; color: #fff; width: 30px; height: 30px;
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
             cursor: pointer; font-size: 16px; z-index: 10;
         }
         
-        .sheet-img { width: 100%; height: 200px; object-fit: contain; background: #2a2a2d; border-radius: 16px; margin-bottom: 16px; pointer-events: none; }
+        .sheet-img { width: 100%; height: 200px; object-fit: contain; background: rgba(15, 23, 42, 0.5); border-radius: 20px; margin-bottom: 20px; pointer-events: none; }
         
-        .sheet-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
-        .sheet-brand { font-size: 14px; color: #8e8e93; margin-bottom: 16px; }
+        .sheet-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; color: #fff; }
+        .sheet-brand { font-size: 15px; color: var(--hint-color); margin-bottom: 20px; }
         
-        .qty-selector { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
-        .qty-btn { width: 36px; height: 36px; border-radius: 10px; background: #2a2a2d; border: none; color: white; font-size: 18px; cursor: pointer; }
-        .qty-val { font-size: 18px; font-weight: 700; min-width: 24px; text-align: center; color: #ffffff; }
-
-        .sheet-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; }
-        .sheet-price { font-size: 24px; font-weight: 800; color: #ffffff; }
-        .sheet-add-btn {
-            background: var(--accent-color); color: white; border: none; padding: 14px 24px;
-            border-radius: 14px; font-weight: 600; font-size: 16px; cursor: pointer;
-            flex-grow: 1; margin-left: 16px; transition: background 0.3s;
+        .qty-selector { display: flex; align-items: center; gap: 16px; margin-top: 10px; }
+        .qty-btn { 
+            width: 44px; height: 44px; border-radius: 14px; background: rgba(255,255,255,0.05); 
+            border: 1px solid var(--glass-border); color: white; font-size: 20px; cursor: pointer; 
         }
-        .sheet-add-btn.added { background: var(--success-color); }
+        .qty-btn:active { background: rgba(255,255,255,0.1); }
+        .qty-val { font-size: 20px; font-weight: 800; min-width: 30px; text-align: center; color: #fff; }
 
-        .address-modal {
+        .sheet-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; }
+        .sheet-price { font-size: 26px; font-weight: 800; color: #fff; text-shadow: 0 0 15px var(--accent-glow); }
+        .sheet-add-btn {
+            background: var(--accent-color); color: white; border: none; padding: 16px 28px;
+            border-radius: 16px; font-weight: 700; font-size: 16px; cursor: pointer;
+            flex-grow: 1; margin-left: 20px; transition: all 0.2s; box-shadow: 0 0 20px var(--accent-glow);
+        }
+        .sheet-add-btn:active { transform: scale(0.95); }
+        .sheet-add-btn.added { background: var(--success-color); box-shadow: 0 0 20px var(--success-glow); }
+
+        /* Модалка адреса и админка */
+        .address-modal, .admin-panel {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
-            width: 90%; max-width: 400px; background: #1c1c1e; border-radius: 20px;
-            z-index: 3000; padding: 30px 24px 15px 24px; 
-            opacity: 0; pointer-events: none; transition: all 0.3s;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            width: 90%; max-width: 400px; background: #1e293b; border-radius: 24px;
+            z-index: 3000; padding: 24px; opacity: 0; pointer-events: none; transition: all 0.3s;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); border: 1px solid var(--glass-border);
             max-height: 85vh; display: flex; flex-direction: column;
         }
-        .address-modal.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
-        .address-modal h3 { margin-bottom: 16px; font-size: 18px; color: #ffffff; }
+        .address-modal.active, .admin-panel.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        .address-modal h3, .admin-panel h3 { margin-bottom: 20px; font-size: 20px; color: #fff; }
         
         .address-list {
             overflow-y: auto; flex-grow: 1; margin-bottom: 10px; padding-right: 5px;
-            scrollbar-width: thin; scrollbar-color: #555 transparent;
         }
-        .address-list::-webkit-scrollbar { width: 4px; }
-        .address-list::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
 
         .metro-line-title {
             font-size: 12px; color: var(--hint-color); text-transform: uppercase;
-            letter-spacing: 1px; margin: 15px 0 5px 5px; font-weight: 600;
+            letter-spacing: 1px; margin: 20px 0 8px 4px; font-weight: 700;
         }
         .metro-line-title:first-child { margin-top: 0; }
 
         .address-item {
-            padding: 12px 14px; background: #2a2a2d; border-radius: 10px; margin-bottom: 6px;
+            padding: 14px 16px; background: rgba(255,255,255,0.03); border-radius: 14px; margin-bottom: 8px;
             cursor: pointer; display: flex; justify-content: space-between; align-items: center;
             border: 1px solid transparent; transition: all 0.2s;
         }
-        .address-item.active { border-color: var(--accent-color); }
-        .address-item span { font-weight: 500; font-size: 14px; color: #ffffff; }
+        .address-item.active { border-color: var(--accent-color); background: rgba(59, 130, 246, 0.1); }
+        .address-item span { font-weight: 500; font-size: 14px; color: #fff; }
         
         .address-item.disabled-station {
-            opacity: 0.4;
-            cursor: not-allowed;
-            background: #1a1a1a;
+            opacity: 0.3; cursor: not-allowed; background: transparent;
         }
 
-        .delivery-section { margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; flex-shrink: 0; }
-        .delivery-section h4 { margin-bottom: 10px; font-size: 15px; color: var(--hint-color); }
-        .delivery-input {
-            width: 100%; background: #2a2a2d; border: 1px solid rgba(255,255,255,0.05);
-            padding: 14px; border-radius: 12px; color: #ffffff; font-size: 14px; outline: none;
-            margin-bottom: 10px;
+        .delivery-section { margin-top: 20px; border-top: 1px solid var(--glass-border); padding-top: 20px; flex-shrink: 0; }
+        .delivery-section h4 { margin-bottom: 12px; font-size: 15px; color: var(--hint-color); }
+        .delivery-input, .form-input {
+            width: 100%; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border);
+            padding: 16px; border-radius: 14px; color: #ffffff; font-size: 14px; outline: none;
+            margin-bottom: 12px; transition: border 0.3s;
         }
-        .delivery-input::placeholder { color: var(--hint-color); }
+        .delivery-input:focus, .form-input:focus { border-color: var(--accent-color); }
+        .delivery-input::placeholder, .form-input::placeholder { color: var(--hint-color); }
+        
         .delivery-btn {
             width: 100%; background: var(--accent-color); color: white; border: none;
-            padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;
+            padding: 16px; border-radius: 14px; font-weight: 700; font-size: 15px; cursor: pointer;
         }
 
-        .cart-item { display: flex; gap: 12px; background: var(--card-bg); padding: 12px; border-radius: 12px; margin-bottom: 12px; align-items: center; }
-        .cart-item-img { width: 60px; height: 60px; background: #2a2a2d; border-radius: 8px; object-fit: contain; }
-        .cart-item-info { flex-grow: 1; cursor: pointer; }
-        .cart-item-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-        .cart-item-price { font-size: 14px; font-weight: 700; color: var(--accent-color); }
+        /* Админка */
+        .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 14px; }
+        .admin-tab-btn {
+            flex: 1; padding: 12px; background: transparent; border: none; border-radius: 10px;
+            color: var(--hint-color); font-weight: 700; cursor: pointer; transition: all 0.2s;
+        }
+        .admin-tab-btn.active { background: var(--accent-color); color: white; box-shadow: 0 4px 10px var(--accent-glow); }
         
-        .delete-btn {
-            background: rgba(255, 59, 48, 0.1); border: none; width: 32px; height: 32px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: var(--danger-color); transition: all 0.2s;
-        }
-        .delete-btn:active { transform: scale(0.8); background: rgba(255, 59, 48, 0.3); }
-        .delete-btn svg { width: 16px; height: 16px; fill: currentColor; }
+        .admin-tab-content { display: none; flex-direction: column; flex-grow: 1; overflow-y: auto; }
+        .admin-tab-content.active { display: flex; }
 
-        .cart-total { display: flex; justify-content: space-between; padding: 20px 16px; font-size: 18px; font-weight: 800; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 16px; }
-        .checkout-form { padding: 0 16px; }
-        .form-input {
-            width: 100%; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05);
-            padding: 14px 16px; border-radius: 12px; color: #ffffff; font-size: 14px; margin-bottom: 12px; outline: none;
+        .admin-product-list, .admin-stations-list { 
+            max-height: 250px; overflow-y: auto; margin-bottom: 15px; background: rgba(0,0,0,0.2); border-radius: 14px; padding: 10px;
         }
+        .admin-product-item, .admin-station-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .admin-product-item:last-child, .admin-station-item:last-child { border-bottom: none; }
+        .admin-product-info { font-size: 13px; color: #fff; }
+        .admin-product-actions { display: flex; gap: 6px; }
+        .admin-action-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .admin-delete-btn { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
         
-        .checkout-btn {
-            width: 100%; background: var(--success-color); color: white; border: none;
-            padding: 16px; border-radius: 14px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px;
-            transition: background 0.3s, opacity 0.3s;
-        }
-        .checkout-btn:active { opacity: 0.8; }
-        .checkout-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
+        .toggle-switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .4s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
+        /* Тост */
         .toast-container { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 4000; display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; pointer-events: none; }
         .toast {
-            background: #2a2a2d; color: white; padding: 12px 24px; border-radius: 30px;
-            font-size: 14px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            animation: slideUp 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+            background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); color: white; padding: 14px 24px; border-radius: 30px;
+            font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--glass-border);
+            animation: slideUpToast 0.4s cubic-bezier(0.16, 1, 0.3, 1), fadeOutToast 0.3s ease 2.7s forwards;
         }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes fadeOut { to { opacity: 0; transform: translateY(-10px); } }
+        @keyframes slideUpToast { from { transform: translateY(30px) scale(0.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes fadeOutToast { to { opacity: 0; transform: translateY(-10px) scale(0.9); } }
 
-        .placeholder-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: var(--hint-color); text-align: center; }
-
+        /* Сайдбар профиля */
         .sidebar {
-            position: fixed; top: 0; left: 0; width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
+            position: fixed; top: 0; left: 0; width: 100%; max-width: 480px; height: 100vh; background: #0f172a; 
             z-index: 2001; transform: translateX(-100%); 
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            padding: 20px; padding-top: 110px; display: flex; flex-direction: column; box-shadow: 5px 0 30px rgba(0,0,0,0.5);
-            pointer-events: none;
+            padding: 30px 20px; padding-top: 110px; display: flex; flex-direction: column; 
+            box-shadow: 5px 0 40px rgba(0,0,0,0.8);
         }
-        .sidebar.active { transform: translateX(0); pointer-events: auto; }
+        .sidebar.active { transform: translateX(0); }
         
         @media (min-width: 480px) {
             .sidebar { left: 50%; transform: translateX(-50%) translateX(-100%); }
             .sidebar.active { transform: translateX(-50%) translateX(0); }
         }
 
-        .sidebar-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; }
-        .sidebar-avatar { width: 80px; height: 80px; border-radius: 50%; background: #2a2a2d; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #333; }
-        .sidebar-name { font-size: 20px; font-weight: 700; color: #ffffff; }
-        .sidebar-status { font-size: 14px; color: var(--hint-color); margin-top: 4px; }
+        .sidebar-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 40px; }
+        .sidebar-avatar { width: 90px; height: 90px; border-radius: 50%; background: #1e293b; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid var(--accent-color); box-shadow: 0 0 20px var(--accent-glow); }
+        .sidebar-name { font-size: 22px; font-weight: 800; color: #ffffff; }
+        .sidebar-status { font-size: 14px; color: var(--hint-color); margin-top: 6px; font-weight: 500; }
         
-        .sidebar-menu { display: flex; flex-direction: column; gap: 5px; }
+        .sidebar-menu { display: flex; flex-direction: column; gap: 8px; }
         .sidebar-item {
-            padding: 14px 16px; border-radius: 12px; color: white; text-decoration: none;
-            display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500;
-            background: transparent; border: none; cursor: pointer; transition: background 0.2s; text-align: left;
+            padding: 16px; border-radius: 16px; color: white; text-decoration: none;
+            display: flex; align-items: center; gap: 14px; font-size: 16px; font-weight: 600;
+            background: rgba(255,255,255,0.03); border: 1px solid transparent; cursor: pointer; transition: all 0.2s; text-align: left;
         }
-        .sidebar-item:hover, .sidebar-item:active { background: rgba(255,255,255,0.05); }
-        .sidebar-item span { font-size: 20px; }
+        .sidebar-item:active { background: rgba(255,255,255,0.08); border-color: var(--glass-border); }
+        .sidebar-item span { font-size: 22px; }
         
-        .sidebar-close { margin-top: auto; color: var(--danger-color); justify-content: center; font-weight: 600; }
+        .sidebar-close { margin-top: auto; color: #fca5a5; background: rgba(239, 68, 68, 0.1); justify-content: center; font-weight: 700; }
 
         .support-link {
-            color: var(--accent-color); text-decoration: none; font-weight: 600;
-            display: inline-block; margin-top: 10px; padding: 10px 20px;
-            background: rgba(46, 166, 255, 0.1); border-radius: 10px; border: 1px solid rgba(46, 166, 255, 0.2);
+            color: var(--accent-color); text-decoration: none; font-weight: 700;
+            display: inline-block; margin-top: 10px; padding: 12px 24px;
+            background: rgba(59, 130, 246, 0.1); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3);
         }
-
-        .admin-panel {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
-            width: 90%; max-width: 400px; background: #1c1c1e; border-radius: 20px;
-            z-index: 4000; padding: 24px; opacity: 0; pointer-events: none; transition: all 0.3s;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-            max-height: 85vh; display: flex; flex-direction: column;
-        }
-        .admin-panel.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
-        
-        .admin-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .admin-tab-btn {
-            flex: 1; padding: 10px; background: #2a2a2d; border: none; border-radius: 10px;
-            color: #888; font-weight: 600; cursor: pointer; transition: all 0.2s;
-        }
-        .admin-tab-btn.active { background: var(--accent-color); color: white; }
-        
-        .admin-tab-content { display: none; flex-direction: column; flex-grow: 1; overflow-y: auto; }
-        .admin-tab-content.active { display: flex; }
-
-        .admin-panel h3 { margin-bottom: 16px; font-size: 18px; color: #ffffff; }
-
-        .admin-product-list, .admin-stations-list { 
-            max-height: 250px; overflow-y: auto; margin-bottom: 15px; background: #2a2a2d; border-radius: 12px; padding: 10px;
-            scrollbar-width: thin;
-        }
-        .admin-product-item, .admin-station-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #444; }
-        .admin-product-item:last-child, .admin-station-item:last-child { border-bottom: none; }
-        .admin-product-info { font-size: 13px; }
-        .admin-product-actions { display: flex; gap: 5px; }
-        .admin-action-btn { background: #444; border: none; color: white; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; }
-        .admin-delete-btn { background: var(--danger-color); }
-        .admin-action-btn:hover { opacity: 0.8; }
-        
-        .toggle-switch {
-            position: relative; display: inline-block; width: 44px; height: 24px;
-        }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #444; transition: .4s; border-radius: 24px;
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 18px; width: 18px;
-            left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;
-        }
-        input:checked + .slider { background-color: var(--success-color); }
-        input:checked + .slider:before { transform: translateX(20px); }
     </style>
 </head>
 <body>
@@ -482,9 +520,9 @@
             
             <!-- 1. ГЛАВНАЯ -->
             <div id="tab-home" class="tab-content active">
-                <header class="header" id="mainHeader">
+                <header class="header">
                     <div class="user-info" onclick="openProfile()">
-                        <div class="user-avatar" id="userAvatar"><span style="font-size: 22px;">👤</span></div>
+                        <div class="user-avatar" id="userAvatar"><span style="font-size: 20px;">👤</span></div>
                         <div><div class="user-name" id="userName">Загрузка...</div></div>
                     </div>
                     <button class="address-btn" id="addressBtn" onclick="openAddressModal()">📍 Выбрать адрес</button>
@@ -518,54 +556,48 @@
                 <div class="grid-container" id="home-grid-new"></div>
             </div>
 
-            <!-- 2. КАТАЛОГ (НОВОЕ МЕНЮ) -->
+            <!-- 2. КАТАЛОГ -->
             <div id="tab-catalog" class="tab-content">
                 <div class="catalog-header">
-                    <div class="search-wrapper">
+                    <div class="search-wrapper" style="margin-top: 20px;">
                         <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
                         <input type="text" class="search-input" id="catalogSearchInput" placeholder="Поиск по всем товарам..." oninput="filterCatalog(this.value)">
                     </div>
                     
-                    <!-- Верхние категории (скрываются при выборе бренда) -->
                     <div class="catalog-categories" id="mainCategories">
-                        <button class="category-btn active" onclick="selectCategory('Жидкость', this)">Жидкости</button>
-                        <button class="category-btn" onclick="selectCategory('Устройство', this)">Устройства</button>
-                        <button class="category-btn" onclick="selectCategory('Расходник', this)">Расходники</button>
-                        <button class="category-btn" onclick="selectCategory('Снюс', this)">Снюс</button>
-                        <button class="category-btn" onclick="selectCategory('Одноразка', this)">Одноразки</button>
+                        <button class="category-btn active" onclick="selectCategory('Жидкость', this)">💧 Жидкости</button>
+                        <button class="category-btn" onclick="selectCategory('Устройство', this)">💨 Устройства</button>
+                        <button class="category-btn" onclick="selectCategory('Расходник', this)">⚙️ Расходники</button>
+                        <button class="category-btn" onclick="selectCategory('Снюс', this)">🟢 Снюс</button>
+                        <button class="category-btn" onclick="selectCategory('Одноразка', this)">⚡ Одноразки</button>
                     </div>
 
-                    <!-- Заголовок текущего уровня -->
-                    <div style="font-size: 14px; color: var(--hint-color); margin-bottom: 10px;" id="catalogLevelTitle">Выберите бренд:</div>
-
-                    <!-- Списки -->
+                    <div style="font-size: 14px; color: var(--hint-color); margin-bottom: 12px; font-weight: 600;" id="catalogLevelTitle">Выберите бренд:</div>
                     <div class="full-list" id="catalogListContainer"></div>
 
-                    <!-- Кнопка Назад -->
                     <button class="nav-btn" id="catalogBackBtn" onclick="goBackInCatalog()" style="display: none;">‹ Назад</button>
-                    <!-- Кнопка Показать товары (если выбран вкус) -->
-                    <button class="nav-btn view-products-btn" id="catalogViewProductsBtn" onclick="showFlavorProducts()" style="display: none;">Показать товары ›</button>
                 </div>
-                
-                <!-- Сетка товаров (показывается только после выбора вкуса) -->
                 <div class="grid-container" id="catalog-grid" style="display: none;"></div>
             </div>
 
             <!-- 3. КОРЗИНА -->
             <div id="tab-cart" class="tab-content">
-                <div class="section-title"><span>Ваша корзина</span></div>
-                <div id="cart-items-container" style="padding: 0 16px;"></div>
+                <div class="section-title" style="margin-top: 30px;"><span>Ваша корзина</span></div>
                 
-                <div id="cart-empty" class="placeholder-page">
-                    <h2>Пусто</h2><p>Добавьте товары из каталога.</p>
+                <div id="cart-empty" class="cart-empty-state">
+                    <svg class="cart-empty-icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                    <h2>Корзина пуста</h2>
+                    <p>Добавьте товары из каталога, чтобы сделать заказ.</p>
                 </div>
 
+                <div id="cart-items-container" style="padding: 0 16px;"></div>
+                
                 <div id="checkout-section" style="display: none;">
                     <div class="cart-total">
                         <span>Итого:</span>
                         <span id="cart-total-price">0.00 BYN</span>
                     </div>
-                    <div class="checkout-form">
+                    <div style="padding: 0 16px;">
                         <button class="checkout-btn" id="checkoutBtn" onclick="submitOrder()" disabled>Оформить заказ</button>
                     </div>
                 </div>
@@ -573,27 +605,30 @@
 
             <!-- 4. ПРОФИЛЬ -->
             <div id="tab-profile" class="tab-content">
-                <div class="placeholder-page"><h2>Профиль</h2><p>Выберите пункт в меню слева.</p></div>
+                <div class="cart-empty-state"><h2>Профиль</h2><p>Выберите пункт в меню слева.</p></div>
             </div>
 
         </div>
 
-        <!-- НИЖНЕЕ МЕНЮ -->
+        <!-- НИЖНЕЕ МЕНЮ (Векторные иконки) -->
         <nav class="tab-bar" id="tabBar">
             <div class="tab-indicator" id="tabIndicator"></div>
             <a class="tab-item active" id="nav-home" onclick="switchTab('home', this)">
-                <span class="tab-icon">🏠</span><span>Главная</span>
+                <svg class="tab-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>Главная</span>
             </a>
             <a class="tab-item" id="nav-catalog" onclick="switchTab('catalog', this)">
-                <span class="tab-icon">📦</span><span>Каталог</span>
+                <svg class="tab-icon" viewBox="0 0 24 24"><path d="M20 6h-3V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM9 4h6v2H9V4zm11 14H4V8h16v10z"/></svg>
+                <span>Каталог</span>
             </a>
             <a class="tab-item" id="nav-cart" onclick="switchTab('cart', this)">
-                <span class="tab-icon">🛒</span>
+                <svg class="tab-icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
                 <div class="cart-badge" id="cartBadge">0</div>
                 <span>Корзина</span>
             </a>
             <a class="tab-item" id="nav-profile" onclick="openProfile()">
-                <span class="tab-icon">👤</span><span>Профиль</span>
+                <svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span>Профиль</span>
             </a>
         </nav>
     </div>
@@ -608,7 +643,7 @@
         <div class="sheet-title" id="sheetTitle">Название</div>
         <div class="sheet-brand" id="sheetBrand">Бренд</div>
         
-        <div style="font-size: 14px; margin-bottom: 8px; color: var(--hint-color); margin-top: 15px;">Количество:</div>
+        <div style="font-size: 14px; margin-bottom: 8px; color: var(--hint-color); margin-top: 20px; font-weight: 600;">Количество:</div>
         <div class="qty-selector">
             <button class="qty-btn" onclick="changeSheetQty(-1)">-</button>
             <div class="qty-val" id="sheetQtyVal">1</div>
@@ -642,10 +677,10 @@
 
         <div class="admin-tab-content active" id="admin-tab-products">
             <h3>Управление товарами</h3>
-            <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 5px;">Существующие товары:</div>
+            <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 8px;">Существующие товары:</div>
             <div class="admin-product-list" id="adminProductList"></div>
 
-            <hr style="border-color: #333; margin: 15px 0;">
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
 
             <h3>Добавить товар</h3>
             <input type="text" class="form-input" id="admin-title" placeholder="Название (Вкус)">
@@ -666,11 +701,11 @@
 
         <div class="admin-tab-content" id="admin-tab-stations">
             <h3>Управление станциями</h3>
-            <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 10px;">Включите или выключите станции, по которым вы работаете:</div>
+            <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Включите или выключите станции, по которым вы работаете:</div>
             <div class="admin-stations-list" id="adminStationsList"></div>
         </div>
 
-        <button class="sidebar-item sidebar-close" style="margin-top: 10px;" onclick="closeAllModals()">✕ Закрыть</button>
+        <button class="sidebar-item sidebar-close" style="margin-top: 15px;" onclick="closeAllModals()">✕ Закрыть</button>
     </div>
 
     <!-- SIDEBAR -->
@@ -698,10 +733,10 @@
         const SUPPORT_TG = "vsqw2d2";
 
         const tabColors = {
-            home: '#0a0a0a',    
-            catalog: '#111111', 
-            cart: '#171717',    
-            profile: '#1c1c1e'  
+            home: '#0b1120',    
+            catalog: '#0f172a', 
+            cart: '#131c31',    
+            profile: '#1e293b'  
         };
 
         const tg = window.Telegram.WebApp;
@@ -764,6 +799,8 @@
         }, { passive: true });
 
         document.addEventListener('touchend', (e) => {
+            // Блокируем свайп страниц, если мы в каталоге или если открыты модалки
+            if (currentTabIndex === 1) return;
             if (document.getElementById('productSheet').classList.contains('active') || 
                 document.getElementById('addressModal').classList.contains('active') ||
                 document.getElementById('adminPanel').classList.contains('active')) return;
@@ -806,6 +843,7 @@
             else document.getElementById('overlay').classList.remove('active');
         }
 
+        // Свайп вниз для Bottom Sheet
         let sheetStartY = 0;
         const bottomSheet = document.getElementById('productSheet');
         
@@ -847,11 +885,10 @@
         let isAdmin = false;
         let disabledStations = []; 
 
-        // Переменные нового каталога
         let currentCatalogCategory = 'Жидкость';
         let currentCatalogBrand = null;
         let currentCatalogFlavor = null;
-        let catalogViewState = 'brands'; // 'brands' или 'flavors'
+        let catalogViewState = 'brands'; 
 
         async function checkAdminStatus() {
             if (!tg.initDataUnsafe?.user) return;
@@ -1050,7 +1087,7 @@
                 card.onclick = () => openProductSheet(prod);
                 card.innerHTML = `
                     <div class="product-image-wrapper">
-                        <img src="https://via.placeholder.com/300x300/2a2a2d/666666?text=Photo" class="product-image">
+                        <img src="https://via.placeholder.com/300x300/0f172a/64748b?text=Photo" class="product-image">
                     </div>
                     <div class="product-title">${prod.title}</div>
                     <div class="product-brand">${prod.brand}</div>
@@ -1074,7 +1111,11 @@
                 div.onclick = () => {
                     switchTab('catalog');
                     selectCategory(allProducts.find(p => p.brand === brand)?.type || 'Жидкость', null);
-                    setTimeout(() => selectBrand(brand), 100);
+                    setTimeout(() => {
+                        currentCatalogBrand = brand;
+                        catalogViewState = 'flavors';
+                        renderCatalogUI();
+                    }, 100);
                 };
                 container.appendChild(div);
             });
@@ -1101,7 +1142,6 @@
             document.getElementById('catalog-grid').style.display = 'grid';
             document.getElementById('catalogListContainer').style.display = 'none';
             document.getElementById('catalogBackBtn').style.display = 'none';
-            document.getElementById('catalogViewProductsBtn').style.display = 'none';
             document.getElementById('catalogLevelTitle').style.display = 'none';
         }
 
@@ -1113,11 +1153,10 @@
             document.getElementById('catalog-grid').style.display = 'grid';
             document.getElementById('catalogListContainer').style.display = 'none';
             document.getElementById('catalogBackBtn').style.display = 'none';
-            document.getElementById('catalogViewProductsBtn').style.display = 'none';
             document.getElementById('catalogLevelTitle').style.display = 'none';
         }
 
-        // --- ЛОГИКА КАТАЛОГА (МНОГОУРОВНЕВОЕ МЕНЮ) ---
+        // --- ЛОГИКА КАТАЛОГА ---
         function selectCategory(category, btn) {
             currentCatalogCategory = category;
             currentCatalogBrand = null;
@@ -1137,15 +1176,12 @@
             const listContainer = document.getElementById('catalogListContainer');
             const grid = document.getElementById('catalog-grid');
             const backBtn = document.getElementById('catalogBackBtn');
-            const viewBtn = document.getElementById('catalogViewProductsBtn');
 
-            // Сброс
             listContainer.innerHTML = '';
             grid.style.display = 'none';
             
             if (catalogViewState === 'brands') {
                 backBtn.style.display = 'none';
-                viewBtn.style.display = 'none';
                 document.getElementById('catalogLevelTitle').innerText = 'Выберите бренд:';
                 listContainer.style.display = 'flex';
                 document.getElementById('mainCategories').style.display = 'flex';
@@ -1171,7 +1207,6 @@
 
             } else if (catalogViewState === 'flavors') {
                 backBtn.style.display = 'block';
-                viewBtn.style.display = 'none';
                 document.getElementById('catalogLevelTitle').innerText = `Бренд: ${currentCatalogBrand}`;
                 listContainer.style.display = 'flex';
                 document.getElementById('mainCategories').style.display = 'none';
@@ -1196,7 +1231,6 @@
                 }
             } else if (catalogViewState === 'products') {
                 backBtn.style.display = 'block';
-                viewBtn.style.display = 'none';
                 document.getElementById('catalogLevelTitle').innerText = `Вкус: ${currentCatalogFlavor}`;
                 listContainer.style.display = 'none';
                 document.getElementById('mainCategories').style.display = 'none';
@@ -1222,7 +1256,6 @@
             const listContainer = document.getElementById('catalogListContainer');
             const grid = document.getElementById('catalog-grid');
             const backBtn = document.getElementById('catalogBackBtn');
-            const viewBtn = document.getElementById('catalogViewProductsBtn');
             
             if (query.trim() === '') {
                 catalogViewState = 'brands';
@@ -1230,12 +1263,10 @@
                 return;
             }
 
-            // При поиске скрываем списки и показываем сетку
             listContainer.style.display = 'none';
             document.getElementById('mainCategories').style.display = 'none';
             document.getElementById('catalogLevelTitle').style.display = 'none';
             backBtn.style.display = 'block';
-            viewBtn.style.display = 'none';
             grid.style.display = 'grid';
 
             const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query.toLowerCase()) || p.brand.toLowerCase().includes(query.toLowerCase()));
@@ -1247,7 +1278,7 @@
             editingCartIndex = cartIndex;
             currentProductInSheet = product;
             
-            document.getElementById('sheetImg').src = "https://via.placeholder.com/300x300/2a2a2d/666666?text=Photo";
+            document.getElementById('sheetImg').src = "https://via.placeholder.com/300x300/0f172a/64748b?text=Photo";
             document.getElementById('sheetTitle').innerText = product.title;
             document.getElementById('sheetBrand').innerText = product.brand;
             
@@ -1371,7 +1402,7 @@
                 
                 container.innerHTML += `
                     <div class="cart-item">
-                        <img src="https://via.placeholder.com/100x100/2a2a2d/666666?text=Photo" class="cart-item-img">
+                        <img src="https://via.placeholder.com/100x100/0f172a/64748b?text=Photo" class="cart-item-img">
                         <div class="cart-item-info" onclick="openProductSheet(cart[${index}], ${index})">
                             <div class="cart-item-title">${displayTitle}</div>
                             <div style="font-size:12px; color:var(--hint-color); margin-bottom:4px;">Кол-во: ${item.quantity} шт.</div>
@@ -1536,10 +1567,10 @@
                 <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
                     <span>Связь с менеджером:</span>
                     <a href="https://t.me/${SUPPORT_TG}" target="_blank" class="support-link">@${SUPPORT_TG}</a>
-                    <button onclick="copySupportLink()" style="background:#444; border:none; color:white; padding:8px 16px; border-radius:8px; font-size:12px; cursor:pointer;">📋 Скопировать</button>
+                    <button onclick="copySupportLink()" style="background:rgba(255,255,255,0.1); border:none; color:white; padding:10px 20px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer;">📋 Скопировать</button>
                 </div>
             `;
-            toast.style.animation = 'slideUp 0.3s ease forwards';
+            toast.style.animation = 'slideUpToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards';
             toast.style.pointerEvents = 'auto';
             container.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 5000);
