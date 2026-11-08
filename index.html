@@ -13,7 +13,6 @@
 
     <style>
         :root {
-            /* Базовые цвета (будут переопределяться градиентом) */
             --bg-color: #0a0a0a;
             --text-color: var(--tg-theme-text-color, #ffffff);
             --hint-color: var(--tg-theme-hint-color, #8e8e93);
@@ -40,7 +39,6 @@
             overscroll-behavior: none;
         }
 
-        /* Плавный переход фона */
         .app-container {
             width: 100%; max-width: 480px; margin: 0 auto; 
             background-color: var(--bg-color); 
@@ -168,6 +166,7 @@
         }
         .add-btn-circle.added { background: var(--success-color); transform: scale(1.1); }
 
+        /* --- НОВЫЙ КАТАЛОГ --- */
         .catalog-header { padding: 120px 16px 16px 16px; touch-action: pan-y; }
         
         .search-wrapper { position: relative; margin-bottom: 12px; }
@@ -181,8 +180,10 @@
         }
         .search-input::placeholder { color: var(--hint-color); }
         
+        /* Верхнее меню категорий */
         .catalog-categories { 
             display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; touch-action: pan-x;
+            margin-bottom: 15px;
         }
         .catalog-categories::-webkit-scrollbar { display: none; }
         .category-btn {
@@ -192,6 +193,23 @@
             cursor: pointer; white-space: nowrap; transition: all 0.2s;
         }
         .category-btn.active { background: #fff; color: #000; }
+
+        /* Список брендов в категории */
+        .brand-list { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin-bottom: 15px; }
+        .brand-list::-webkit-scrollbar { display: none; }
+        .brand-item {
+            background: #2a2a2d; padding: 8px 16px; border-radius: 8px;
+            font-size: 14px; cursor: pointer; white-space: nowrap; transition: 0.2s;
+        }
+        .brand-item.active { background: var(--accent-color); color: #fff; }
+
+        /* Список вкусов (или названий товаров) */
+        .flavor-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .flavor-item {
+            background: #2a2a2d; padding: 8px 12px; border-radius: 8px;
+            font-size: 13px; cursor: pointer; transition: 0.2s;
+        }
+        .flavor-item.active { background: var(--accent-color); color: #fff; }
 
         #tab-cart .section-title { margin-top: 120px; }
 
@@ -233,11 +251,12 @@
         }
         .overlay.active { opacity: 1; pointer-events: auto; }
 
+        /* ПЛАВНАЯ КАРТОЧКА ТОВАРА */
         .bottom-sheet {
             position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 480px; background: #1c1c1e;
             border-radius: 24px 24px 0 0; z-index: 1001; padding: 20px;
-            transition: bottom 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 0 -10px 30px rgba(0,0,0,0.5); touch-action: none;
         }
         .bottom-sheet.active { bottom: 0; }
@@ -363,19 +382,14 @@
 
         .placeholder-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: var(--hint-color); text-align: center; }
 
-        /* --- НАТИВНАЯ АНИМАЦИЯ SIDEBAR --- */
         .sidebar {
             position: fixed; top: 0; left: 0; width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
-            z-index: 2001; 
-            transform: translateX(-100%); 
+            z-index: 2001; transform: translateX(-100%); 
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             padding: 20px; padding-top: 110px; display: flex; flex-direction: column; box-shadow: 5px 0 30px rgba(0,0,0,0.5);
             pointer-events: none;
         }
-        .sidebar.active { 
-            transform: translateX(0); 
-            pointer-events: auto; 
-        }
+        .sidebar.active { transform: translateX(0); pointer-events: auto; }
         
         @media (min-width: 480px) {
             .sidebar { left: 50%; transform: translateX(-50%) translateX(-100%); }
@@ -404,7 +418,6 @@
             background: rgba(46, 166, 255, 0.1); border-radius: 10px; border: 1px solid rgba(46, 166, 255, 0.2);
         }
 
-        /* --- АДМИН-ПАНЕЛЬ --- */
         .admin-panel {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
             width: 90%; max-width: 400px; background: #1c1c1e; border-radius: 20px;
@@ -498,7 +511,7 @@
                 <div class="grid-container" id="home-grid-new"></div>
             </div>
 
-            <!-- 2. КАТАЛОГ -->
+            <!-- 2. КАТАЛОГ (НОВАЯ ЛОГИКА) -->
             <div id="tab-catalog" class="tab-content">
                 <div class="catalog-header">
                     <div class="search-wrapper">
@@ -506,16 +519,20 @@
                         <input type="text" class="search-input" placeholder="Поиск по всем товарам..." oninput="filterCatalog(this.value)">
                     </div>
                     
-                    <div class="catalog-categories">
-                        <button class="category-btn active" onclick="changeCategory('Жидкость', this)">Жидкости</button>
-                        <button class="category-btn" onclick="changeCategory('Устройство', this)">Устройства</button>
-                        <button class="category-btn" onclick="changeCategory('Расходник', this)">Расходники</button>
-                        <button class="category-btn" onclick="changeCategory('Снюс', this)">Снюс</button>
+                    <!-- Верхние категории -->
+                    <div class="catalog-categories" id="mainCategories">
+                        <button class="category-btn active" onclick="selectCategory('Жидкость', this)">Жидкости</button>
+                        <button class="category-btn" onclick="selectCategory('Устройство', this)">Устройства</button>
+                        <button class="category-btn" onclick="selectCategory('Расходник', this)">Расходники</button>
+                        <button class="category-btn" onclick="selectCategory('Снюс', this)">Снюс</button>
+                        <button class="category-btn" onclick="selectCategory('Одноразка', this)">Одноразки</button>
                     </div>
-                    <div id="activeBrandFilter" style="display:none; margin-top: 10px; font-size: 14px; color: var(--accent-color);">
-                        Бренд: <b id="activeBrandName"></b> 
-                        <span onclick="resetBrandFilter()" style="cursor:pointer; text-decoration:underline; margin-left:5px; color:var(--hint-color);">(Сбросить)</span>
-                    </div>
+
+                    <!-- Бренды в выбранной категории -->
+                    <div class="brand-list" id="catalogBrands"></div>
+
+                    <!-- Вкусы/Названия в выбранном бренде -->
+                    <div class="flavor-list" id="catalogFlavors"></div>
                 </div>
                 <div class="grid-container" id="catalog-grid"></div>
             </div>
@@ -619,7 +636,7 @@
             <hr style="border-color: #333; margin: 15px 0;">
 
             <h3>Добавить товар</h3>
-            <input type="text" class="form-input" id="admin-title" placeholder="Название">
+            <input type="text" class="form-input" id="admin-title" placeholder="Название (Вкус)">
             <input type="text" class="form-input" id="admin-brand" placeholder="Бренд">
             <input type="number" class="form-input" id="admin-price" placeholder="Цена (BYN)" step="0.01">
             <input type="number" class="form-input" id="admin-stock" placeholder="Количество">
@@ -629,6 +646,7 @@
                 <option value="Устройство">Устройство</option>
                 <option value="Расходник">Расходник</option>
                 <option value="Снюс">Снюс</option>
+                <option value="Одноразка">Одноразка</option>
             </select>
 
             <button class="checkout-btn" onclick="submitNewProduct()">Добавить товар</button>
@@ -667,12 +685,11 @@
         const API_URL = "https://sttp-api-new.onrender.com/api";
         const SUPPORT_TG = "vsqw2d2";
 
-        // Цвета для вкладок (градиент от темного к светлому)
         const tabColors = {
-            home: '#0a0a0a',    // Почти черный
-            catalog: '#111111', // Чуть светлее
-            cart: '#171717',    // Еще светлее
-            profile: '#1c1c1e'  // Самый светлый (совпадает с панелью)
+            home: '#0a0a0a',    
+            catalog: '#111111', 
+            cart: '#171717',    
+            profile: '#1c1c1e'  
         };
 
         const tg = window.Telegram.WebApp;
@@ -712,7 +729,6 @@
             currentTabIndex = index;
             tabsWrapper.style.transform = `translateX(-${index * 25}%)`;
             
-            // Меняем фон приложения плавно
             appContainer.style.backgroundColor = tabColors[tabs[index]];
 
             document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
@@ -723,7 +739,7 @@
             if (tabs[index] === 'profile') openSidebar();
             else closeSidebar();
 
-            if (tabs[index] === 'catalog') loadCatalog(currentCategory);
+            if (tabs[index] === 'catalog') renderCatalogUI();
             else if (tabs[index] === 'cart') renderCart();
         }
 
@@ -799,7 +815,7 @@
         bottomSheet.addEventListener('touchend', (e) => {
             if (sheetStartY === null) return;
             const deltaY = e.changedTouches[0].clientY - sheetStartY;
-            bottomSheet.style.transition = 'bottom 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
+            bottomSheet.style.transition = 'bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
             
             if (deltaY > 100) {
                 bottomSheet.style.transform = '';
@@ -811,15 +827,18 @@
         }, { passive: true });
 
         let allProducts = []; 
-        let currentCategory = 'Жидкость';
         let cart = []; 
         let selectedAddress = null;
-        let activeBrandFilter = null;
         let currentProductInSheet = null;
         let currentSheetQty = 1;
         let editingCartIndex = -1;
         let isAdmin = false;
         let disabledStations = []; 
+
+        // Переменные для нового каталога
+        let currentCatalogCategory = 'Жидкость';
+        let currentCatalogBrand = null;
+        let currentCatalogFlavor = null;
 
         async function checkAdminStatus() {
             if (!tg.initDataUnsafe?.user) return;
@@ -994,7 +1013,7 @@
                 if (!response.ok) throw new Error('Ошибка сети');
                 allProducts = await response.json();
                 renderHome();
-                if(currentTabIndex === 1) loadCatalog(currentCategory);
+                if(currentTabIndex === 1) renderCatalogUI();
             } catch (error) {
                 showToast("⚠️ Сервер недоступен");
             }
@@ -1039,14 +1058,14 @@
                 const div = document.createElement('div');
                 div.className = 'brand-card';
                 div.innerText = brand;
-                div.onclick = () => filterByBrand(brand);
+                div.onclick = () => {
+                    switchTab('catalog');
+                    // Сброс фильтров и выбор бренда
+                    selectCategory(allProducts.find(p => p.brand === brand)?.type || 'Жидкость', document.querySelector('.category-btn'));
+                    setTimeout(() => selectBrand(brand), 100);
+                };
                 container.appendChild(div);
             });
-        }
-
-        function loadCatalog(category) {
-            const filtered = allProducts.filter(p => p.type === category);
-            renderProducts(filtered, 'catalog-grid');
         }
 
         window.onload = () => {
@@ -1076,40 +1095,99 @@
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
         }
 
-        function changeCategory(category, btn) {
+        // --- НОВАЯ ЛОГИКА КАТАЛОГА ---
+        function selectCategory(category, btn) {
+            currentCatalogCategory = category;
+            currentCatalogBrand = null;
+            currentCatalogFlavor = null;
+            
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentCategory = category;
-            resetBrandFilter();
+            if(btn) btn.classList.add('active');
+            
+            renderCatalogUI();
         }
 
-        function filterByBrand(brand) {
-            activeBrandFilter = brand;
-            document.getElementById('activeBrandFilter').style.display = 'block';
-            document.getElementById('activeBrandName').innerText = brand;
-            const filtered = allProducts.filter(p => p.brand.toLowerCase() === brand.toLowerCase());
-            renderProducts(filtered, 'catalog-grid');
-            switchTab('catalog');
+        function renderCatalogUI() {
+            // 1. Рендер брендов
+            const brandList = document.getElementById('catalogBrands');
+            brandList.innerHTML = '';
+            
+            const productsInCat = allProducts.filter(p => p.type === currentCatalogCategory);
+            const brands = [...new Set(productsInCat.map(p => p.brand))].filter(Boolean);
+            
+            if (brands.length === 0) {
+                brandList.innerHTML = '<span style="color:var(--hint-color); font-size:13px;">Нет брендов</span>';
+            } else {
+                brands.forEach(brand => {
+                    const div = document.createElement('div');
+                    div.className = 'brand-item' + (currentCatalogBrand === brand ? ' active' : '');
+                    div.innerText = brand;
+                    div.onclick = () => selectBrand(brand);
+                    brandList.appendChild(div);
+                });
+            }
+
+            // 2. Рендер вкусов (если выбран бренд)
+            const flavorList = document.getElementById('catalogFlavors');
+            flavorList.innerHTML = '';
+            
+            const productGrid = document.getElementById('catalog-grid');
+            productGrid.innerHTML = '';
+
+            if (!currentCatalogBrand) {
+                // Если бренд не выбран, показываем все товары категории
+                renderProducts(productsInCat, 'catalog-grid');
+            } else {
+                const productsInBrand = productsInCat.filter(p => p.brand === currentCatalogBrand);
+                
+                if (productsInBrand.length === 0) {
+                    flavorList.innerHTML = '<span style="color:var(--hint-color); font-size:13px;">Нет вкусов</span>';
+                } else {
+                    productsInBrand.forEach(p => {
+                        const div = document.createElement('div');
+                        div.className = 'flavor-item' + (currentCatalogFlavor === p.title ? ' active' : '');
+                        div.innerText = p.title;
+                        div.onclick = () => selectFlavor(p.title);
+                        flavorList.appendChild(div);
+                    });
+                }
+
+                // Фильтруем для сетки
+                let displayProducts = productsInBrand;
+                if (currentCatalogFlavor) {
+                    displayProducts = productsInBrand.filter(p => p.title === currentCatalogFlavor);
+                }
+                renderProducts(displayProducts, 'catalog-grid');
+            }
         }
 
-        function resetBrandFilter() {
-            activeBrandFilter = null;
-            document.getElementById('activeBrandFilter').style.display = 'none';
-            loadCatalog(currentCategory);
+        function selectBrand(brand) {
+            currentCatalogBrand = brand;
+            currentCatalogFlavor = null;
+            renderCatalogUI();
+        }
+
+        function selectFlavor(flavorTitle) {
+            currentCatalogFlavor = flavorTitle;
+            renderCatalogUI();
         }
 
         function filterCatalog(query) {
-            query = query.toLowerCase();
+            // При поиске сбрасываем фильтры брендов/вкусов
+            currentCatalogBrand = null;
+            currentCatalogFlavor = null;
+            
             if (query.trim() === '') {
-                if(activeBrandFilter) filterByBrand(activeBrandFilter);
-                else loadCatalog(currentCategory);
+                renderCatalogUI();
                 return;
             }
-            resetBrandFilter();
-            const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query) || p.brand.toLowerCase().includes(query));
+            const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query.toLowerCase()) || p.brand.toLowerCase().includes(query.toLowerCase()));
             renderProducts(filtered, 'catalog-grid');
+            document.getElementById('catalogBrands').innerHTML = '';
+            document.getElementById('catalogFlavors').innerHTML = '';
         }
 
+        // --- КАРТОЧКА ТОВАРА ---
         function openProductSheet(product, cartIndex = -1) {
             editingCartIndex = cartIndex;
             currentProductInSheet = product;
@@ -1323,7 +1401,7 @@
             document.getElementById('sidebar').classList.remove('active');
             document.getElementById('overlay').classList.add('active');
             document.getElementById('addressModal').classList.add('active');
-            loadAdminStations().then(renderClientStations); // Обновляем станции перед показом
+            loadAdminStations().then(renderClientStations); 
         }
 
         function openAddressModalFromProfile() {
@@ -1437,7 +1515,6 @@
             if (savedAddr) {
                 document.getElementById('addressBtn').innerHTML = `📍 ${savedAddr}`;
             }
-            // Станции теперь рендерятся динамически
         }
     </script>
 </body>
