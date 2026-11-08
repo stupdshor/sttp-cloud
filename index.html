@@ -194,22 +194,29 @@
         }
         .category-btn.active { background: #fff; color: #000; }
 
-        /* Список брендов в категории */
-        .brand-list { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin-bottom: 15px; }
-        .brand-list::-webkit-scrollbar { display: none; }
-        .brand-item {
-            background: #2a2a2d; padding: 8px 16px; border-radius: 8px;
-            font-size: 14px; cursor: pointer; white-space: nowrap; transition: 0.2s;
+        /* Списки (Бренды/Вкусы) */
+        .full-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .list-item {
+            background: var(--card-bg); padding: 15px 16px; border-radius: 12px;
+            font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.2s;
+            display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid rgba(255,255,255,0.03);
         }
-        .brand-item.active { background: var(--accent-color); color: #fff; }
+        .list-item:active { background: #2a2a2d; }
+        .list-item-arrow { font-size: 18px; color: var(--hint-color); }
 
-        /* Список вкусов (или названий товаров) */
-        .flavor-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
-        .flavor-item {
-            background: #2a2a2d; padding: 8px 12px; border-radius: 8px;
-            font-size: 13px; cursor: pointer; transition: 0.2s;
+        /* Кнопки Назад/Вперед */
+        .nav-btn {
+            width: 100%; padding: 14px; background: #2a2a2d; border: none; border-radius: 12px;
+            color: white; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .flavor-item.active { background: var(--accent-color); color: #fff; }
+        .nav-btn:active { background: #333; }
+
+        /* Кнопка Дальше (если выбран вкус, чтобы посмотреть карточку) */
+        .view-products-btn {
+            background: var(--accent-color); color: white;
+        }
 
         #tab-cart .section-title { margin-top: 120px; }
 
@@ -511,15 +518,15 @@
                 <div class="grid-container" id="home-grid-new"></div>
             </div>
 
-            <!-- 2. КАТАЛОГ (НОВАЯ ЛОГИКА) -->
+            <!-- 2. КАТАЛОГ (НОВОЕ МЕНЮ) -->
             <div id="tab-catalog" class="tab-content">
                 <div class="catalog-header">
                     <div class="search-wrapper">
                         <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                        <input type="text" class="search-input" placeholder="Поиск по всем товарам..." oninput="filterCatalog(this.value)">
+                        <input type="text" class="search-input" id="catalogSearchInput" placeholder="Поиск по всем товарам..." oninput="filterCatalog(this.value)">
                     </div>
                     
-                    <!-- Верхние категории -->
+                    <!-- Верхние категории (скрываются при выборе бренда) -->
                     <div class="catalog-categories" id="mainCategories">
                         <button class="category-btn active" onclick="selectCategory('Жидкость', this)">Жидкости</button>
                         <button class="category-btn" onclick="selectCategory('Устройство', this)">Устройства</button>
@@ -528,13 +535,20 @@
                         <button class="category-btn" onclick="selectCategory('Одноразка', this)">Одноразки</button>
                     </div>
 
-                    <!-- Бренды в выбранной категории -->
-                    <div class="brand-list" id="catalogBrands"></div>
+                    <!-- Заголовок текущего уровня -->
+                    <div style="font-size: 14px; color: var(--hint-color); margin-bottom: 10px;" id="catalogLevelTitle">Выберите бренд:</div>
 
-                    <!-- Вкусы/Названия в выбранном бренде -->
-                    <div class="flavor-list" id="catalogFlavors"></div>
+                    <!-- Списки -->
+                    <div class="full-list" id="catalogListContainer"></div>
+
+                    <!-- Кнопка Назад -->
+                    <button class="nav-btn" id="catalogBackBtn" onclick="goBackInCatalog()" style="display: none;">‹ Назад</button>
+                    <!-- Кнопка Показать товары (если выбран вкус) -->
+                    <button class="nav-btn view-products-btn" id="catalogViewProductsBtn" onclick="showFlavorProducts()" style="display: none;">Показать товары ›</button>
                 </div>
-                <div class="grid-container" id="catalog-grid"></div>
+                
+                <!-- Сетка товаров (показывается только после выбора вкуса) -->
+                <div class="grid-container" id="catalog-grid" style="display: none;"></div>
             </div>
 
             <!-- 3. КОРЗИНА -->
@@ -594,8 +608,6 @@
         <div class="sheet-title" id="sheetTitle">Название</div>
         <div class="sheet-brand" id="sheetBrand">Бренд</div>
         
-        <div id="flavorContainer"></div>
-
         <div style="font-size: 14px; margin-bottom: 8px; color: var(--hint-color); margin-top: 15px;">Количество:</div>
         <div class="qty-selector">
             <button class="qty-btn" onclick="changeSheetQty(-1)">-</button>
@@ -835,10 +847,11 @@
         let isAdmin = false;
         let disabledStations = []; 
 
-        // Переменные для нового каталога
+        // Переменные нового каталога
         let currentCatalogCategory = 'Жидкость';
         let currentCatalogBrand = null;
         let currentCatalogFlavor = null;
+        let catalogViewState = 'brands'; // 'brands' или 'flavors'
 
         async function checkAdminStatus() {
             if (!tg.initDataUnsafe?.user) return;
@@ -1060,8 +1073,7 @@
                 div.innerText = brand;
                 div.onclick = () => {
                     switchTab('catalog');
-                    // Сброс фильтров и выбор бренда
-                    selectCategory(allProducts.find(p => p.brand === brand)?.type || 'Жидкость', document.querySelector('.category-btn'));
+                    selectCategory(allProducts.find(p => p.brand === brand)?.type || 'Жидкость', null);
                     setTimeout(() => selectBrand(brand), 100);
                 };
                 container.appendChild(div);
@@ -1086,6 +1098,11 @@
             renderProducts(sorted, 'catalog-grid');
             switchTab('catalog');
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('catalog-grid').style.display = 'grid';
+            document.getElementById('catalogListContainer').style.display = 'none';
+            document.getElementById('catalogBackBtn').style.display = 'none';
+            document.getElementById('catalogViewProductsBtn').style.display = 'none';
+            document.getElementById('catalogLevelTitle').style.display = 'none';
         }
 
         function openNewArrivals() {
@@ -1093,98 +1110,136 @@
             renderProducts(sorted, 'catalog-grid');
             switchTab('catalog');
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('catalog-grid').style.display = 'grid';
+            document.getElementById('catalogListContainer').style.display = 'none';
+            document.getElementById('catalogBackBtn').style.display = 'none';
+            document.getElementById('catalogViewProductsBtn').style.display = 'none';
+            document.getElementById('catalogLevelTitle').style.display = 'none';
         }
 
-        // --- НОВАЯ ЛОГИКА КАТАЛОГА ---
+        // --- ЛОГИКА КАТАЛОГА (МНОГОУРОВНЕВОЕ МЕНЮ) ---
         function selectCategory(category, btn) {
             currentCatalogCategory = category;
             currentCatalogBrand = null;
             currentCatalogFlavor = null;
+            catalogViewState = 'brands';
             
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
+            
+            document.getElementById('catalogLevelTitle').style.display = 'block';
+            document.getElementById('catalogLevelTitle').innerText = 'Выберите бренд:';
             
             renderCatalogUI();
         }
 
         function renderCatalogUI() {
-            // 1. Рендер брендов
-            const brandList = document.getElementById('catalogBrands');
-            brandList.innerHTML = '';
-            
-            const productsInCat = allProducts.filter(p => p.type === currentCatalogCategory);
-            const brands = [...new Set(productsInCat.map(p => p.brand))].filter(Boolean);
-            
-            if (brands.length === 0) {
-                brandList.innerHTML = '<span style="color:var(--hint-color); font-size:13px;">Нет брендов</span>';
-            } else {
-                brands.forEach(brand => {
-                    const div = document.createElement('div');
-                    div.className = 'brand-item' + (currentCatalogBrand === brand ? ' active' : '');
-                    div.innerText = brand;
-                    div.onclick = () => selectBrand(brand);
-                    brandList.appendChild(div);
-                });
-            }
+            const listContainer = document.getElementById('catalogListContainer');
+            const grid = document.getElementById('catalog-grid');
+            const backBtn = document.getElementById('catalogBackBtn');
+            const viewBtn = document.getElementById('catalogViewProductsBtn');
 
-            // 2. Рендер вкусов (если выбран бренд)
-            const flavorList = document.getElementById('catalogFlavors');
-            flavorList.innerHTML = '';
+            // Сброс
+            listContainer.innerHTML = '';
+            grid.style.display = 'none';
             
-            const productGrid = document.getElementById('catalog-grid');
-            productGrid.innerHTML = '';
+            if (catalogViewState === 'brands') {
+                backBtn.style.display = 'none';
+                viewBtn.style.display = 'none';
+                document.getElementById('catalogLevelTitle').innerText = 'Выберите бренд:';
+                listContainer.style.display = 'flex';
+                document.getElementById('mainCategories').style.display = 'flex';
 
-            if (!currentCatalogBrand) {
-                // Если бренд не выбран, показываем все товары категории
-                renderProducts(productsInCat, 'catalog-grid');
-            } else {
-                const productsInBrand = productsInCat.filter(p => p.brand === currentCatalogBrand);
+                const productsInCat = allProducts.filter(p => p.type === currentCatalogCategory);
+                const brands = [...new Set(productsInCat.map(p => p.brand))].filter(Boolean);
                 
-                if (productsInBrand.length === 0) {
-                    flavorList.innerHTML = '<span style="color:var(--hint-color); font-size:13px;">Нет вкусов</span>';
+                if (brands.length === 0) {
+                    listContainer.innerHTML = '<div style="text-align:center; color:var(--hint-color); margin-top:20px;">Брендов пока нет</div>';
                 } else {
-                    productsInBrand.forEach(p => {
+                    brands.forEach(brand => {
                         const div = document.createElement('div');
-                        div.className = 'flavor-item' + (currentCatalogFlavor === p.title ? ' active' : '');
-                        div.innerText = p.title;
-                        div.onclick = () => selectFlavor(p.title);
-                        flavorList.appendChild(div);
+                        div.className = 'list-item';
+                        div.innerHTML = `<span>📁 ${brand}</span><span class="list-item-arrow">›</span>`;
+                        div.onclick = () => {
+                            currentCatalogBrand = brand;
+                            catalogViewState = 'flavors';
+                            renderCatalogUI();
+                        };
+                        listContainer.appendChild(div);
                     });
                 }
 
-                // Фильтруем для сетки
-                let displayProducts = productsInBrand;
-                if (currentCatalogFlavor) {
-                    displayProducts = productsInBrand.filter(p => p.title === currentCatalogFlavor);
+            } else if (catalogViewState === 'flavors') {
+                backBtn.style.display = 'block';
+                viewBtn.style.display = 'none';
+                document.getElementById('catalogLevelTitle').innerText = `Бренд: ${currentCatalogBrand}`;
+                listContainer.style.display = 'flex';
+                document.getElementById('mainCategories').style.display = 'none';
+
+                const productsInBrand = allProducts.filter(p => p.type === currentCatalogCategory && p.brand === currentCatalogBrand);
+                const flavors = [...new Set(productsInBrand.map(p => p.title))].filter(Boolean);
+                
+                if (flavors.length === 0) {
+                    listContainer.innerHTML = '<div style="text-align:center; color:var(--hint-color); margin-top:20px;">Вкусов пока нет</div>';
+                } else {
+                    flavors.forEach(flavor => {
+                        const div = document.createElement('div');
+                        div.className = 'list-item';
+                        div.innerHTML = `<span>🏷 ${flavor}</span><span class="list-item-arrow">›</span>`;
+                        div.onclick = () => {
+                            currentCatalogFlavor = flavor;
+                            catalogViewState = 'products';
+                            renderCatalogUI();
+                        };
+                        listContainer.appendChild(div);
+                    });
                 }
+            } else if (catalogViewState === 'products') {
+                backBtn.style.display = 'block';
+                viewBtn.style.display = 'none';
+                document.getElementById('catalogLevelTitle').innerText = `Вкус: ${currentCatalogFlavor}`;
+                listContainer.style.display = 'none';
+                document.getElementById('mainCategories').style.display = 'none';
+                grid.style.display = 'grid';
+
+                const displayProducts = allProducts.filter(p => p.type === currentCatalogCategory && p.brand === currentCatalogBrand && p.title === currentCatalogFlavor);
                 renderProducts(displayProducts, 'catalog-grid');
             }
         }
 
-        function selectBrand(brand) {
-            currentCatalogBrand = brand;
-            currentCatalogFlavor = null;
-            renderCatalogUI();
-        }
-
-        function selectFlavor(flavorTitle) {
-            currentCatalogFlavor = flavorTitle;
+        function goBackInCatalog() {
+            if (catalogViewState === 'products') {
+                catalogViewState = 'flavors';
+                currentCatalogFlavor = null;
+            } else if (catalogViewState === 'flavors') {
+                catalogViewState = 'brands';
+                currentCatalogBrand = null;
+            }
             renderCatalogUI();
         }
 
         function filterCatalog(query) {
-            // При поиске сбрасываем фильтры брендов/вкусов
-            currentCatalogBrand = null;
-            currentCatalogFlavor = null;
+            const listContainer = document.getElementById('catalogListContainer');
+            const grid = document.getElementById('catalog-grid');
+            const backBtn = document.getElementById('catalogBackBtn');
+            const viewBtn = document.getElementById('catalogViewProductsBtn');
             
             if (query.trim() === '') {
+                catalogViewState = 'brands';
                 renderCatalogUI();
                 return;
             }
+
+            // При поиске скрываем списки и показываем сетку
+            listContainer.style.display = 'none';
+            document.getElementById('mainCategories').style.display = 'none';
+            document.getElementById('catalogLevelTitle').style.display = 'none';
+            backBtn.style.display = 'block';
+            viewBtn.style.display = 'none';
+            grid.style.display = 'grid';
+
             const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query.toLowerCase()) || p.brand.toLowerCase().includes(query.toLowerCase()));
             renderProducts(filtered, 'catalog-grid');
-            document.getElementById('catalogBrands').innerHTML = '';
-            document.getElementById('catalogFlavors').innerHTML = '';
         }
 
         // --- КАРТОЧКА ТОВАРА ---
