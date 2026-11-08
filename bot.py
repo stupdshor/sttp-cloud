@@ -41,7 +41,6 @@ class AdminStates(StatesGroup):
 async def cmd_start(message: types.Message):
     user_id = message.from_user.id
     
-    # Кнопка магазина
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🛍 Открыть STTP SHOP", web_app=WebAppInfo(url=WEB_APP_URL))]
     ])
@@ -49,14 +48,14 @@ async def cmd_start(message: types.Message):
     # Жесткая проверка только по ID из кода
     if user_id == OWNER_ID:
         text = (
-            f"Привет, {message.from_user.first_name}! 👋\n"
-            "Вы вошли как **Владелец**.\n\n"
+            f"Привет, {message.from_user.first_name}!\n"
+            "Вы вошли как Владелец.\n\n"
             "Доступные команды:\n"
             "/admin_panel — Управление администраторами"
         )
-        await message.answer(text, reply_markup=keyboard, parse_mode="Markdown")
+        await message.answer(text, reply_markup=keyboard)
     else:
-        text = f"Привет, {message.from_user.first_name}! 👋\nДобро пожаловать в магазин STTP."
+        text = f"Привет, {message.from_user.first_name}!\nДобро пожаловать в магазин STTP."
         await message.answer(text, reply_markup=keyboard)
 
 # --- ПАНЕЛЬ ВЛАДЕЛЬЦА ---
@@ -98,7 +97,7 @@ async def process_add_admin_id(message: types.Message, state: FSMContext):
             if resp.status == 200:
                 await message.answer(f"✅ Пользователь с ID {new_admin_id} теперь администратор!")
             else:
-                await message.answer(f"❌ Ошибка. Код: {resp.status}")
+                await message.answer(f"❌ Ошибка сервера. Код: {resp.status}")
     
     await state.clear()
 
@@ -143,12 +142,12 @@ async def process_remove_admin_id(message: types.Message, state: FSMContext):
             if resp.status == 200:
                 await message.answer(f"🗑 Пользователь с ID {rem_admin_id} больше не администратор.")
             else:
-                await message.answer(f"❌ Ошибка. Код: {resp.status}")
+                await message.answer(f"❌ Ошибка сервера. Код: {resp.status}")
     
     await state.clear()
 
 async def main():
-    print("БОТ ЗАПУЩЕН С НОВЫМ КОДОМ!")
+    print("БОТ ЗАПУЩЕН И ГОТОВ К РАБОТЕ!")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
