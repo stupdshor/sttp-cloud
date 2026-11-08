@@ -316,5 +316,32 @@ def check_user(req: dict):
     conn.close()
     return {"is_admin": is_admin}
 
+# --- ДОБАВЛЕНИЕ СТАРТОВЫХ БРЕНДОВ ---
+@app.post("/api/seed-brands")
+def seed_brands(x_init_data: str = Header(None)):
+    check_admin_rights(x_init_data)
+    start_brands = [
+        "Annima Love", "Bjorn", "Catswill", "Duall", "Elfliq", 
+        "Hotspot", "Isterika", "Monster", "OGGO prime", "Podonki", 
+        "Rick and Morty", "SKL", "Анархия V2", "Злая монашка", 
+        "Призрак 69", "Самоубийца"
+    ]
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    added_count = 0
+    
+    for brand in start_brands:
+        # Проверяем, есть ли уже такой бренд (хотя бы один товар)
+        cursor.execute("SELECT id FROM products WHERE brand = %s LIMIT 1", (brand,))
+        if not cursor.fetchone():
+            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES ('Новый вкус', %s, 0.0, 0, 'Жидкость')", (brand,))
+            added_count += 1
+            
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"status": "ok", "added": added_count}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
