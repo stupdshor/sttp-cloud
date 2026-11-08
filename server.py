@@ -343,5 +343,16 @@ def seed_brands(x_init_data: str = Header(None)):
     conn.close()
     return {"status": "ok", "added": added_count}
 
+# --- ПОЛУЧЕНИЕ СПИСКА АДМИНОВ ---
+@app.get("/api/get-admins")
+def get_admins():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id FROM admins")
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return [row['user_id'] for row in rows]
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
