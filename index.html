@@ -13,7 +13,8 @@
 
     <style>
         :root {
-            --bg-color: var(--tg-theme-bg-color, #0a0a0a);
+            /* Базовые цвета (будут переопределяться градиентом) */
+            --bg-color: #0a0a0a;
             --text-color: var(--tg-theme-text-color, #ffffff);
             --hint-color: var(--tg-theme-hint-color, #8e8e93);
             --card-bg: #1c1c1e;
@@ -39,12 +40,15 @@
             overscroll-behavior: none;
         }
 
+        /* Плавный переход фона */
         .app-container {
             width: 100%; max-width: 480px; margin: 0 auto; 
-            background-color: var(--bg-color); position: relative;
+            background-color: var(--bg-color); 
+            position: relative;
             height: 100vh; overflow: hidden; 
             box-shadow: 0 0 20px rgba(0,0,0,0.5); 
             overscroll-behavior: none;
+            transition: background-color 0.5s ease;
         }
 
         .tabs-wrapper {
@@ -300,7 +304,6 @@
         .address-item.active { border-color: var(--accent-color); }
         .address-item span { font-weight: 500; font-size: 14px; color: #ffffff; }
         
-        /* Стиль для выключенной станции */
         .address-item.disabled-station {
             opacity: 0.4;
             cursor: not-allowed;
@@ -360,17 +363,23 @@
 
         .placeholder-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: var(--hint-color); text-align: center; }
 
+        /* --- НАТИВНАЯ АНИМАЦИЯ SIDEBAR --- */
         .sidebar {
-            position: fixed; top: 0; left: -150%; width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
-            z-index: 2001; transition: left 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: fixed; top: 0; left: 0; width: 100%; max-width: 480px; height: 100vh; background: #1c1c1e; 
+            z-index: 2001; 
+            transform: translateX(-100%); 
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             padding: 20px; padding-top: 110px; display: flex; flex-direction: column; box-shadow: 5px 0 30px rgba(0,0,0,0.5);
             pointer-events: none;
         }
-        .sidebar.active { left: 0; pointer-events: auto; }
+        .sidebar.active { 
+            transform: translateX(0); 
+            pointer-events: auto; 
+        }
         
         @media (min-width: 480px) {
-            .sidebar { left: 50%; transform: translateX(-50%) translateX(-150%); }
-            .sidebar.active { transform: translateX(-50%) translateX(0); left: 50%; }
+            .sidebar { left: 50%; transform: translateX(-50%) translateX(-100%); }
+            .sidebar.active { transform: translateX(-50%) translateX(0); }
         }
 
         .sidebar-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; }
@@ -405,7 +414,6 @@
         }
         .admin-panel.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
         
-        /* Вкладки в админке */
         .admin-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
         .admin-tab-btn {
             flex: 1; padding: 10px; background: #2a2a2d; border: none; border-radius: 10px;
@@ -430,7 +438,6 @@
         .admin-delete-btn { background: var(--danger-color); }
         .admin-action-btn:hover { opacity: 0.8; }
         
-        /* Переключатель станций */
         .toggle-switch {
             position: relative; display: inline-block; width: 44px; height: 24px;
         }
@@ -588,7 +595,6 @@
     <!-- МОДАЛКА АДРЕСА -->
     <div class="address-modal" id="addressModal">
         <h3>Выберите станцию метро</h3>
-        
         <div class="address-list" id="metroList"></div>
 
         <div class="delivery-section">
@@ -605,7 +611,6 @@
             <button class="admin-tab-btn" onclick="switchAdminTab('stations', this)">Адреса</button>
         </div>
 
-        <!-- Вкладка Товары -->
         <div class="admin-tab-content active" id="admin-tab-products">
             <h3>Управление товарами</h3>
             <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 5px;">Существующие товары:</div>
@@ -629,7 +634,6 @@
             <button class="checkout-btn" onclick="submitNewProduct()">Добавить товар</button>
         </div>
 
-        <!-- Вкладка Адреса -->
         <div class="admin-tab-content" id="admin-tab-stations">
             <h3>Управление станциями</h3>
             <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 10px;">Включите или выключите станции, по которым вы работаете:</div>
@@ -663,6 +667,14 @@
         const API_URL = "https://sttp-api-new.onrender.com/api";
         const SUPPORT_TG = "vsqw2d2";
 
+        // Цвета для вкладок (градиент от темного к светлому)
+        const tabColors = {
+            home: '#0a0a0a',    // Почти черный
+            catalog: '#111111', // Чуть светлее
+            cart: '#171717',    // Еще светлее
+            profile: '#1c1c1e'  // Самый светлый (совпадает с панелью)
+        };
+
         const tg = window.Telegram.WebApp;
         tg.expand(); tg.ready();
         try { if (tg.requestFullscreen) tg.requestFullscreen(); } catch (e) {}
@@ -692,6 +704,7 @@
         const tabsWrapper = document.getElementById('tabsWrapper');
         const tabBar = document.getElementById('tabBar');
         const tabIndicator = document.getElementById('tabIndicator');
+        const appContainer = document.getElementById('appContainer');
         let previousTabIndex = 0;
 
         function updateCarousel(index) {
@@ -699,6 +712,9 @@
             currentTabIndex = index;
             tabsWrapper.style.transform = `translateX(-${index * 25}%)`;
             
+            // Меняем фон приложения плавно
+            appContainer.style.backgroundColor = tabColors[tabs[index]];
+
             document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
             const activeNav = document.getElementById(`nav-${tabs[index]}`);
             if (activeNav) activeNav.classList.add('active');
@@ -803,7 +819,7 @@
         let currentSheetQty = 1;
         let editingCartIndex = -1;
         let isAdmin = false;
-        let disabledStations = []; // Массив выключенных станций
+        let disabledStations = []; 
 
         async function checkAdminStatus() {
             if (!tg.initDataUnsafe?.user) return;
@@ -823,7 +839,6 @@
             } catch (e) {}
         }
 
-        // --- АДМИНКА: ВКЛАДКИ ---
         function switchAdminTab(tabName, btn) {
             document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -839,10 +854,9 @@
             renderAdminList(); 
             document.getElementById('overlay').classList.add('active');
             document.getElementById('adminPanel').classList.add('active');
-            switchAdminTab('products', document.querySelector('.admin-tab-btn')); // Сброс на первую вкладку
+            switchAdminTab('products', document.querySelector('.admin-tab-btn')); 
         }
 
-        // --- АДМИНКА: ТОВАРЫ ---
         function renderAdminList() {
             const list = document.getElementById('adminProductList');
             list.innerHTML = '';
@@ -924,7 +938,6 @@
             }
         }
 
-        // --- АДМИНКА: СТАНЦИИ ---
         async function loadAdminStations() {
             try {
                 const resp = await fetch(`${API_URL}/stations`);
@@ -939,7 +952,6 @@
             const list = document.getElementById('adminStationsList');
             list.innerHTML = '';
             
-            // Все доступные станции (дублируем из initStorage)
             const allStations = [
                 "Малиновка", "Петровщина", "Михалово", "Грушевка", "Институт Культуры", "Площадь Ленина", "Октябрьская", "Площадь Победы", "Площадь Якуба Коласа", "Академия Наук", "Парк Челюскинцев", "Московская", "Восток", "Борисовский тракт", "Уручье",
                 "Каменная Горка", "Кунцевщина", "Спортивная", "Пушкинская", "Молодежная", "Фрунзенская", "Немига", "Купаловская", "Первомайская", "Пролетарская", "Тракторный завод", "Партизанская", "Автозаводская", "Могилевская", "Шабаны",
@@ -969,7 +981,6 @@
                     headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
                     body: JSON.stringify({ station_name: stationName, is_disabled: isDisabled })
                 });
-                // Обновляем локальный массив
                 if (isDisabled) disabledStations.push(stationName);
                 else disabledStations = disabledStations.filter(s => s !== stationName);
             } catch (e) {
@@ -977,7 +988,6 @@
             }
         }
 
-        // --- ЗАГРУЗКА ТОВАРОВ ---
         async function fetchProducts() {
             try {
                 const response = await fetch(`${API_URL}/products`);
@@ -1045,7 +1055,7 @@
             fetchProducts().then(renderBrands);
             checkAdminStatus(); 
             updateCarousel(0);
-            loadAdminStations(); // Подгружаем станции при старте
+            loadAdminStations();
         };
         
         window.addEventListener('resize', () => {
@@ -1309,19 +1319,18 @@
             }
         }
 
-        // --- АДРЕСА ---
         function openAddressModal() {
             document.getElementById('sidebar').classList.remove('active');
             document.getElementById('overlay').classList.add('active');
             document.getElementById('addressModal').classList.add('active');
-            renderClientStations();
+            loadAdminStations().then(renderClientStations); // Обновляем станции перед показом
         }
 
         function openAddressModalFromProfile() {
             document.getElementById('sidebar').classList.remove('active');
             document.getElementById('overlay').classList.add('active');
             document.getElementById('addressModal').classList.add('active');
-            renderClientStations();
+            loadAdminStations().then(renderClientStations);
         }
 
         function submitCourierAddress() {
@@ -1333,7 +1342,6 @@
             setTimeout(() => closeAllModals(), 500);
         }
 
-        // Отрисовка станций для клиента с учетом выключенных
         function renderClientStations() {
             const list = document.getElementById('metroList');
             list.innerHTML = '';
@@ -1429,7 +1437,7 @@
             if (savedAddr) {
                 document.getElementById('addressBtn').innerHTML = `📍 ${savedAddr}`;
             }
-            // Станции теперь рендерятся динамически в renderClientStations()
+            // Станции теперь рендерятся динамически
         }
     </script>
 </body>
