@@ -4,443 +4,157 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>STTP SHOP</title>
-    
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-home: #0b1120;
-            --bg-catalog: #0f172a;
-            --bg-cart: #131c31;
-            --bg-profile: #1e293b;
-            --text-color: var(--tg-theme-text-color, #f8fafc);
-            --hint-color: var(--tg-theme-hint-color, #94a3b8);
-            --accent-color: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.4);
-            --success-color: #10b981;
-            --success-glow: rgba(16, 185, 129, 0.4);
-            --danger-color: #ef4444;
-            
-            --glass-bg: rgba(30, 41, 59, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --card-bg: rgba(30, 41, 59, 0.8);
+            --bg-home: #0b1120; --bg-catalog: #0f172a; --bg-cart: #131c31; --bg-profile: #1e293b;
+            --text-color: var(--tg-theme-text-color, #f8fafc); --hint-color: var(--tg-theme-hint-color, #94a3b8);
+            --accent-color: #3b82f6; --accent-glow: rgba(59, 130, 246, 0.4);
+            --success-color: #10b981; --success-glow: rgba(16, 185, 129, 0.4);
+            --danger-color: #ef4444; --glass-bg: rgba(30, 41, 59, 0.6); --glass-border: rgba(255, 255, 255, 0.08); --card-bg: rgba(30, 41, 59, 0.8);
         }
-
-        * {
-            box-sizing: border-box; margin: 0; padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 4px; }
-
-        body {
-            background-color: #000; 
-            color: var(--text-color);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center; 
-            overscroll-behavior: none;
-        }
-
-        .app-container {
-            width: 100%; max-width: 480px; margin: 0 auto; 
-            background-color: var(--bg-home); 
-            position: relative;
-            height: 100vh; overflow: hidden; 
-            box-shadow: 0 0 30px rgba(0,0,0,0.8); 
-            overscroll-behavior: none;
-            transition: background-color 0.5s ease;
-        }
-
-        .tabs-wrapper {
-            display: flex; width: 400%; height: 100%;
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            will-change: transform;
-        }
-
-        .tab-content {
-            width: 25%; height: 100%; overflow-y: auto;
-            scrollbar-width: none; padding-bottom: 90px; 
-            overscroll-behavior-y: contain;
-        }
+        body { background-color: #000; color: var(--text-color); height: 100vh; overflow: hidden; display: flex; justify-content: center; overscroll-behavior: none; }
+        .app-container { width: 100%; max-width: 480px; background-color: var(--bg-home); position: relative; height: 100vh; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); transition: background-color 0.5s ease; }
+        .tabs-wrapper { display: flex; width: 400%; height: 100%; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .tab-content { width: 25%; height: 100%; overflow-y: auto; padding-bottom: 90px; overscroll-behavior-y: contain; }
         .tab-content::-webkit-scrollbar { display: none; }
 
-        /* Плавающая шапка + отступ 90px */
-        .header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 16px; margin: 90px 16px 16px 16px; /* Отступ 90px */
-            background: var(--glass-bg); backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            position: relative; z-index: 100;
-            animation: slideDown 0.5s ease;
-        }
-
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; margin: 90px 16px 16px 16px; background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative; z-index: 100; animation: slideDown 0.5s ease; }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
         .user-info { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-        .user-avatar {
-            width: 42px; height: 42px; border-radius: 50%; background: #334155;
-            display: flex; align-items: center; justify-content: center; 
-            overflow: hidden; border: 2px solid var(--accent-color);
-        }
+        .user-avatar { width: 42px; height: 42px; border-radius: 50%; background: #334155; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid var(--accent-color); }
         .user-name { font-weight: 700; font-size: 16px; color: #fff; }
-        
-        .address-btn {
-            background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); 
-            padding: 8px 12px; border-radius: 12px; font-weight: 600; font-size: 12px; cursor: pointer;
-            display: flex; align-items: center; gap: 6px; transition: all 0.2s;
-            max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
+        .address-btn { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 8px 12px; border-radius: 12px; font-weight: 600; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; max-width: 140px; overflow: hidden; white-space: nowrap; }
         .address-btn:active { transform: scale(0.95); background: rgba(59, 130, 246, 0.3); }
 
-        .banner {
-            margin: 0 16px 16px 16px; border-radius: 20px;
-            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-            padding: 24px 16px; text-align: center; color: white;
-            box-shadow: 0 8px 25px var(--accent-glow);
-            animation: fadeUp 0.6s ease;
-        }
+        .banner { margin: 0 16px 16px 16px; border-radius: 20px; background: linear-gradient(135deg, #1e3a8a, #3b82f6); padding: 24px 16px; text-align: center; color: white; box-shadow: 0 8px 25px var(--accent-glow); animation: fadeUp 0.6s ease; }
         @keyframes fadeUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
         .banner h2 { font-size: 22px; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .banner p { font-size: 13px; margin-top: 6px; opacity: 0.9; }
 
-        .section-title {
-            padding: 0 16px; font-size: 18px; font-weight: 700; color: #f8fafc;
-            margin: 24px 0 12px 0; display: flex; justify-content: space-between; align-items: center;
-        }
+        .section-title { padding: 0 16px; font-size: 18px; font-weight: 700; color: #f8fafc; margin: 24px 0 12px 0; display: flex; justify-content: space-between; align-items: center; }
         .section-title span:last-child { cursor: pointer; color: var(--accent-color); font-size: 13px; font-weight: 600; }
-
-        .promo-scroll {
-            display: flex; gap: 12px; padding: 0 16px 16px 16px;
-            overflow-x: auto; scrollbar-width: none; touch-action: pan-x;
-        }
+        .promo-scroll { display: flex; gap: 12px; padding: 0 16px 16px 16px; overflow-x: auto; scrollbar-width: none; touch-action: pan-x; }
         .promo-scroll::-webkit-scrollbar { display: none; }
-        
-        .promo-card {
-            min-width: 140px; height: 90px; border-radius: 16px;
-            background: var(--card-bg); border: 1px solid var(--glass-border);
-            display: flex; align-items: center; justify-content: center;
-            color: var(--hint-color); font-weight: 600; font-size: 14px;
-            cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
-        }
+        .promo-card { min-width: 140px; height: 90px; border-radius: 16px; background: var(--card-bg); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; color: var(--hint-color); font-weight: 600; font-size: 14px; cursor: pointer; transition: transform 0.2s; }
         .promo-card:active { transform: scale(0.95); }
 
-        .brands-scroll {
-            display: flex; gap: 12px; padding: 0 16px 16px 16px;
-            overflow-x: auto; scrollbar-width: none;
-        }
+        .brands-scroll { display: flex; gap: 12px; padding: 0 16px 16px 16px; overflow-x: auto; scrollbar-width: none; }
         .brands-scroll::-webkit-scrollbar { display: none; }
-        .brand-card {
-            min-width: 70px; height: 70px; border-radius: 50%;
-            background: var(--card-bg); border: 1px solid var(--glass-border);
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-weight: 600; font-size: 11px;
-            cursor: pointer; transition: all 0.2s; text-align: center; padding: 5px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
+        .brand-card { min-width: 70px; height: 70px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 11px; cursor: pointer; transition: all 0.2s; text-align: center; padding: 5px; }
         .brand-card:active { transform: scale(0.9); }
 
-        .grid-container {
-            display: grid; grid-template-columns: repeat(2, 1fr);
-            gap: 12px; padding: 0 16px;
-        }
-
-        .product-card {
-            background: var(--card-bg); border-radius: 18px; padding: 12px;
-            display: flex; flex-direction: column; border: 1px solid var(--glass-border);
-            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .product-card:active { transform: scale(0.96); box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        
-        .product-image-wrapper {
-            width: 100%; aspect-ratio: 1 / 1; background: rgba(15, 23, 42, 0.5);
-            border-radius: 14px; margin-bottom: 10px; display: flex;
-            align-items: center; justify-content: center; overflow: hidden; position: relative;
-        }
-        
-        .product-image { 
-            width: 80%; height: 80%; object-fit: contain; 
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
-            transition: transform 0.3s;
-        }
-        .product-card:hover .product-image { transform: scale(1.1); }
-
+        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 16px; }
+        .product-card { background: var(--card-bg); border-radius: 18px; padding: 12px; display: flex; flex-direction: column; border: 1px solid var(--glass-border); cursor: pointer; transition: transform 0.2s; position: relative; }
+        .product-card:active { transform: scale(0.96); }
+        .product-image-wrapper { width: 100%; aspect-ratio: 1 / 1; background: rgba(15, 23, 42, 0.5); border-radius: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .product-image { width: 80%; height: 80%; object-fit: contain; }
         .product-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; color: #f8fafc; }
         .product-brand { font-size: 11px; color: var(--hint-color); margin-bottom: 12px; }
-        
         .card-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
-        
-        .product-price { 
-            font-size: 16px; font-weight: 800; color: #fff; 
-            text-shadow: 0 0 10px var(--accent-glow);
-        }
-        
-        .add-btn-circle {
-            width: 32px; height: 32px; border-radius: 50%; background: var(--accent-color);
-            color: white; display: flex; align-items: center; justify-content: center;
-            font-size: 20px; font-weight: bold; transition: all 0.2s; border: none; cursor: pointer;
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
+        .product-price { font-size: 16px; font-weight: 800; color: #fff; text-shadow: 0 0 10px var(--accent-glow); }
+        .add-btn-circle { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; border: none; cursor: pointer; box-shadow: 0 0 15px var(--accent-glow); }
         .add-btn-circle:active { transform: scale(0.85); }
         .add-btn-circle.added { background: var(--success-color); box-shadow: 0 0 15px var(--success-glow); }
 
-        /* --- КАТАЛОГ --- */
-        .catalog-header { padding: 90px 16px 16px 16px; touch-action: pan-y; } /* Отступ 90px */
-        
+        .catalog-header { padding: 90px 16px 16px 16px; touch-action: pan-y; }
         .search-wrapper { position: relative; margin-bottom: 16px; }
-        .search-icon {
-            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-            width: 18px; height: 18px; fill: var(--hint-color); pointer-events: none;
-        }
-        .search-input {
-            width: 100%; background: var(--glass-bg); border: 1px solid var(--glass-border);
-            padding: 14px 16px 14px 44px; border-radius: 16px; color: #fff; font-size: 14px; outline: none;
-            backdrop-filter: blur(10px); transition: border 0.3s;
-        }
+        .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; fill: var(--hint-color); pointer-events: none; }
+        .search-input { width: 100%; background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 14px 16px 14px 44px; border-radius: 16px; color: #fff; font-size: 14px; outline: none; }
         .search-input:focus { border-color: var(--accent-color); }
-        .search-input::placeholder { color: var(--hint-color); }
         
-        .catalog-categories { 
-            display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; 
-            touch-action: pan-x; 
-            overscroll-behavior-x: contain;
-            margin-bottom: 20px; padding-bottom: 4px;
-        }
+        .catalog-categories { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; touch-action: pan-x; overscroll-behavior-x: contain; margin-bottom: 20px; }
         .catalog-categories::-webkit-scrollbar { display: none; }
-        .category-btn {
-            background: var(--glass-bg); color: var(--hint-color);
-            border: 1px solid var(--glass-border); padding: 10px 16px;
-            border-radius: 12px; font-weight: 600; font-size: 13px;
-            cursor: pointer; white-space: nowrap; transition: all 0.2s;
-            display: flex; align-items: center; gap: 6px;
-        }
-        .category-btn.active { 
-            background: var(--accent-color); color: #fff; border-color: var(--accent-color);
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
+        .category-btn { background: var(--glass-bg); color: var(--hint-color); border: 1px solid var(--glass-border); padding: 10px 16px; border-radius: 12px; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
+        .category-btn.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); box-shadow: 0 0 15px var(--accent-glow); }
 
-        .full-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; animation: fadeUp 0.4s ease; }
-        .list-item {
-            background: var(--glass-bg); padding: 16px; border-radius: 16px;
-            font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s;
-            display: flex; justify-content: space-between; align-items: center;
-            border: 1px solid var(--glass-border); backdrop-filter: blur(10px);
-        }
-        .list-item:active { transform: scale(0.98); background: rgba(59, 130, 246, 0.2); border-color: var(--accent-color); }
+        .full-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .list-item { background: var(--glass-bg); padding: 16px; border-radius: 16px; font-size: 15px; font-weight: 500; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--glass-border); }
+        .list-item:active { background: rgba(59, 130, 246, 0.2); border-color: var(--accent-color); }
         .list-item-arrow { font-size: 18px; color: var(--accent-color); }
+        .nav-btn { width: 100%; padding: 14px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 10px; }
 
-        .nav-btn {
-            width: 100%; padding: 14px; background: var(--glass-bg); border: 1px solid var(--glass-border); 
-            border-radius: 16px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 10px;
-            display: flex; align-items: center; justify-content: center; gap: 8px; backdrop-filter: blur(10px);
-        }
-        .nav-btn:active { background: rgba(255,255,255,0.1); }
-
-        /* --- КОРЗИНА --- */
-        .cart-empty-state {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 50vh; text-align: center; padding: 90px 20px 0 20px; /* Отступ 90px */
-            animation: fadeUp 0.5s ease;
-        }
-        .cart-empty-icon {
-            width: 80px; height: 80px; fill: var(--hint-color); opacity: 0.5; margin-bottom: 20px;
-        }
+        .cart-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; text-align: center; padding: 90px 20px 0 20px; }
+        .cart-empty-icon { width: 80px; height: 80px; fill: var(--hint-color); opacity: 0.5; margin-bottom: 20px; }
         .cart-empty-state h2 { font-size: 20px; color: #fff; margin-bottom: 8px; }
         .cart-empty-state p { font-size: 14px; color: var(--hint-color); }
 
-        .cart-item { 
-            display: flex; gap: 14px; background: var(--card-bg); padding: 14px; 
-            border-radius: 16px; margin-bottom: 12px; align-items: center; 
-            border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
+        .cart-item { display: flex; gap: 14px; background: var(--card-bg); padding: 14px; border-radius: 16px; margin-bottom: 12px; align-items: center; border: 1px solid var(--glass-border); }
         .cart-item-img { width: 60px; height: 60px; background: rgba(15, 23, 42, 0.5); border-radius: 10px; object-fit: contain; }
         .cart-item-info { flex-grow: 1; cursor: pointer; }
         .cart-item-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #f8fafc; }
-        .cart-item-price { font-size: 15px; font-weight: 800; color: #fff; text-shadow: 0 0 10px var(--accent-glow); }
+        .cart-item-price { font-size: 15px; font-weight: 800; color: #fff; }
+        .delete-btn { background: rgba(239, 68, 68, 0.15); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--danger-color); }
         
-        .delete-btn {
-            background: rgba(239, 68, 68, 0.15); border: none; width: 36px; height: 36px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: var(--danger-color); transition: all 0.2s;
-        }
-        .delete-btn:active { transform: scale(0.85); background: rgba(239, 68, 68, 0.3); }
-        .delete-btn svg { width: 18px; height: 18px; fill: currentColor; }
-
         .cart-total { display: flex; justify-content: space-between; padding: 24px 16px; font-size: 20px; font-weight: 800; border-top: 1px solid var(--glass-border); margin-top: 16px; color: #fff; }
-        
-        .checkout-btn {
-            width: 100%; background: var(--success-color); color: white; border: none;
-            padding: 18px; border-radius: 16px; font-weight: 800; font-size: 16px; cursor: pointer; margin-top: 10px;
-            transition: all 0.2s; box-shadow: 0 0 20px var(--success-glow);
-        }
-        .checkout-btn:active { transform: scale(0.96); }
-        .checkout-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; box-shadow: none; }
+        .checkout-btn { width: 100%; background: var(--success-color); color: white; border: none; padding: 18px; border-radius: 16px; font-weight: 800; font-size: 16px; cursor: pointer; margin-top: 10px; box-shadow: 0 0 20px var(--success-glow); }
+        .checkout-btn:disabled { background: #334155; color: #64748b; box-shadow: none; }
 
-        /* --- НИЖНЕЕ МЕНЮ --- */
-        .tab-bar {
-            position: fixed; bottom: 0; width: 100%; max-width: 480px;
-            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px);
-            display: flex; justify-content: space-around; align-items: center;
-            padding: 12px 0 25px 0; border-top: 1px solid var(--glass-border); 
-            z-index: 100; transition: transform 0.3s ease;
-        }
-        .tab-item {
-            display: flex; flex-direction: column; align-items: center; gap: 6px;
-            color: var(--hint-color); font-size: 11px; font-weight: 600; 
-            cursor: pointer; transition: color 0.3s; z-index: 2; flex: 1; position: relative;
-        }
-        .tab-icon { width: 24px; height: 24px; fill: currentColor; transition: transform 0.3s; } 
+        .tab-bar { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); display: flex; justify-content: space-around; align-items: center; padding: 12px 0 25px 0; border-top: 1px solid var(--glass-border); z-index: 100; transition: transform 0.3s ease; }
+        .tab-item { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--hint-color); font-size: 11px; font-weight: 600; cursor: pointer; flex: 1; position: relative; }
+        .tab-icon { width: 24px; height: 24px; fill: currentColor; transition: transform 0.3s; }
         .tab-item.active { color: var(--accent-color); }
         .tab-item.active .tab-icon { transform: translateY(-4px) scale(1.1); filter: drop-shadow(0 0 8px var(--accent-glow)); }
-
-        .tab-indicator {
-            position: absolute; bottom: 15px; height: 55px; 
-            background: rgba(59, 130, 246, 0.1); border-radius: 18px;
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), width 0.3s;
-            z-index: 1; pointer-events: none; left: 0;
-        }
-
-        .cart-badge {
-            position: absolute; top: -6px; right: 12px;
-            background: var(--danger-color); color: white; font-size: 10px; font-weight: bold;
-            width: 18px; height: 18px; border-radius: 50%;
-            display: none; align-items: center; justify-content: center;
-            border: 2px solid #0f172a;
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
-        }
+        .tab-indicator { position: absolute; bottom: 15px; height: 55px; background: rgba(59, 130, 246, 0.1); border-radius: 18px; transition: transform 0.3s, width 0.3s; z-index: 1; pointer-events: none; left: 0; }
+        .cart-badge { position: absolute; top: -6px; right: 12px; background: var(--danger-color); color: white; font-size: 10px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 2px solid #0f172a; }
         .cart-badge.show { display: flex; }
 
-        /* --- МОДАЛЬНЫЕ ОКНА --- */
-        .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-            backdrop-filter: blur(4px);
-        }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(4px); }
         .overlay.active { opacity: 1; pointer-events: auto; }
 
-        .bottom-sheet {
-            position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 480px; background: #1e293b;
-            border-radius: 28px 28px 0 0; z-index: 1001; padding: 24px;
-            transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.6); touch-action: none;
-            border-top: 1px solid var(--glass-border);
-        }
+        .bottom-sheet { position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #1e293b; border-radius: 28px 28px 0 0; z-index: 1001; padding: 24px; transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1); border-top: 1px solid var(--glass-border); }
         .bottom-sheet.active { bottom: 0; }
-        
-        .drag-handle {
-            width: 40px; height: 5px; background: #475569; border-radius: 5px;
-            margin: 0 auto 20px auto; cursor: grab;
-        }
-
-        .sheet-close-btn {
-            position: absolute; top: 20px; right: 20px;
-            background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 16px; z-index: 10;
-        }
-        
-        .sheet-img { width: 100%; height: 200px; object-fit: contain; background: rgba(15, 23, 42, 0.5); border-radius: 20px; margin-bottom: 20px; pointer-events: none; }
-        
+        .drag-handle { width: 40px; height: 5px; background: #475569; border-radius: 5px; margin: 0 auto 20px auto; }
+        .sheet-close-btn { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .sheet-img { width: 100%; height: 200px; object-fit: contain; background: rgba(15, 23, 42, 0.5); border-radius: 20px; margin-bottom: 20px; }
         .sheet-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; color: #fff; }
         .sheet-brand { font-size: 15px; color: var(--hint-color); margin-bottom: 20px; }
-        
         .qty-selector { display: flex; align-items: center; gap: 16px; margin-top: 10px; }
-        .qty-btn { 
-            width: 44px; height: 44px; border-radius: 14px; background: rgba(255,255,255,0.05); 
-            border: 1px solid var(--glass-border); color: white; font-size: 20px; cursor: pointer; 
-        }
-        .qty-btn:active { background: rgba(255,255,255,0.1); }
+        .qty-btn { width: 44px; height: 44px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; font-size: 20px; }
         .qty-val { font-size: 20px; font-weight: 800; min-width: 30px; text-align: center; color: #fff; }
-
         .sheet-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; }
-        .sheet-price { font-size: 26px; font-weight: 800; color: #fff; text-shadow: 0 0 15px var(--accent-glow); }
-        .sheet-add-btn {
-            background: var(--accent-color); color: white; border: none; padding: 16px 28px;
-            border-radius: 16px; font-weight: 700; font-size: 16px; cursor: pointer;
-            flex-grow: 1; margin-left: 20px; transition: all 0.2s; box-shadow: 0 0 20px var(--accent-glow);
-        }
-        .sheet-add-btn:active { transform: scale(0.95); }
-        .sheet-add-btn.added { background: var(--success-color); box-shadow: 0 0 20px var(--success-glow); }
+        .sheet-price { font-size: 26px; font-weight: 800; color: #fff; }
+        .sheet-add-btn { background: var(--accent-color); color: white; border: none; padding: 16px 28px; border-radius: 16px; font-weight: 700; font-size: 16px; flex-grow: 1; margin-left: 20px; }
 
-        .address-modal, .admin-panel {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
-            width: 90%; max-width: 400px; background: #1e293b; border-radius: 24px;
-            z-index: 3000; padding: 24px; opacity: 0; pointer-events: none; transition: all 0.3s;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8); border: 1px solid var(--glass-border);
-            max-height: 85vh; display: flex; flex-direction: column;
-        }
+        /* АДМИНКА */
+        .address-modal, .admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); width: 90%; max-width: 400px; background: #1e293b; border-radius: 24px; z-index: 3000; padding: 24px; opacity: 0; pointer-events: none; transition: all 0.3s; border: 1px solid var(--glass-border); display: flex; flex-direction: column; }
+        .address-modal { height: 80vh; }
+        .admin-panel { height: 80vh; } /* Фикс высоты админки */
         .address-modal.active, .admin-panel.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
-        .address-modal h3, .admin-panel h3 { margin-bottom: 20px; font-size: 20px; color: #fff; }
+        .address-modal h3, .admin-panel h3 { margin-bottom: 20px; font-size: 20px; color: #fff; flex-shrink: 0; }
         
-        .address-list {
-            overflow-y: auto; flex-grow: 1; margin-bottom: 10px; padding-right: 5px;
-        }
-
-        .metro-line-title {
-            font-size: 12px; color: var(--hint-color); text-transform: uppercase;
-            letter-spacing: 1px; margin: 20px 0 8px 4px; font-weight: 700;
-        }
+        .address-list { overflow-y: auto; flex-grow: 1; margin-bottom: 10px; }
+        .metro-line-title { font-size: 12px; color: var(--hint-color); text-transform: uppercase; margin: 20px 0 8px 4px; font-weight: 700; }
         .metro-line-title:first-child { margin-top: 0; }
-
-        .address-item {
-            padding: 14px 16px; background: rgba(255,255,255,0.03); border-radius: 14px; margin-bottom: 8px;
-            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-            border: 1px solid transparent; transition: all 0.2s;
-        }
+        .address-item { padding: 14px 16px; background: rgba(255,255,255,0.03); border-radius: 14px; margin-bottom: 8px; cursor: pointer; display: flex; justify-content: space-between; border: 1px solid transparent; }
         .address-item.active { border-color: var(--accent-color); background: rgba(59, 130, 246, 0.1); }
         .address-item span { font-weight: 500; font-size: 14px; color: #fff; }
-        
-        .address-item.disabled-station {
-            opacity: 0.3; cursor: not-allowed; background: transparent;
-        }
-
+        .address-item.disabled-station { opacity: 0.3; cursor: not-allowed; background: transparent; }
         .delivery-section { margin-top: 20px; border-top: 1px solid var(--glass-border); padding-top: 20px; flex-shrink: 0; }
         .delivery-section h4 { margin-bottom: 12px; font-size: 15px; color: var(--hint-color); }
-        .delivery-input, .form-input {
-            width: 100%; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border);
-            padding: 16px; border-radius: 14px; color: #ffffff; font-size: 14px; outline: none;
-            margin-bottom: 12px; transition: border 0.3s;
-        }
-        .delivery-input:focus, .form-input:focus { border-color: var(--accent-color); }
-        .delivery-input::placeholder, .form-input::placeholder { color: var(--hint-color); }
-        
-        .delivery-btn {
-            width: 100%; background: var(--accent-color); color: white; border: none;
-            padding: 16px; border-radius: 14px; font-weight: 700; font-size: 15px; cursor: pointer;
-        }
+        .delivery-input, .form-input { width: 100%; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border); padding: 16px; border-radius: 14px; color: #ffffff; font-size: 14px; outline: none; margin-bottom: 12px; }
+        .delivery-btn { width: 100%; background: var(--accent-color); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 700; font-size: 15px; cursor: pointer; }
 
-        .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 14px; }
-        .admin-tab-btn {
-            flex: 1; padding: 12px; background: transparent; border: none; border-radius: 10px;
-            color: var(--hint-color); font-weight: 700; cursor: pointer; transition: all 0.2s;
-        }
-        .admin-tab-btn.active { background: var(--accent-color); color: white; box-shadow: 0 4px 10px var(--accent-glow); }
+        .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 14px; flex-shrink: 0; }
+        .admin-tab-btn { flex: 1; padding: 12px; background: transparent; border: none; border-radius: 10px; color: var(--hint-color); font-weight: 700; cursor: pointer; }
+        .admin-tab-btn.active { background: var(--accent-color); color: white; }
         
         .admin-tab-content { display: none; flex-direction: column; flex-grow: 1; overflow-y: auto; }
         .admin-tab-content.active { display: flex; }
-
-        .admin-product-list, .admin-stations-list { 
-            max-height: 250px; overflow-y: auto; margin-bottom: 15px; background: rgba(0,0,0,0.2); border-radius: 14px; padding: 10px;
-        }
+        
+        .admin-product-list, .admin-stations-list { flex-grow: 1; overflow-y: auto; margin-bottom: 15px; background: rgba(0,0,0,0.2); border-radius: 14px; padding: 10px; }
         .admin-product-item, .admin-station-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .admin-product-item:last-child, .admin-station-item:last-child { border-bottom: none; }
         .admin-product-info { font-size: 13px; color: #fff; }
         .admin-product-actions { display: flex; gap: 6px; }
-        .admin-action-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .admin-action-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
         .admin-delete-btn { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
         
         .toggle-switch { position: relative; display: inline-block; width: 46px; height: 26px; }
@@ -451,58 +165,31 @@
         input:checked + .slider:before { transform: translateX(20px); }
 
         .toast-container { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 4000; display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; pointer-events: none; }
-        .toast {
-            background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); color: white; padding: 14px 24px; border-radius: 30px;
-            font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--glass-border);
-            animation: slideUpToast 0.4s cubic-bezier(0.16, 1, 0.3, 1), fadeOutToast 0.3s ease 2.7s forwards;
-        }
+        .toast { background: rgba(30, 41, 59, 0.95); color: white; padding: 14px 24px; border-radius: 30px; font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--glass-border); animation: slideUpToast 0.4s cubic-bezier(0.16, 1, 0.3, 1), fadeOutToast 0.3s ease 2.7s forwards; }
         @keyframes slideUpToast { from { transform: translateY(30px) scale(0.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
         @keyframes fadeOutToast { to { opacity: 0; transform: translateY(-10px) scale(0.9); } }
 
-        .sidebar {
-            position: fixed; top: 0; left: 0; width: 100%; max-width: 480px; height: 100vh; background: #0f172a; 
-            z-index: 2001; transform: translateX(-100%); 
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            padding: 30px 20px; padding-top: 110px; display: flex; flex-direction: column; 
-            box-shadow: 5px 0 40px rgba(0,0,0,0.8);
-        }
+        .sidebar { position: fixed; top: 0; left: 0; width: 100%; max-width: 480px; height: 100vh; background: #0f172a; z-index: 2001; transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding: 30px 20px; padding-top: 110px; display: flex; flex-direction: column; }
         .sidebar.active { transform: translateX(0); }
-        
-        @media (min-width: 480px) {
-            .sidebar { left: 50%; transform: translateX(-50%) translateX(-100%); }
-            .sidebar.active { transform: translateX(-50%) translateX(0); }
-        }
-
+        @media (min-width: 480px) { .sidebar { left: 50%; transform: translateX(-50%) translateX(-100%); } .sidebar.active { transform: translateX(-50%) translateX(0); } }
         .sidebar-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 40px; }
-        .sidebar-avatar { width: 90px; height: 90px; border-radius: 50%; background: #1e293b; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid var(--accent-color); box-shadow: 0 0 20px var(--accent-glow); }
+        .sidebar-avatar { width: 90px; height: 90px; border-radius: 50%; background: #1e293b; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid var(--accent-color); }
         .sidebar-name { font-size: 22px; font-weight: 800; color: #ffffff; }
         .sidebar-status { font-size: 14px; color: var(--hint-color); margin-top: 6px; font-weight: 500; }
-        
         .sidebar-menu { display: flex; flex-direction: column; gap: 8px; }
-        .sidebar-item {
-            padding: 16px; border-radius: 16px; color: white; text-decoration: none;
-            display: flex; align-items: center; gap: 14px; font-size: 16px; font-weight: 600;
-            background: rgba(255,255,255,0.03); border: 1px solid transparent; cursor: pointer; transition: all 0.2s; text-align: left;
-        }
+        .sidebar-item { padding: 16px; border-radius: 16px; color: white; display: flex; align-items: center; gap: 14px; font-size: 16px; font-weight: 600; background: rgba(255,255,255,0.03); border: 1px solid transparent; cursor: pointer; text-align: left; }
         .sidebar-item:active { background: rgba(255,255,255,0.08); border-color: var(--glass-border); }
         .sidebar-item span { font-size: 22px; }
-        
         .sidebar-close { margin-top: auto; color: #fca5a5; background: rgba(239, 68, 68, 0.1); justify-content: center; font-weight: 700; }
-
-        .support-link {
-            color: var(--accent-color); text-decoration: none; font-weight: 700;
-            display: inline-block; margin-top: 10px; padding: 12px 24px;
-            background: rgba(59, 130, 246, 0.1); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3);
-        }
+        .support-link { color: var(--accent-color); text-decoration: none; font-weight: 700; display: inline-block; margin-top: 10px; padding: 12px 24px; background: rgba(59, 130, 246, 0.1); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3); }
     </style>
 </head>
 <body>
 
     <div class="app-container" id="appContainer">
-        
         <div class="tabs-wrapper" id="tabsWrapper">
             
-            <!-- 1. ГЛАВНАЯ -->
+            <!-- ГЛАВНАЯ -->
             <div id="tab-home" class="tab-content active">
                 <header class="header">
                     <div class="user-info" onclick="openProfile()">
@@ -511,43 +198,31 @@
                     </div>
                     <button class="address-btn" id="addressBtn" onclick="openAddressModal()">📍 Выбрать адрес</button>
                 </header>
-
                 <div class="banner">
-                    <h2>STTP SHOP</h2>
-                    <p>Ждем ваших заказов 🔥</p>
+                    <h2 id="bannerTitle">STTP SHOP</h2>
+                    <p id="bannerSubtitle">Ждем ваших заказов 🔥</p>
                 </div>
-
                 <div class="section-title"><span>Акции</span></div>
-                <div class="promo-scroll" id="promoScroll">
+                <div class="promo-scroll">
                     <div class="promo-card" onclick="openDiscounts()">🎁 Скидки</div>
                     <div class="promo-card" onclick="openNewArrivals()">🔥 Новинки</div>
                     <div class="promo-card" onclick="openAddressModal()">🚚 Доставка</div>
                 </div>
-
                 <div class="section-title"><span>Бренды</span></div>
                 <div class="brands-scroll" id="brandsScroll"></div>
-
-                <div class="section-title">
-                    <span>Хиты продаж</span>
-                    <span onclick="switchTab('catalog')">Все товары ›</span>
-                </div>
+                <div class="section-title"><span>Хиты продаж</span><span onclick="switchTab('catalog')">Все товары ›</span></div>
                 <div class="grid-container" id="home-grid-hits"></div>
-
-                <div class="section-title">
-                    <span>Новинки</span>
-                    <span onclick="switchTab('catalog')">Все товары ›</span>
-                </div>
+                <div class="section-title"><span>Новинки</span><span onclick="switchTab('catalog')">Все товары ›</span></div>
                 <div class="grid-container" id="home-grid-new"></div>
             </div>
 
-            <!-- 2. КАТАЛОГ -->
+            <!-- КАТАЛОГ -->
             <div id="tab-catalog" class="tab-content">
                 <div class="catalog-header">
                     <div class="search-wrapper">
                         <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
                         <input type="text" class="search-input" id="catalogSearchInput" placeholder="Поиск по всем товарам..." oninput="filterCatalog(this.value)">
                     </div>
-                    
                     <div class="catalog-categories" id="mainCategories">
                         <button class="category-btn active" onclick="selectCategory('Жидкость', this)">💧 Жидкости</button>
                         <button class="category-btn" onclick="selectCategory('Устройство', this)">💨 Устройства</button>
@@ -555,65 +230,41 @@
                         <button class="category-btn" onclick="selectCategory('Снюс', this)">🟢 Снюс</button>
                         <button class="category-btn" onclick="selectCategory('Одноразка', this)">⚡ Одноразки</button>
                     </div>
-
                     <div style="font-size: 14px; color: var(--hint-color); margin-bottom: 12px; font-weight: 600;" id="catalogLevelTitle">Выберите бренд:</div>
                     <div class="full-list" id="catalogListContainer"></div>
-
                     <button class="nav-btn" id="catalogBackBtn" onclick="goBackInCatalog()" style="display: none;">‹ Назад</button>
                 </div>
                 <div class="grid-container" id="catalog-grid" style="display: none;"></div>
             </div>
 
-            <!-- 3. КОРЗИНА -->
+            <!-- КОРЗИНА -->
             <div id="tab-cart" class="tab-content">
-                <div class="section-title" style="margin-top: 90px;"><span>Ваша корзина</span></div> <!-- Отступ 90px -->
-                
+                <div class="section-title" style="margin-top: 90px;"><span>Ваша корзина</span></div>
                 <div id="cart-empty" class="cart-empty-state">
                     <svg class="cart-empty-icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
                     <h2>Корзина пуста</h2>
                     <p>Добавьте товары из каталога, чтобы сделать заказ.</p>
                 </div>
-
                 <div id="cart-items-container" style="padding: 0 16px;"></div>
-                
                 <div id="checkout-section" style="display: none;">
-                    <div class="cart-total">
-                        <span>Итого:</span>
-                        <span id="cart-total-price">0.00 BYN</span>
-                    </div>
-                    <div style="padding: 0 16px;">
-                        <button class="checkout-btn" id="checkoutBtn" onclick="submitOrder()" disabled>Оформить заказ</button>
-                    </div>
+                    <div class="cart-total"><span>Итого:</span><span id="cart-total-price">0.00 BYN</span></div>
+                    <div style="padding: 0 16px;"><button class="checkout-btn" id="checkoutBtn" onclick="submitOrder()" disabled>Оформить заказ</button></div>
                 </div>
             </div>
 
-            <!-- 4. ПРОФИЛЬ -->
+            <!-- ПРОФИЛЬ -->
             <div id="tab-profile" class="tab-content">
                 <div class="cart-empty-state"><h2>Профиль</h2><p>Выберите пункт в меню слева.</p></div>
             </div>
-
         </div>
 
         <!-- НИЖНЕЕ МЕНЮ -->
         <nav class="tab-bar" id="tabBar">
             <div class="tab-indicator" id="tabIndicator"></div>
-            <a class="tab-item active" id="nav-home" onclick="switchTab('home', this)">
-                <svg class="tab-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-                <span>Главная</span>
-            </a>
-            <a class="tab-item" id="nav-catalog" onclick="switchTab('catalog', this)">
-                <svg class="tab-icon" viewBox="0 0 24 24"><path d="M20 6h-3V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM9 4h6v2H9V4zm11 14H4V8h16v10z"/></svg>
-                <span>Каталог</span>
-            </a>
-            <a class="tab-item" id="nav-cart" onclick="switchTab('cart', this)">
-                <svg class="tab-icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                <div class="cart-badge" id="cartBadge">0</div>
-                <span>Корзина</span>
-            </a>
-            <a class="tab-item" id="nav-profile" onclick="openProfile()">
-                <svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                <span>Профиль</span>
-            </a>
+            <a class="tab-item active" id="nav-home" onclick="switchTab('home', this)"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Главная</span></a>
+            <a class="tab-item" id="nav-catalog" onclick="switchTab('catalog', this)"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M20 6h-3V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM9 4h6v2H9V4zm11 14H4V8h16v10z"/></svg><span>Каталог</span></a>
+            <a class="tab-item" id="nav-cart" onclick="switchTab('cart', this)"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg><div class="cart-badge" id="cartBadge">0</div><span>Корзина</span></a>
+            <a class="tab-item" id="nav-profile" onclick="openProfile()"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Профиль</span></a>
         </nav>
     </div>
 
@@ -626,14 +277,12 @@
         <img src="" class="sheet-img" id="sheetImg">
         <div class="sheet-title" id="sheetTitle">Название</div>
         <div class="sheet-brand" id="sheetBrand">Бренд</div>
-        
         <div style="font-size: 14px; margin-bottom: 8px; color: var(--hint-color); margin-top: 20px; font-weight: 600;">Количество:</div>
         <div class="qty-selector">
             <button class="qty-btn" onclick="changeSheetQty(-1)">-</button>
             <div class="qty-val" id="sheetQtyVal">1</div>
             <button class="qty-btn" onclick="changeSheetQty(1)">+</button>
         </div>
-
         <div class="sheet-bottom">
             <div class="sheet-price" id="sheetPrice">0.00 BYN</div>
             <button class="sheet-add-btn" id="sheetAddBtn" onclick="addToCartFromSheet()">В корзину</button>
@@ -644,10 +293,9 @@
     <div class="address-modal" id="addressModal">
         <h3>Выберите станцию метро</h3>
         <div class="address-list" id="metroList"></div>
-
         <div class="delivery-section">
             <h4>Доставка на руки</h4>
-            <input type="text" class="delivery-input" id="courierAddressInput" placeholder="Введите ваш адрес (улица, дом, квартира)">
+            <input type="text" class="delivery-input" id="courierAddressInput" placeholder="Введите ваш адрес">
             <button class="delivery-btn" onclick="submitCourierAddress()">Сохранить адрес доставки</button>
         </div>
     </div>
@@ -657,21 +305,28 @@
         <div class="admin-tabs">
             <button class="admin-tab-btn active" onclick="switchAdminTab('products', this)">Товары</button>
             <button class="admin-tab-btn" onclick="switchAdminTab('stations', this)">Адреса</button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('content', this)">Контент</button>
         </div>
 
+        <!-- ТОВАРЫ -->
         <div class="admin-tab-content active" id="admin-tab-products">
-            <h3>Управление товарами</h3>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="admin-action-btn" onclick="downloadCSV()" style="flex: 1; padding: 12px;">📥 Экспорт</button>
+                <button class="admin-action-btn" onclick="downloadCSVTemplate()" style="flex: 1; padding: 12px;">📄 Шаблон</button>
+                <button class="admin-action-btn" onclick="document.getElementById('csvFileInput').click()" style="flex: 1; padding: 12px; background: var(--success-color); color: white;">📤 Импорт</button>
+                <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSVImport(event)">
+            </div>
+
             <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 8px;">Существующие товары:</div>
             <div class="admin-product-list" id="adminProductList"></div>
 
             <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
 
-            <h3>Добавить товар</h3>
+            <h3 style="margin-bottom: 10px;">Добавить товар</h3>
             <input type="text" class="form-input" id="admin-title" placeholder="Название (Вкус)">
             <input type="text" class="form-input" id="admin-brand" placeholder="Бренд">
             <input type="number" class="form-input" id="admin-price" placeholder="Цена (BYN)" step="0.01">
             <input type="number" class="form-input" id="admin-stock" placeholder="Количество">
-            
             <select class="form-input" id="admin-type">
                 <option value="Жидкость">Жидкость</option>
                 <option value="Устройство">Устройство</option>
@@ -679,17 +334,26 @@
                 <option value="Снюс">Снюс</option>
                 <option value="Одноразка">Одноразка</option>
             </select>
-
             <button class="checkout-btn" onclick="submitNewProduct()">Добавить товар</button>
         </div>
 
+        <!-- АДРЕСА -->
         <div class="admin-tab-content" id="admin-tab-stations">
             <h3>Управление станциями</h3>
-            <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Включите или выключите станции, по которым вы работаете:</div>
+            <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Включите или выключите станции:</div>
             <div class="admin-stations-list" id="adminStationsList"></div>
         </div>
 
-        <button class="sidebar-item sidebar-close" style="margin-top: 15px;" onclick="closeAllModals()">✕ Закрыть</button>
+        <!-- КОНТЕНТ -->
+        <div class="admin-tab-content" id="admin-tab-content">
+            <h3>Управление контентом</h3>
+            <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Настройте баннер на главной странице:</div>
+            <input type="text" class="form-input" id="content-banner-title" placeholder="Заголовок баннера">
+            <input type="text" class="form-input" id="content-banner-subtitle" placeholder="Подзаголовок баннера">
+            <button class="checkout-btn" onclick="saveContent()">Сохранить контент</button>
+        </div>
+
+        <button class="sidebar-item sidebar-close" style="margin-top: 15px; flex-shrink: 0;" onclick="closeAllModals()">✕ Закрыть</button>
     </div>
 
     <!-- SIDEBAR -->
@@ -699,14 +363,12 @@
             <div class="sidebar-name" id="sidebarName">Гость</div>
             <div class="sidebar-status">Покупатель STTP</div>
         </div>
-        
         <div class="sidebar-menu">
             <button class="sidebar-item" onclick="showToast('🚧 История заказов в разработке')"><span>📦</span> Мои заказы</button>
             <button class="sidebar-item" onclick="showToast('🚧 Бонусный счет в разработке')"><span>🎁</span> Мои бонусы</button>
             <button class="sidebar-item" onclick="openAddressModalFromProfile()"><span>📍</span> Мои адреса</button>
             <button class="sidebar-item" onclick="showSupportLink()"><span>💬</span> Поддержка</button>
         </div>
-        
         <button class="sidebar-item sidebar-close" onclick="closeSidebar()">✕ Закрыть</button>
     </div>
 
@@ -715,13 +377,7 @@
     <script>
         const API_URL = "https://sttp-api-new.onrender.com/api";
         const SUPPORT_TG = "vsqw2d2";
-
-        const tabColors = {
-            home: '#0b1120',    
-            catalog: '#0f172a', 
-            cart: '#131c31',    
-            profile: '#1e293b'  
-        };
+        const tabColors = { home: '#0b1120', catalog: '#0f172a', cart: '#131c31', profile: '#1e293b' };
 
         const tg = window.Telegram.WebApp;
         tg.expand(); tg.ready();
@@ -759,27 +415,21 @@
             if (index === 3 && currentTabIndex !== 3) previousTabIndex = currentTabIndex;
             currentTabIndex = index;
             tabsWrapper.style.transform = `translateX(-${index * 25}%)`;
-            
             appContainer.style.backgroundColor = tabColors[tabs[index]];
-
             document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
             const activeNav = document.getElementById(`nav-${tabs[index]}`);
             if (activeNav) activeNav.classList.add('active');
             moveIndicator(activeNav);
-
             if (tabs[index] === 'profile') openSidebar();
             else closeSidebar();
-
             if (tabs[index] === 'catalog') renderCatalogUI();
             else if (tabs[index] === 'cart') renderCart();
         }
 
         let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
-        
         document.addEventListener('touchstart', (e) => {
             if (e.target.closest('.catalog-categories') || e.target.closest('.promo-scroll') || e.target.closest('.brands-scroll')) {
-                touchStartX = null;
-                return;
+                touchStartX = null; return;
             }
             touchStartX = e.changedTouches[0].screenX;
             touchStartY = e.changedTouches[0].screenY;
@@ -818,63 +468,56 @@
         }
 
         function openProfile() { switchTab('profile'); }
-
-        function openSidebar() {
-            document.getElementById('overlay').classList.add('active');
-            document.getElementById('sidebar').classList.add('active');
-        }
-
-        function closeSidebar() {
-            document.getElementById('sidebar').classList.remove('active');
-            if (currentTabIndex === 3) updateCarousel(previousTabIndex); 
-            else document.getElementById('overlay').classList.remove('active');
-        }
+        function openSidebar() { document.getElementById('overlay').classList.add('active'); document.getElementById('sidebar').classList.add('active'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('active'); if (currentTabIndex === 3) updateCarousel(previousTabIndex); else document.getElementById('overlay').classList.remove('active'); }
 
         let sheetStartY = 0;
         const bottomSheet = document.getElementById('productSheet');
-        
         bottomSheet.addEventListener('touchstart', (e) => {
-            if (e.target.closest('.sheet-img') || e.target.closest('.drag-handle') || e.target.closest('.sheet-close-btn') || e.target.closest('.sheet-title')) {
-                sheetStartY = e.touches[0].clientY;
-            } else sheetStartY = null;
+            if (e.target.closest('.sheet-img') || e.target.closest('.drag-handle') || e.target.closest('.sheet-close-btn') || e.target.closest('.sheet-title')) sheetStartY = e.touches[0].clientY;
+            else sheetStartY = null;
         }, { passive: true });
-
         bottomSheet.addEventListener('touchmove', (e) => {
             if (sheetStartY === null) return;
             const deltaY = e.touches[0].clientY - sheetStartY;
-            if (deltaY > 0) {
-                bottomSheet.style.transition = 'none';
-                bottomSheet.style.transform = `translateX(-50%) translateY(${deltaY}px)`;
-            }
+            if (deltaY > 0) { bottomSheet.style.transition = 'none'; bottomSheet.style.transform = `translateX(-50%) translateY(${deltaY}px)`; }
         }, { passive: true });
-
         bottomSheet.addEventListener('touchend', (e) => {
             if (sheetStartY === null) return;
             const deltaY = e.changedTouches[0].clientY - sheetStartY;
             bottomSheet.style.transition = 'bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
-            
-            if (deltaY > 100) {
-                bottomSheet.style.transform = '';
-                closeAllModals();
-            } else {
-                bottomSheet.style.transform = 'translateX(-50%) translateY(0)';
-            }
+            if (deltaY > 100) { bottomSheet.style.transform = ''; closeAllModals(); }
+            else { bottomSheet.style.transform = 'translateX(-50%) translateY(0)'; }
             sheetStartY = null;
         }, { passive: true });
 
-        let allProducts = []; 
-        let cart = []; 
-        let selectedAddress = null;
-        let currentProductInSheet = null;
-        let currentSheetQty = 1;
-        let editingCartIndex = -1;
-        let isAdmin = false;
-        let disabledStations = []; 
+        let allProducts = []; let cart = []; let selectedAddress = null; let currentProductInSheet = null; let currentSheetQty = 1; let editingCartIndex = -1; let isAdmin = false; let disabledStations = []; 
+        let currentCatalogCategory = 'Жидкость'; let currentCatalogBrand = null; let currentCatalogFlavor = null; let catalogViewState = 'brands'; 
 
-        let currentCatalogCategory = 'Жидкость';
-        let currentCatalogBrand = null;
-        let currentCatalogFlavor = null;
-        let catalogViewState = 'brands'; 
+        async function loadContent() {
+            try {
+                const res = await fetch(`${API_URL}/content`);
+                const data = await res.json();
+                document.getElementById('bannerTitle').innerText = data.banner_title;
+                document.getElementById('bannerSubtitle').innerText = data.banner_subtitle;
+                document.getElementById('content-banner-title').value = data.banner_title;
+                document.getElementById('content-banner-subtitle').value = data.banner_subtitle;
+            } catch (e) {}
+        }
+
+        async function saveContent() {
+            const title = document.getElementById('content-banner-title').value;
+            const subtitle = document.getElementById('content-banner-subtitle').value;
+            try {
+                const res = await fetch(`${API_URL}/content`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
+                    body: JSON.stringify({ banner_title: title, banner_subtitle: subtitle })
+                });
+                if (res.ok) { showToast('✅ Контент обновлен!'); loadContent(); }
+                else showToast('❌ Ошибка');
+            } catch (e) { showToast('❌ Ошибка сети'); }
+        }
 
         async function checkAdminStatus() {
             if (!tg.initDataUnsafe?.user) return;
@@ -882,7 +525,6 @@
                 const resp = await fetch(`${API_URL}/check-admin`, { headers: { 'X-Init-Data': tg.initData } });
                 const data = await resp.json();
                 isAdmin = data.is_admin;
-                
                 if (isAdmin) {
                     const menu = document.querySelector('.sidebar-menu');
                     const adminBtn = document.createElement('button');
@@ -897,10 +539,8 @@
         function switchAdminTab(tabName, btn) {
             document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
             document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById(`admin-tab-${tabName}`).classList.add('active');
-            
             if (tabName === 'stations') loadAdminStations();
         }
 
@@ -929,22 +569,86 @@
             });
         }
 
+        // --- ЭКСПОРТ / ИМПОРТ ---
+        function downloadCSVTemplate() {
+            const csv = "Название;Бренд;Цена;Количество;Категория\nПример вкуса;Пример бренда;10.5;100;Жидкость";
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "sttp_template.csv";
+            link.click();
+        }
+
+        function downloadCSV() {
+            if (allProducts.length === 0) { showToast('Нет товаров для экспорта'); return; }
+            let csv = "Название;Бренд;Цена;Количество;Категория\n";
+            allProducts.forEach(p => {
+                csv += `${p.title};${p.brand};${p.price};${p.stock};${p.type}\n`;
+            });
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `sttp_export_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+            showToast('📥 Экспорт готов');
+        }
+
+        function handleCSVImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n').filter(line => line.trim() !== '');
+                const products = [];
+                // Пропускаем заголовок (i=1)
+                for (let i = 1; i < lines.length; i++) {
+                    const parts = lines[i].split(';');
+                    if (parts.length >= 5) {
+                        products.push({
+                            title: parts[0].trim(),
+                            brand: parts[1].trim(),
+                            price: parseFloat(parts[2].replace(',', '.')) || 0,
+                            stock: parseInt(parts[3]) || 0,
+                            type: parts[4].trim()
+                        });
+                    }
+                }
+                
+                if (products.length === 0) { showToast('⚠️ Файл пуст или неверный формат'); return; }
+
+                try {
+                    const res = await fetch(`${API_URL}/import-products`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
+                        body: JSON.stringify(products)
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        showToast(`✅ Импортировано: ${data.imported} товаров`);
+                        fetchProducts().then(renderAdminList);
+                    } else {
+                        showToast('❌ Ошибка импорта');
+                    }
+                } catch (err) {
+                    showToast('❌ Ошибка сети');
+                }
+                event.target.value = ''; // Сброс инпута
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        // --- ОСТАЛЬНОЕ УПРАВЛЕНИЕ ---
         function editProduct(id, currentPrice, currentStock) {
             const newPrice = prompt("Введите новую цену (BYN):", currentPrice);
             if (newPrice === null) return;
             const newStock = prompt("Введите новое количество (шт.):", currentStock);
             if (newStock === null) return;
-
             fetch(`${API_URL}/edit-product`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
                 body: JSON.stringify({ product_id: id, new_price: parseFloat(newPrice), new_stock: parseInt(newStock) })
-            }).then(res => {
-                if (res.ok) {
-                    showToast("✅ Товар обновлен!");
-                    fetchProducts().then(renderAdminList);
-                } else showToast("❌ Ошибка");
-            });
+            }).then(res => { if (res.ok) { showToast("✅ Товар обновлен!"); fetchProducts().then(renderAdminList); } });
         }
 
         function deleteProduct(id) {
@@ -953,12 +657,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
                 body: JSON.stringify({ product_id: id })
-            }).then(res => {
-                if (res.ok) {
-                    showToast("🗑 Товар удален");
-                    fetchProducts().then(renderAdminList);
-                } else showToast("❌ Ошибка");
-            });
+            }).then(res => { if (res.ok) { showToast("🗑 Удалено"); fetchProducts().then(renderAdminList); } });
         }
 
         async function submitNewProduct() {
@@ -967,30 +666,22 @@
             const price = parseFloat(document.getElementById('admin-price').value);
             const stock = parseInt(document.getElementById('admin-stock').value);
             const type = document.getElementById('admin-type').value;
-
-            if (!title || !brand || isNaN(price) || isNaN(stock)) {
-                showToast("⚠️ Заполните все поля корректно"); return;
-            }
-
+            if (!title || !brand || isNaN(price) || isNaN(stock)) { showToast("⚠️ Заполните все поля"); return; }
             try {
                 const response = await fetch(`${API_URL}/add-product`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
                     body: JSON.stringify({ title, brand, price, stock, type })
                 });
-
-                if (!response.ok) throw new Error("Ошибка сервера");
-
-                showToast("✅ Товар успешно добавлен!");
+                if (!response.ok) throw new Error("Ошибка");
+                showToast("✅ Товар добавлен!");
                 document.activeElement.blur();
                 document.getElementById('admin-title').value = '';
                 document.getElementById('admin-brand').value = '';
                 document.getElementById('admin-price').value = '';
                 document.getElementById('admin-stock').value = '';
                 fetchProducts().then(renderAdminList);
-            } catch (error) {
-                showToast(`❌ ${error.message}`);
-            }
+            } catch (error) { showToast(`❌ ${error.message}`); }
         }
 
         async function loadAdminStations() {
@@ -998,21 +689,17 @@
                 const resp = await fetch(`${API_URL}/stations`);
                 disabledStations = await resp.json();
                 renderAdminStations();
-            } catch (e) {
-                showToast("❌ Ошибка загрузки станций");
-            }
+            } catch (e) { showToast("❌ Ошибка загрузки станций"); }
         }
 
         function renderAdminStations() {
             const list = document.getElementById('adminStationsList');
             list.innerHTML = '';
-            
             const allStations = [
                 "Малиновка", "Петровщина", "Михалово", "Грушевка", "Институт Культуры", "Площадь Ленина", "Октябрьская", "Площадь Победы", "Площадь Якуба Коласа", "Академия Наук", "Парк Челюскинцев", "Московская", "Восток", "Борисовский тракт", "Уручье",
                 "Каменная Горка", "Кунцевщина", "Спортивная", "Пушкинская", "Молодежная", "Фрунзенская", "Немига", "Купаловская", "Первомайская", "Пролетарская", "Тракторный завод", "Партизанская", "Автозаводская", "Могилевская", "Шабаны",
                 "Слуцкий Гостинец", "Новаторская", "Вокзальная", "Ковальская Слобода", "Юбилейная площадь", "Площадь Франтишка Богушевича", "Аэродромная", "Неморшанский сад", "Серебряный бор"
             ];
-
             allStations.forEach(station => {
                 const isDisabled = disabledStations.includes(station);
                 const div = document.createElement('div');
@@ -1038,9 +725,7 @@
                 });
                 if (isDisabled) disabledStations.push(stationName);
                 else disabledStations = disabledStations.filter(s => s !== stationName);
-            } catch (e) {
-                showToast("❌ Ошибка сохранения");
-            }
+            } catch (e) { showToast("❌ Ошибка сохранения"); }
         }
 
         async function fetchProducts() {
@@ -1050,9 +735,7 @@
                 allProducts = await response.json();
                 renderHome();
                 if(currentTabIndex === 1) renderCatalogUI();
-            } catch (error) {
-                showToast("⚠️ Сервер недоступен");
-            }
+            } catch (error) { showToast("⚠️ Сервер недоступен"); }
         }
 
         function renderHome() {
@@ -1097,11 +780,7 @@
                 div.onclick = () => {
                     switchTab('catalog');
                     selectCategory(allProducts.find(p => p.brand === brand)?.type || 'Жидкость', null);
-                    setTimeout(() => {
-                        currentCatalogBrand = brand;
-                        catalogViewState = 'flavors';
-                        renderCatalogUI();
-                    }, 100);
+                    setTimeout(() => { currentCatalogBrand = brand; catalogViewState = 'flavors'; renderCatalogUI(); }, 100);
                 };
                 container.appendChild(div);
             });
@@ -1112,13 +791,12 @@
             updateCartBadge();
             fetchProducts().then(renderBrands);
             checkAdminStatus(); 
+            loadContent();
             updateCarousel(0);
             loadAdminStations();
         };
         
-        window.addEventListener('resize', () => {
-            moveIndicator(document.getElementById(`nav-${tabs[currentTabIndex]}`));
-        });
+        window.addEventListener('resize', () => { moveIndicator(document.getElementById(`nav-${tabs[currentTabIndex]}`)); });
 
         function openDiscounts() {
             let sorted = [...allProducts].sort((a, b) => a.price - b.price);
@@ -1147,13 +825,10 @@
             currentCatalogBrand = null;
             currentCatalogFlavor = null;
             catalogViewState = 'brands';
-            
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
-            
             document.getElementById('catalogLevelTitle').style.display = 'block';
             document.getElementById('catalogLevelTitle').innerText = 'Выберите бренд:';
-            
             renderCatalogUI();
         }
 
@@ -1161,7 +836,6 @@
             const listContainer = document.getElementById('catalogListContainer');
             const grid = document.getElementById('catalog-grid');
             const backBtn = document.getElementById('catalogBackBtn');
-
             listContainer.innerHTML = '';
             grid.style.display = 'none';
             
@@ -1170,47 +844,32 @@
                 document.getElementById('catalogLevelTitle').innerText = 'Выберите бренд:';
                 listContainer.style.display = 'flex';
                 document.getElementById('mainCategories').style.display = 'flex';
-
                 const productsInCat = allProducts.filter(p => p.type === currentCatalogCategory);
                 const brands = [...new Set(productsInCat.map(p => p.brand))].filter(Boolean);
-                
-                if (brands.length === 0) {
-                    listContainer.innerHTML = '<div style="text-align:center; color:var(--hint-color); margin-top:20px;">Брендов пока нет</div>';
-                } else {
+                if (brands.length === 0) listContainer.innerHTML = '<div style="text-align:center; color:var(--hint-color); margin-top:20px;">Брендов пока нет</div>';
+                else {
                     brands.forEach(brand => {
                         const div = document.createElement('div');
                         div.className = 'list-item';
                         div.innerHTML = `<span>📁 ${brand}</span><span class="list-item-arrow">›</span>`;
-                        div.onclick = () => {
-                            currentCatalogBrand = brand;
-                            catalogViewState = 'flavors';
-                            renderCatalogUI();
-                        };
+                        div.onclick = () => { currentCatalogBrand = brand; catalogViewState = 'flavors'; renderCatalogUI(); };
                         listContainer.appendChild(div);
                     });
                 }
-
             } else if (catalogViewState === 'flavors') {
                 backBtn.style.display = 'block';
                 document.getElementById('catalogLevelTitle').innerText = `Бренд: ${currentCatalogBrand}`;
                 listContainer.style.display = 'flex';
                 document.getElementById('mainCategories').style.display = 'none';
-
                 const productsInBrand = allProducts.filter(p => p.type === currentCatalogCategory && p.brand === currentCatalogBrand);
                 const flavors = [...new Set(productsInBrand.map(p => p.title))].filter(Boolean);
-                
-                if (flavors.length === 0) {
-                    listContainer.innerHTML = '<div style="text-align:center; color:var(--hint-color); margin-top:20px;">Вкусов пока нет</div>';
-                } else {
+                if (flavors.length === 0) listContainer.innerHTML = '<div style="text-align:center; color:var(--hint-color); margin-top:20px;">Вкусов пока нет</div>';
+                else {
                     flavors.forEach(flavor => {
                         const div = document.createElement('div');
                         div.className = 'list-item';
                         div.innerHTML = `<span>🏷 ${flavor}</span><span class="list-item-arrow">›</span>`;
-                        div.onclick = () => {
-                            currentCatalogFlavor = flavor;
-                            catalogViewState = 'products';
-                            renderCatalogUI();
-                        };
+                        div.onclick = () => { currentCatalogFlavor = flavor; catalogViewState = 'products'; renderCatalogUI(); };
                         listContainer.appendChild(div);
                     });
                 }
@@ -1220,20 +879,14 @@
                 listContainer.style.display = 'none';
                 document.getElementById('mainCategories').style.display = 'none';
                 grid.style.display = 'grid';
-
                 const displayProducts = allProducts.filter(p => p.type === currentCatalogCategory && p.brand === currentCatalogBrand && p.title === currentCatalogFlavor);
                 renderProducts(displayProducts, 'catalog-grid');
             }
         }
 
         function goBackInCatalog() {
-            if (catalogViewState === 'products') {
-                catalogViewState = 'flavors';
-                currentCatalogFlavor = null;
-            } else if (catalogViewState === 'flavors') {
-                catalogViewState = 'brands';
-                currentCatalogBrand = null;
-            }
+            if (catalogViewState === 'products') { catalogViewState = 'flavors'; currentCatalogFlavor = null; }
+            else if (catalogViewState === 'flavors') { catalogViewState = 'brands'; currentCatalogBrand = null; }
             renderCatalogUI();
         }
 
@@ -1241,19 +894,12 @@
             const listContainer = document.getElementById('catalogListContainer');
             const grid = document.getElementById('catalog-grid');
             const backBtn = document.getElementById('catalogBackBtn');
-            
-            if (query.trim() === '') {
-                catalogViewState = 'brands';
-                renderCatalogUI();
-                return;
-            }
-
+            if (query.trim() === '') { catalogViewState = 'brands'; renderCatalogUI(); return; }
             listContainer.style.display = 'none';
             document.getElementById('mainCategories').style.display = 'none';
             document.getElementById('catalogLevelTitle').style.display = 'none';
             backBtn.style.display = 'block';
             grid.style.display = 'grid';
-
             const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query.toLowerCase()) || p.brand.toLowerCase().includes(query.toLowerCase()));
             renderProducts(filtered, 'catalog-grid');
         }
@@ -1261,42 +907,27 @@
         function openProductSheet(product, cartIndex = -1) {
             editingCartIndex = cartIndex;
             currentProductInSheet = product;
-            
             document.getElementById('sheetImg').src = "https://via.placeholder.com/300x300/0f172a/64748b?text=Photo";
             document.getElementById('sheetTitle').innerText = product.title;
             document.getElementById('sheetBrand').innerText = product.brand;
-            
             currentSheetQty = cartIndex > -1 ? cart[cartIndex].quantity : 1;
             document.getElementById('sheetQtyVal').innerText = currentSheetQty;
             updateSheetPrice();
-            
             const addBtn = document.getElementById('sheetAddBtn');
             addBtn.innerText = cartIndex > -1 ? "Обновить" : "В корзину";
             addBtn.classList.remove('added');
-            
             document.getElementById('overlay').classList.add('active');
             bottomSheet.classList.add('active');
             bottomSheet.style.transform = 'translateX(-50%) translateY(0)';
         }
 
-        function changeSheetQty(delta) {
-            currentSheetQty = Math.max(1, currentSheetQty + delta);
-            document.getElementById('sheetQtyVal').innerText = currentSheetQty;
-            updateSheetPrice();
-        }
-
-        function updateSheetPrice() {
-            if(!currentProductInSheet) return;
-            const total = currentProductInSheet.price * currentSheetQty;
-            document.getElementById('sheetPrice').innerText = total.toFixed(2) + ' BYN';
-        }
-
+        function changeSheetQty(delta) { currentSheetQty = Math.max(1, currentSheetQty + delta); document.getElementById('sheetQtyVal').innerText = currentSheetQty; updateSheetPrice(); }
+        function updateSheetPrice() { if(!currentProductInSheet) return; const total = currentProductInSheet.price * currentSheetQty; document.getElementById('sheetPrice').innerText = total.toFixed(2) + ' BYN'; }
         function closeAllModals() {
             document.getElementById('overlay').classList.remove('active');
             bottomSheet.classList.remove('active');
             document.getElementById('addressModal').classList.remove('active');
             document.getElementById('adminPanel').classList.remove('active');
-            
             if (currentTabIndex === 3) updateCarousel(previousTabIndex);
         }
 
@@ -1304,36 +935,22 @@
             const product = allProducts.find(p => p.id === productId);
             if(!product) return;
             addToCartLogic(product, 1);
-            if(btn) {
-                btn.classList.add('added'); btn.innerHTML = '✓';
-                setTimeout(() => { btn.classList.remove('added'); btn.innerHTML = '+'; }, 800);
-            }
+            if(btn) { btn.classList.add('added'); btn.innerHTML = '✓'; setTimeout(() => { btn.classList.remove('added'); btn.innerHTML = '+'; }, 800); }
         }
 
         function addToCartFromSheet() {
             if(!currentProductInSheet) return;
-            if (editingCartIndex > -1) {
-                cart[editingCartIndex].quantity = currentSheetQty;
-                showToast('Корзина обновлена');
-            } else {
-                addToCartLogic(currentProductInSheet, currentSheetQty);
-                quickAddAnimationBtn(currentProductInSheet.id);
-            }
-            updateCartBadge();
-            renderCart();
-            
+            if (editingCartIndex > -1) { cart[editingCartIndex].quantity = currentSheetQty; showToast('Корзина обновлена'); }
+            else { addToCartLogic(currentProductInSheet, currentSheetQty); quickAddAnimationBtn(currentProductInSheet.id); }
+            updateCartBadge(); renderCart();
             const addBtn = document.getElementById('sheetAddBtn');
-            addBtn.innerText = "Готово ✓";
-            addBtn.classList.add('added');
+            addBtn.innerText = "Готово ✓"; addBtn.classList.add('added');
             setTimeout(() => { closeAllModals(); }, 800);
         }
 
         function quickAddAnimationBtn(productId) {
             const btn = document.getElementById(`btn-prod-${productId}`);
-            if(btn) {
-                btn.classList.add('added'); btn.innerHTML = '✓';
-                setTimeout(() => { btn.classList.remove('added'); btn.innerHTML = '+'; }, 800);
-            }
+            if(btn) { btn.classList.add('added'); btn.innerHTML = '✓'; setTimeout(() => { btn.classList.remove('added'); btn.innerHTML = '+'; }, 800); }
         }
 
         function addToCartLogic(product, qty) {
@@ -1347,18 +964,9 @@
         function updateCartBadge() {
             const badge = document.getElementById('cartBadge');
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            if(totalItems > 0) { badge.innerText = totalItems; badge.classList.add('show'); } 
-            else { badge.classList.remove('show'); }
-
+            if(totalItems > 0) { badge.innerText = totalItems; badge.classList.add('show'); } else { badge.classList.remove('show'); }
             const checkoutBtn = document.getElementById('checkoutBtn');
-            if (cart.length > 0) {
-                checkoutBtn.disabled = false;
-                checkoutBtn.innerText = "Оформить заказ";
-            } else {
-                checkoutBtn.disabled = true;
-                checkoutBtn.innerText = "Корзина пуста";
-            }
-
+            if (cart.length > 0) { checkoutBtn.disabled = false; checkoutBtn.innerText = "Оформить заказ"; } else { checkoutBtn.disabled = true; checkoutBtn.innerText = "Корзина пуста"; }
             localStorage.setItem('vape_cart', JSON.stringify(cart));
         }
 
@@ -1367,23 +975,12 @@
             const emptyMsg = document.getElementById('cart-empty');
             const checkout = document.getElementById('checkout-section');
             const totalPriceEl = document.getElementById('cart-total-price');
-
-            if (cart.length === 0) {
-                container.innerHTML = '';
-                emptyMsg.style.display = 'flex';
-                checkout.style.display = 'none';
-                return;
-            }
-
-            emptyMsg.style.display = 'none';
-            checkout.style.display = 'block';
-            container.innerHTML = '';
-            
+            if (cart.length === 0) { container.innerHTML = ''; emptyMsg.style.display = 'flex'; checkout.style.display = 'none'; return; }
+            emptyMsg.style.display = 'none'; checkout.style.display = 'block'; container.innerHTML = '';
             let total = 0;
             cart.forEach((item, index) => {
                 total += item.price * item.quantity;
                 const displayTitle = `${item.type} "${item.title}"`;
-                
                 container.innerHTML += `
                     <div class="cart-item">
                         <img src="https://via.placeholder.com/100x100/0f172a/64748b?text=Photo" class="cart-item-img">
@@ -1392,153 +989,66 @@
                             <div style="font-size:12px; color:var(--hint-color); margin-bottom:4px;">Кол-во: ${item.quantity} шт.</div>
                             <div class="cart-item-price">${(item.price * item.quantity).toFixed(2)} BYN</div>
                         </div>
-                        <button class="delete-btn" onclick="removeFromCart(${index})">
-                            <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-                        </button>
+                        <button class="delete-btn" onclick="removeFromCart(${index})"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
                     </div>
                 `;
             });
             totalPriceEl.innerText = total.toFixed(2) + ' BYN';
         }
 
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCartBadge();
-            renderCart();
-            showToast('Товар удален');
-        }
+        function removeFromCart(index) { cart.splice(index, 1); updateCartBadge(); renderCart(); showToast('Товар удален'); }
 
         async function submitOrder() {
             if (cart.length === 0) return;
-            
             const btn = document.getElementById('checkoutBtn');
-            btn.disabled = true;
-            btn.innerText = "Отправка...";
-
+            btn.disabled = true; btn.innerText = "Отправка...";
             const addr = localStorage.getItem('vape_addr') || "Не выбрана";
             const now = new Date();
             const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-            
-            let text = `Здравствуйте! Хочу оформить заказ:\n\n`;
-            text += `📍 Локация: ${addr}\n`;
-            text += `🕒 Время: ${timeStr}\n\n`;
-            text += `🛒 Товары:\n`;
-            
+            let text = `Здравствуйте! Хочу оформить заказ:\n\n📍 Локация: ${addr}\n🕒 Время: ${timeStr}\n\n🛒 Товары:\n`;
             let total = 0;
-            cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                total += itemTotal;
-                text += `• ${item.type} "${item.title}" - ${item.quantity} шт. = ${itemTotal.toFixed(2)} BYN\n`;
-            });
-            
+            cart.forEach(item => { const itemTotal = item.price * item.quantity; total += itemTotal; text += `• ${item.type} "${item.title}" - ${item.quantity} шт. = ${itemTotal.toFixed(2)} BYN\n`; });
             text += `\n💰 Итого: ${total.toFixed(2)} BYN`;
-
-            const orderData = {
-                items: cart.map(item => ({ product_id: item.id, quantity: item.quantity })),
-                name: user ? user.first_name : "Клиент",
-                phone: "Telegram"
-            };
-
+            const orderData = { items: cart.map(item => ({ product_id: item.id, quantity: item.quantity })), name: user ? user.first_name : "Клиент", phone: "Telegram" };
             try {
-                const response = await fetch(`${API_URL}/order`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(orderData)
-                });
-
+                const response = await fetch(`${API_URL}/order`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) });
                 if (!response.ok) throw new Error("Ошибка при списании");
-
-                cart = [];
-                updateCartBadge();
-                renderCart();
-                showToast('🎉 Заказ оформлен!');
-                fetchProducts(); 
-
-                setTimeout(() => { 
-                    const url = `https://t.me/${SUPPORT_TG}?text=${encodeURIComponent(text)}`;
-                    tg.openTelegramLink(url);
-                    updateCarousel(0);
-                }, 1000);
-
-            } catch (error) {
-                showToast(`❌ ${error.message}`);
-                btn.disabled = false;
-                btn.innerText = "Оформить заказ";
-            }
+                cart = []; updateCartBadge(); renderCart(); showToast('🎉 Заказ оформлен!'); fetchProducts(); 
+                setTimeout(() => { const url = `https://t.me/${SUPPORT_TG}?text=${encodeURIComponent(text)}`; tg.openTelegramLink(url); updateCarousel(0); }, 1000);
+            } catch (error) { showToast(`❌ ${error.message}`); btn.disabled = false; btn.innerText = "Оформить заказ"; }
         }
 
-        function openAddressModal() {
-            document.getElementById('sidebar').classList.remove('active');
-            document.getElementById('overlay').classList.add('active');
-            document.getElementById('addressModal').classList.add('active');
-            loadAdminStations().then(renderClientStations); 
-        }
-
-        function openAddressModalFromProfile() {
-            document.getElementById('sidebar').classList.remove('active');
-            document.getElementById('overlay').classList.add('active');
-            document.getElementById('addressModal').classList.add('active');
-            loadAdminStations().then(renderClientStations);
-        }
-
+        function openAddressModal() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.add('active'); document.getElementById('addressModal').classList.add('active'); loadAdminStations().then(renderClientStations); }
+        function openAddressModalFromProfile() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.add('active'); document.getElementById('addressModal').classList.add('active'); loadAdminStations().then(renderClientStations); }
         function submitCourierAddress() {
             const input = document.getElementById('courierAddressInput').value;
             if(!input) { showToast('⚠️ Введите адрес доставки'); return; }
-            document.getElementById('addressBtn').innerHTML = `🚚 Доставка`;
-            showToast(`🚚 Курьер приедет по адресу: ${input}`);
-            localStorage.setItem('vape_addr', 'Доставка: ' + input);
-            setTimeout(() => closeAllModals(), 500);
+            document.getElementById('addressBtn').innerHTML = `🚚 Доставка`; showToast(`🚚 Курьер приедет по адресу: ${input}`);
+            localStorage.setItem('vape_addr', 'Доставка: ' + input); setTimeout(() => closeAllModals(), 500);
         }
 
         function renderClientStations() {
-            const list = document.getElementById('metroList');
-            list.innerHTML = '';
-            
+            const list = document.getElementById('metroList'); list.innerHTML = '';
             const metroLines = [
-                {
-                    name: "Синяя ветка",
-                    stations: ["Малиновка", "Петровщина", "Михалово", "Грушевка", "Институт Культуры", "Площадь Ленина", "Октябрьская", "Площадь Победы", "Площадь Якуба Коласа", "Академия Наук", "Парк Челюскинцев", "Московская", "Восток", "Борисовский тракт", "Уручье"]
-                },
-                {
-                    name: "Красная ветка",
-                    stations: ["Каменная Горка", "Кунцевщина", "Спортивная", "Пушкинская", "Молодежная", "Фрунзенская", "Немига", "Купаловская", "Первомайская", "Пролетарская", "Тракторный завод", "Партизанская", "Автозаводская", "Могилевская", "Шабаны"]
-                },
-                {
-                    name: "Зеленая ветка",
-                    stations: ["Слуцкий Гостинец", "Новаторская", "Вокзальная", "Ковальская Слобода", "Юбилейная площадь", "Площадь Франтишка Богушевича", "Аэродромная", "Неморшанский сад", "Серебряный бор"]
-                }
+                { name: "Синяя ветка", stations: ["Малиновка", "Петровщина", "Михалово", "Грушевка", "Институт Культуры", "Площадь Ленина", "Октябрьская", "Площадь Победы", "Площадь Якуба Коласа", "Академия Наук", "Парк Челюскинцев", "Московская", "Восток", "Борисовский тракт", "Уручье"] },
+                { name: "Красная ветка", stations: ["Каменная Горка", "Кунцевщина", "Спортивная", "Пушкинская", "Молодежная", "Фрунзенская", "Немига", "Купаловская", "Первомайская", "Пролетарская", "Тракторный завод", "Партизанская", "Автозаводская", "Могилевская", "Шабаны"] },
+                { name: "Зеленая ветка", stations: ["Слуцкий Гостинец", "Новаторская", "Вокзальная", "Ковальская Слобода", "Юбилейная площадь", "Площадь Франтишка Богушевича", "Аэродромная", "Неморшанский сад", "Серебряный бор"] }
             ];
-
             const savedAddr = localStorage.getItem('vape_addr');
-
             metroLines.forEach(line => {
-                const title = document.createElement('div');
-                title.className = 'metro-line-title';
-                title.innerText = line.name;
-                list.appendChild(title);
-
+                const title = document.createElement('div'); title.className = 'metro-line-title'; title.innerText = line.name; list.appendChild(title);
                 line.stations.forEach(station => {
                     const isDisabled = disabledStations.includes(station);
                     const div = document.createElement('div');
                     div.className = 'address-item' + (isDisabled ? ' disabled-station' : '');
-                    
                     if (savedAddr === station) div.classList.add('active');
-
                     div.onclick = () => {
-                        if (isDisabled) {
-                            showToast('⚠️ По этой станции доставка временно не осуществляется');
-                            return;
-                        }
-                        document.querySelectorAll('.address-item').forEach(i => i.classList.remove('active'));
-                        div.classList.add('active');
-                        document.getElementById('addressBtn').innerHTML = `📍 ${station}`;
-                        localStorage.setItem('vape_addr', station);
-                        showToast(`📍 Станция: ${station}`);
-                        setTimeout(() => closeAllModals(), 500);
+                        if (isDisabled) { showToast('⚠️ По этой станции доставка временно не осуществляется'); return; }
+                        document.querySelectorAll('.address-item').forEach(i => i.classList.remove('active')); div.classList.add('active');
+                        document.getElementById('addressBtn').innerHTML = `📍 ${station}`; localStorage.setItem('vape_addr', station);
+                        showToast(`📍 Станция: ${station}`); setTimeout(() => closeAllModals(), 500);
                     };
-                    
-                    div.innerHTML = `<div><span>${station}</span></div><div style="color:var(--success-color); display:none;">✓</div>`;
-                    list.appendChild(div);
+                    div.innerHTML = `<div><span>${station}</span></div><div style="color:var(--success-color); display:none;">✓</div>`; list.appendChild(div);
                 });
             });
         }
@@ -1547,44 +1057,19 @@
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = 'toast';
-            toast.innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
-                    <span>Связь с менеджером:</span>
-                    <a href="https://t.me/${SUPPORT_TG}" target="_blank" class="support-link">@${SUPPORT_TG}</a>
-                    <button onclick="copySupportLink()" style="background:rgba(255,255,255,0.1); border:none; color:white; padding:10px 20px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer;">📋 Скопировать</button>
-                </div>
-            `;
-            toast.style.animation = 'slideUpToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards';
-            toast.style.pointerEvents = 'auto';
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 5000);
+            toast.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; gap:10px;"><span>Связь с менеджером:</span><a href="https://t.me/${SUPPORT_TG}" target="_blank" class="support-link">@${SUPPORT_TG}</a><button onclick="copySupportLink()" style="background:rgba(255,255,255,0.1); border:none; color:white; padding:10px 20px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer;">📋 Скопировать</button></div>`;
+            toast.style.animation = 'slideUpToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards'; toast.style.pointerEvents = 'auto';
+            container.appendChild(toast); setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 5000);
         }
 
-        function copySupportLink() {
-            navigator.clipboard.writeText(`@${SUPPORT_TG}`).then(() => {
-                showToast('✅ Скопировано!');
-            }).catch(() => {
-                showToast('❌ Ошибка копирования');
-            });
-        }
-
-        function showToast(message) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerText = message;
-            container.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 3000);
-        }
+        function copySupportLink() { navigator.clipboard.writeText(`@${SUPPORT_TG}`).then(() => { showToast('✅ Скопировано!'); }).catch(() => { showToast('❌ Ошибка'); }); }
+        function showToast(message) { const container = document.getElementById('toastContainer'); const toast = document.createElement('div'); toast.className = 'toast'; toast.innerText = message; container.appendChild(toast); setTimeout(() => { toast.remove(); }, 3000); }
 
         function initStorage() {
             const savedCart = localStorage.getItem('vape_cart');
             if (savedCart) cart = JSON.parse(savedCart);
-            
             const savedAddr = localStorage.getItem('vape_addr');
-            if (savedAddr) {
-                document.getElementById('addressBtn').innerHTML = `📍 ${savedAddr}`;
-            }
+            if (savedAddr) { document.getElementById('addressBtn').innerHTML = `📍 ${savedAddr}`; }
         }
     </script>
 </body>
