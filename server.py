@@ -27,19 +27,15 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 def validate_telegram_data(init_data: str) -> Optional[dict]:
     try:
         parsed_data = dict(parse_qsl(init_data))
-        if "hash" not in parsed_data:
-            return None
+        if "hash" not in parsed_data: return None
         hash_from_telegram = parsed_data.pop("hash")
         data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed_data.items()))
         secret_key = hmac.new(b"WebAppData", BOT_TOKEN.encode(), hashlib.sha256).digest()
         calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
         if calculated_hash == hash_from_telegram:
-            if "user" in parsed_data:
-                return json.loads(parsed_data["user"])
+            if "user" in parsed_data: return json.loads(parsed_data["user"])
         return None
-    except Exception as e:
-        print(f"Ошибка валидации: {e}")
-        return None
+    except: return None
 
 def get_db_connection():
     url = DATABASE_URL.replace("postgres://", "postgresql://")
@@ -52,81 +48,74 @@ def init_db():
     # Товары
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS products (
-            id SERIAL PRIMARY KEY, 
-            title TEXT NOT NULL, 
-            brand TEXT,
-            price REAL, 
-            stock INTEGER, 
-            type TEXT
+            id SERIAL PRIMARY KEY, title TEXT NOT NULL, brand TEXT,
+            price REAL, stock INTEGER, type TEXT
         )
     ''')
-    
     # Админы
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS admins (user_id BIGINT PRIMARY KEY)
-    ''')
+    cursor.execute('CREATE TABLE IF NOT EXISTS admins (user_id BIGINT PRIMARY KEY)')
+    # Станции
+    cursor.execute('CREATE TABLE IF NOT EXISTS disabled_stations (station_name TEXT PRIMARY KEY)')
     
-    # Выключенные станции
+    # Настройки контента
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS disabled_stations (
-            station_name TEXT PRIMARY KEY
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
         )
     ''')
     
-    # Проверяем, пустая ли таблица товаров
+    # Дефолтные настройки баннера
+    cursor.execute("INSERT INTO settings (key, value) VALUES ('banner_title', 'STTP SHOP') ON CONFLICT DO NOTHING")
+    cursor.execute("INSERT INTO settings (key, value) VALUES ('banner_subtitle', 'Ждем ваших заказов 🔥') ON CONFLICT DO NOTHING")
+
     cursor.execute('SELECT COUNT(*) FROM products')
     if cursor.fetchone()['count'] == 0:
-        # Список брендов из вашего скрина
-        start_brands = [
-            "Annima Love", "Bjorn", "Catswill", "Duall", "Elfliq", 
-            "Hotspot", "Isterika", "Monster", "OGGO prime", "Podonki", 
-            "Rick and Morty", "SKL", "Анархия V2", "Злая монашка", 
-            "Призрак 69", "Самоубийца"
-        ]
-        
-        # Добавляем стартовые бренды (по 0 остатка, чтобы они появились в каталоге)
+        start_brands = ["Annima Love", "Bjorn", "Catswill", "Duall", "Elfliq", "Hotspot", "Isterika", "Monster", "OGGO prime", "Podonki", "Rick and Morty", "SKL", "Анархия V2", "Злая монашка", "Призрак 69", "Самоубийца"]
         for brand in start_brands:
-            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES (%s, %s, %s, %s, %s)", 
-                           ('Новый вкус', brand, 0.0, 0, 'Жидкость'))
+            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES ('Новый вкус', %s, 0.0, 0, 'Жидкость')", (brand,))
             
     conn.commit()
     cursor.close()
     conn.close()
 
-try:
-    init_db()
-    print("База данных успешно инициализирована!")
-except Exception as e:
-    print(f"Ошибка инициализации БД: {e}")
+try: init_db()
+except Exception as e: print(f"Ошибка инициализации БД: {e}")
 
+# --- МОДЕЛИ ---
 class OrderItem(BaseModel):
     product_id: int
     quantity: int
-
 class Order(BaseModel):
     items: List[OrderItem]
     name: str
     phone: str
-
 class ProductRequest(BaseModel):
     title: str
     brand: str
     price: float
     stock: int
     type: str
-
 class DeleteRequest(BaseModel):
     product_id: int
-
 class EditRequest(BaseModel):
     product_id: int
     new_price: float
     new_stock: int
-
 class ToggleStationRequest(BaseModel):
     station_name: str
     is_disabled: bool
+class ImportProduct(BaseModel):
+    title: str
+    brand: str
+    price: float
+    stock: int
+    type: str
+class ContentRequest(BaseModel):
+    banner_title: str
+    banner_subtitle: str
 
+# --- API ---
 @app.get("/api/products")
 def get_products():
     conn = get_db_connection()
@@ -155,8 +144,7 @@ def create_order(order: Order):
 
 def check_admin_rights(init_data: str):
     user_data = validate_telegram_data(init_data)
-    if not user_data:
-        raise HTTPException(status_code=401, detail="Неверная подпись Telegram")
+    if not user_data: raise HTTPException(status_code=401, detail="Неверная подпись")
     user_id = user_data.get("id")
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -164,10 +152,37 @@ def check_admin_rights(init_data: str):
     is_admin = cursor.fetchone() is not None
     cursor.close()
     conn.close()
-    if not is_admin:
-        raise HTTPException(status_code=403, detail="Вы не администратор")
+    if not is_admin: raise HTTPException(status_code=403, detail="Вы не администратор")
     return user_id
 
+# --- КОНТЕНТ ---
+@app.get("/api/content")
+def get_content():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT key, value FROM settings WHERE key IN ('banner_title', 'banner_subtitle')")
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    res = {row['key']: row['value'] for row in rows}
+    return {
+        "banner_title": res.get('banner_title', 'STTP SHOP'),
+        "banner_subtitle": res.get('banner_subtitle', 'Ждем ваших заказов 🔥')
+    }
+
+@app.post("/api/content")
+def update_content(req: ContentRequest, x_init_data: str = Header(None)):
+    check_admin_rights(x_init_data)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE settings SET value = %s WHERE key = 'banner_title'", (req.banner_title,))
+    cursor.execute("UPDATE settings SET value = %s WHERE key = 'banner_subtitle'", (req.banner_subtitle,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"status": "ok"}
+
+# --- ТОВАРЫ ---
 @app.post("/api/add-product")
 def add_product_admin(req: ProductRequest, x_init_data: str = Header(None)):
     check_admin_rights(x_init_data)
@@ -179,6 +194,27 @@ def add_product_admin(req: ProductRequest, x_init_data: str = Header(None)):
     cursor.close()
     conn.close()
     return {"status": "ok"}
+
+@app.post("/api/import-products")
+def import_products(products: List[ImportProduct], x_init_data: str = Header(None)):
+    check_admin_rights(x_init_data)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    count = 0
+    for p in products:
+        # Проверка на дубликат (по названию и бренду)
+        cursor.execute("SELECT id FROM products WHERE title = %s AND brand = %s", (p.title, p.brand))
+        existing = cursor.fetchone()
+        if existing:
+            cursor.execute("UPDATE products SET price = %s, stock = stock + %s WHERE id = %s", (p.price, p.stock, existing['id']))
+        else:
+            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES (%s, %s, %s, %s, %s)", 
+                           (p.title, p.brand, p.price, p.stock, p.type))
+        count += 1
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"status": "ok", "imported": count}
 
 @app.post("/api/delete-product")
 def delete_product(req: DeleteRequest, x_init_data: str = Header(None)):
@@ -202,14 +238,7 @@ def edit_product(req: EditRequest, x_init_data: str = Header(None)):
     conn.close()
     return {"status": "ok"}
 
-@app.get("/api/check-admin")
-def check_admin(x_init_data: str = Header(None)):
-    try:
-        user_id = check_admin_rights(x_init_data)
-        return {"is_admin": True, "user_id": user_id}
-    except:
-        return {"is_admin": False}
-
+# --- СТАНЦИИ ---
 @app.get("/api/stations")
 def get_stations():
     conn = get_db_connection()
@@ -234,10 +263,16 @@ def toggle_station(req: ToggleStationRequest, x_init_data: str = Header(None)):
     conn.close()
     return {"status": "ok"}
 
+@app.get("/api/check-admin")
+def check_admin(x_init_data: str = Header(None)):
+    try:
+        user_id = check_admin_rights(x_init_data)
+        return {"is_admin": True, "user_id": user_id}
+    except: return {"is_admin": False}
+
 @app.post("/api/add-admin")
 def add_admin(req: dict):
-    if req.get("owner_id") != 1340303313:
-        raise HTTPException(status_code=403, detail="Нет прав")
+    if req.get("owner_id") != 1340303313: raise HTTPException(status_code=403)
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("INSERT INTO admins (user_id) VALUES (%s) ON CONFLICT DO NOTHING", (req["user_id"],))
