@@ -1,7 +1,10 @@
 from fastapi import FastAPI, HTTPException, Header
+from fastAPI.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import os
+import io
+import csv
 import uvicorn
 import hashlib
 import hmac
@@ -44,28 +47,20 @@ def get_db_connection():
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    # Товары
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS products (
             id SERIAL PRIMARY KEY, title TEXT NOT NULL, brand TEXT,
             price REAL, stock INTEGER, type TEXT
         )
     ''')
-    # Админы
     cursor.execute('CREATE TABLE IF NOT EXISTS admins (user_id BIGINT PRIMARY KEY)')
-    # Станции
     cursor.execute('CREATE TABLE IF NOT EXISTS disabled_stations (station_name TEXT PRIMARY KEY)')
-    
-    # Настройки контента
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS settings (
             key TEXT PRIMARY KEY,
             value TEXT
         )
     ''')
-    
-    # Дефолтные настройки баннера
     cursor.execute("INSERT INTO settings (key, value) VALUES ('banner_title', 'STTP SHOP') ON CONFLICT DO NOTHING")
     cursor.execute("INSERT INTO settings (key, value) VALUES ('banner_subtitle', 'Ждем ваших заказов 🔥') ON CONFLICT DO NOTHING")
 
@@ -115,6 +110,40 @@ class ContentRequest(BaseModel):
     banner_title: str
     banner_subtitle: str
 
+# --- ЭКСПОРТ ФАЙЛОВ (ДЛЯ БРАУЗЕРА) ---
+@app.get("/api/download/export")
+def export_csv():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT title, brand, price, stock, type FROM products ORDER BY type, brand, title")
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    output = io.StringIO()
+    output.write('\ufeff') # BOM для Excel
+    writer = csv.writer(output, delimiter=';')
+    writer.writerow(['Название', 'Бренд', 'Цена', 'Количество', 'Категория'])
+    
+    for row in rows:
+        writer.writerow([row['title'], row['brand'], row['price'], row['stock'], row['type']])
+
+    response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=sttp_export.csv"
+    return response
+
+@app.get("/api/download/template")
+def download_template():
+    output = io.StringIO()
+    output.write('\ufeff')
+    writer = csv.writer(output, delimiter=';')
+    writer.writerow(['Название', 'Бренд', 'Цена', 'Количество', 'Категория'])
+    writer.writerow(['Пример вкуса', 'Пример бренда', '10.5', '100', 'Жидкость'])
+    
+    response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=sttp_template.csv"
+    return response
+
 # --- API ---
 @app.get("/api/products")
 def get_products():
@@ -155,7 +184,6 @@ def check_admin_rights(init_data: str):
     if not is_admin: raise HTTPException(status_code=403, detail="Вы не администратор")
     return user_id
 
-# --- КОНТЕНТ ---
 @app.get("/api/content")
 def get_content():
     conn = get_db_connection()
@@ -182,7 +210,6 @@ def update_content(req: ContentRequest, x_init_data: str = Header(None)):
     conn.close()
     return {"status": "ok"}
 
-# --- ТОВАРЫ ---
 @app.post("/api/add-product")
 def add_product_admin(req: ProductRequest, x_init_data: str = Header(None)):
     check_admin_rights(x_init_data)
@@ -202,7 +229,6 @@ def import_products(products: List[ImportProduct], x_init_data: str = Header(Non
     cursor = conn.cursor()
     count = 0
     for p in products:
-        # Проверка на дубликат (по названию и бренду)
         cursor.execute("SELECT id FROM products WHERE title = %s AND brand = %s", (p.title, p.brand))
         existing = cursor.fetchone()
         if existing:
@@ -238,7 +264,6 @@ def edit_product(req: EditRequest, x_init_data: str = Header(None)):
     conn.close()
     return {"status": "ok"}
 
-# --- СТАНЦИИ ---
 @app.get("/api/stations")
 def get_stations():
     conn = get_db_connection()
