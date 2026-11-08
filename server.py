@@ -5,7 +5,8 @@ import os
 import uvicorn
 import hashlib
 import hmac
-from urllib.parse import unquote, parse_qsl
+import json
+from urllib.parse import parse_qsl
 from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -23,7 +24,6 @@ app.add_middleware(
 DATABASE_URL = os.getenv("DATABASE_URL")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# --- ФУНКЦИЯ ПРОВЕРКИ ПОДПИСИ TELEGRAM ---
 def validate_telegram_data(init_data: str) -> Optional[dict]:
     try:
         parsed_data = dict(parse_qsl(init_data))
@@ -37,8 +37,6 @@ def validate_telegram_data(init_data: str) -> Optional[dict]:
         calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
         
         if calculated_hash == hash_from_telegram:
-            # Декодируем JSON пользователя
-            import json
             if "user" in parsed_data:
                 return json.loads(parsed_data["user"])
         return None
@@ -46,7 +44,6 @@ def validate_telegram_data(init_data: str) -> Optional[dict]:
         print(f"Ошибка валидации: {e}")
         return None
 
-# --- ПОДКЛЮЧЕНИЕ К БД ---
 def get_db_connection():
     url = DATABASE_URL.replace("postgres://", "postgresql://")
     return psycopg2.connect(url, cursor_factory=RealDictCursor)
@@ -54,15 +51,31 @@ def get_db_connection():
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    # Товары
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS products (
-            id SERIAL PRIMARY KEY, title TEXT NOT NULL, brand TEXT,
-            price REAL, stock INTEGER, type TEXT
+            id SERIAL PRIMARY KEY, 
+            title TEXT NOT NULL, 
+            brand TEXT,
+            price REAL, 
+            stock INTEGER, 
+            type TEXT
         )
     ''')
+    
+    # Админы
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS admins (user_id BIGINT PRIMARY KEY)
     ''')
+    
+    # Выключенные станции (новая таблица)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS disabled_stations (
+            station_name TEXT PRIMARY KEY
+        )
+    ''')
+    
     cursor.execute('SELECT COUNT(*) FROM products')
     if cursor.fetchone()['count'] == 0:
         cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES (%s, %s, %s, %s, %s)", 
@@ -77,7 +90,6 @@ try:
 except Exception as e:
     print(f"Ошибка инициализации БД: {e}")
 
-# --- МОДЕЛИ ---
 class OrderItem(BaseModel):
     product_id: int
     quantity: int
@@ -102,7 +114,9 @@ class EditRequest(BaseModel):
     new_price: float
     new_stock: int
 
-# --- ЭНДПОИНТЫ ---
+class ToggleStationRequest(BaseModel):
+    station_name: str
+    is_disabled: bool
 
 @app.get("/api/products")
 def get_products():
@@ -129,8 +143,6 @@ def create_order(order: Order):
     cursor.close()
     conn.close()
     return {"status": "ok"}
-
-# --- АДМИНКА (ТЕПЕРЬ С ПРОВЕРКОЙ) ---
 
 def check_admin_rights(init_data: str):
     user_data = validate_telegram_data(init_data)
@@ -191,9 +203,32 @@ def check_admin(x_init_data: str = Header(None)):
     except:
         return {"is_admin": False}
 
-@app.post("/api/add-admin") # Для бота
+@app.get("/api/stations")
+def get_stations():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT station_name FROM disabled_stations")
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return [row['station_name'] for row in rows]
+
+@app.post("/api/toggle-station")
+def toggle_station(req: ToggleStationRequest, x_init_data: str = Header(None)):
+    check_admin_rights(x_init_data)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if req.is_disabled:
+        cursor.execute("INSERT INTO disabled_stations (station_name) VALUES (%s) ON CONFLICT DO NOTHING", (req.station_name,))
+    else:
+        cursor.execute("DELETE FROM disabled_stations WHERE station_name = %s", (req.station_name,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"status": "ok"}
+
+@app.post("/api/add-admin")
 def add_admin(req: dict):
-    # Эту ручку дергает бот, поэтому проверяем owner_id внутри
     if req.get("owner_id") != 1340303313:
         raise HTTPException(status_code=403, detail="Нет прав")
     conn = get_db_connection()
@@ -204,7 +239,7 @@ def add_admin(req: dict):
     conn.close()
     return {"status": "ok"}
 
-@app.post("/api/check-user") # Для бота
+@app.post("/api/check-user")
 def check_user(req: dict):
     conn = get_db_connection()
     cursor = conn.cursor()
