@@ -26,10 +26,7 @@
         .tab-content { width: 25%; height: 100%; overflow-y: auto; padding-bottom: 90px; overscroll-behavior-y: contain; }
         .tab-content::-webkit-scrollbar { display: none; }
 
-        #csvFileInput {
-            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-            overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; opacity: 0; pointer-events: none;
-        }
+        #csvFileInput { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; opacity: 0; pointer-events: none; }
 
         .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; margin: 90px 16px 16px 16px; background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative; z-index: 100; animation: slideDown 0.5s ease; }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -193,6 +190,7 @@
     <div class="app-container" id="appContainer">
         <div class="tabs-wrapper" id="tabsWrapper">
             
+            <!-- ГЛАВНАЯ -->
             <div id="tab-home" class="tab-content active">
                 <header class="header">
                     <div class="user-info" onclick="openProfile()">
@@ -219,6 +217,7 @@
                 <div class="grid-container" id="home-grid-new"></div>
             </div>
 
+            <!-- КАТАЛОГ -->
             <div id="tab-catalog" class="tab-content">
                 <div class="catalog-header">
                     <div class="search-wrapper">
@@ -239,6 +238,7 @@
                 <div class="grid-container" id="catalog-grid" style="display: none;"></div>
             </div>
 
+            <!-- КОРЗИНА -->
             <div id="tab-cart" class="tab-content">
                 <div class="section-title" style="margin-top: 90px;"><span>Ваша корзина</span></div>
                 <div id="cart-empty" class="cart-empty-state">
@@ -253,6 +253,7 @@
                 </div>
             </div>
 
+            <!-- ПРОФИЛЬ -->
             <div id="tab-profile" class="tab-content">
                 <div class="cart-empty-state"><h2>Профиль</h2><p>Выберите пункт в меню слева.</p></div>
             </div>
@@ -561,28 +562,25 @@
             });
         }
 
-        // --- ЭКСПОРТ ЧЕРЕЗ ВНЕШНИЙ БРАУЗЕР (чтобы Telegram не блокировал) ---
-        function downloadFile(content, fileName, mimeType) {
-            const base64Content = btoa(unescape(encodeURIComponent("\uFEFF" + content)));
-            const dataUri = `data:${mimeType};base64,${base64Content}`;
-            
-            // Открываем в системном браузере через Telegram API
-            tg.openLink(dataUri);
-            showToast('📥 Файл отправлен в браузер');
-        }
-
+        // --- ЭКСПОРТ ЧЕРЕЗ СЕРВЕР ---
         function downloadCSVTemplate() {
-            const csv = "Название;Бренд;Цена;Количество;Категория\nПример вкуса;Пример бренда;10.5;100;Жидкость";
-            downloadFile(csv, "sttp_template.csv", "text/csv");
+            const url = `${API_URL}/download/template`;
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.openLink(url);
+            } else {
+                window.open(url, '_blank');
+            }
+            showToast('📥 Шаблон открыт');
         }
 
         function downloadCSV() {
-            if (allProducts.length === 0) { showToast('Нет товаров для экспорта'); return; }
-            let csv = "Название;Бренд;Цена;Количество;Категория\n";
-            allProducts.forEach(p => {
-                csv += `${p.title};${p.brand};${p.price};${p.stock};${p.type}\n`;
-            });
-            downloadFile(csv, `sttp_export_${new Date().toISOString().slice(0,10)}.csv`, "text/csv");
+            const url = `${API_URL}/download/export`;
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.openLink(url);
+            } else {
+                window.open(url, '_blank');
+            }
+            showToast('📥 Экспорт открыт');
         }
 
         function triggerImport() {
