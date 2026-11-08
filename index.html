@@ -190,7 +190,6 @@
     <div class="app-container" id="appContainer">
         <div class="tabs-wrapper" id="tabsWrapper">
             
-            <!-- ГЛАВНАЯ -->
             <div id="tab-home" class="tab-content active">
                 <header class="header">
                     <div class="user-info" onclick="openProfile()">
@@ -217,7 +216,6 @@
                 <div class="grid-container" id="home-grid-new"></div>
             </div>
 
-            <!-- КАТАЛОГ -->
             <div id="tab-catalog" class="tab-content">
                 <div class="catalog-header">
                     <div class="search-wrapper">
@@ -238,7 +236,6 @@
                 <div class="grid-container" id="catalog-grid" style="display: none;"></div>
             </div>
 
-            <!-- КОРЗИНА -->
             <div id="tab-cart" class="tab-content">
                 <div class="section-title" style="margin-top: 90px;"><span>Ваша корзина</span></div>
                 <div id="cart-empty" class="cart-empty-state">
@@ -253,7 +250,6 @@
                 </div>
             </div>
 
-            <!-- ПРОФИЛЬ -->
             <div id="tab-profile" class="tab-content">
                 <div class="cart-empty-state"><h2>Профиль</h2><p>Выберите пункт в меню слева.</p></div>
             </div>
@@ -306,10 +302,11 @@
         </div>
 
         <div class="admin-tab-content active" id="admin-tab-products">
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
                 <button type="button" class="admin-action-btn" onclick="downloadCSV()" style="flex: 1; padding: 12px;">📥 Экспорт</button>
                 <button type="button" class="admin-action-btn" onclick="downloadCSVTemplate()" style="flex: 1; padding: 12px;">📄 Шаблон</button>
                 <button type="button" class="admin-action-btn" onclick="triggerImport()" style="flex: 1; padding: 12px; background: var(--success-color); color: white;">📤 Импорт</button>
+                <button type="button" class="admin-action-btn" onclick="seedBrands()" style="flex: 1; padding: 12px; background: #8b5cf6; color: white; min-width: 100%;">🌱 Залить бренды</button>
                 <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVImport(event)">
             </div>
 
@@ -562,24 +559,38 @@
             });
         }
 
+        // --- ЗАЛИВКА БРЕНДОВ ---
+        async function seedBrands() {
+            if (!confirm("Добавить стандартные бренды в базу? (Те, которых нет)")) return;
+            try {
+                const res = await fetch(`${API_URL}/seed-brands`, {
+                    method: 'POST',
+                    headers: { 'X-Init-Data': tg.initData }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(`✅ Добавлено брендов: ${data.added}`);
+                    fetchProducts().then(renderAdminList);
+                } else {
+                    showToast("❌ Ошибка сервера");
+                }
+            } catch (e) {
+                showToast("❌ Ошибка сети");
+            }
+        }
+
         // --- ЭКСПОРТ ЧЕРЕЗ СЕРВЕР ---
         function downloadCSVTemplate() {
             const url = `${API_URL}/download/template`;
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.openLink(url);
-            } else {
-                window.open(url, '_blank');
-            }
+            if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.openLink(url); } 
+            else { window.open(url, '_blank'); }
             showToast('📥 Шаблон открыт');
         }
 
         function downloadCSV() {
             const url = `${API_URL}/download/export`;
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.openLink(url);
-            } else {
-                window.open(url, '_blank');
-            }
+            if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.openLink(url); } 
+            else { window.open(url, '_blank'); }
             showToast('📥 Экспорт открыт');
         }
 
