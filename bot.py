@@ -6,16 +6,13 @@ from threading import Thread
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.fsm.storage.memory import MemoryStorage
 import aiohttp
 
 # --- Настройки ---
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 WEB_APP_URL = "https://sttp-cloud.vercel.app"
 API_URL = "https://sttp-api-new.onrender.com/api"
-OWNER_ID = 1340303313
+OWNER_ID = 1340303313  # Твой ID
 
 # --- Flask для Render ---
 app = Flask(__name__)
@@ -30,12 +27,7 @@ def run_flask():
 # --- Логика Бота ---
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher(storage=MemoryStorage())
-
-# Состояния для ввода ID
-class AdminStates(StatesGroup):
-    waiting_for_add_id = State()
-    waiting_for_remove_id = State()
+dp = Dispatcher()
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
@@ -56,11 +48,11 @@ async def cmd_start(message: types.Message):
     ])
 
     if user_id == OWNER_ID:
-        greeting = f"Привет, {message.from_user.first_name}! 👋\nВы вошли как **Владелец**.\n\nКоманды для управления:\n/admin_panel — Управление админами\n/start — Открыть магазин"
+        greeting = f"Привет, {message.from_user.first_name}! 👋\nВы вошли как **Владелец**.\n\nДля управления админами напишите /admin_panel"
     elif is_admin:
-        greeting = f"Привет, {message.from_user.first_name}! 👋\nВы вошли как **Администратор**.\nНажмите кнопку, чтобы управлять магазином:"
+        greeting = f"Привет, {message.from_user.first_name}! 👋\nВы вошли как **Администратор**."
     else:
-        greeting = f"Привет, {message.from_user.first_name}! 👋\nДобро пожаловать в магазин STTP.\nНажмите кнопку, чтобы открыть каталог:"
+        greeting = f"Привет, {message.from_user.first_name}! 👋\nДобро пожаловать в магазин STTP."
 
     await message.answer(greeting, reply_markup=keyboard, parse_mode="Markdown")
 
@@ -68,7 +60,7 @@ async def cmd_start(message: types.Message):
 @dp.message(Command("admin_panel"))
 async def cmd_admin_panel(message: types.Message):
     if message.from_user.id != OWNER_ID:
-        await message.answer("⛔ У вас нет прав для этой команды.")
+        await message.answer("⛔ У вас нет прав.")
         return
     
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -77,82 +69,22 @@ async def cmd_admin_panel(message: types.Message):
     ])
     await message.answer("Панель управления администраторами:", reply_markup=keyboard)
 
-# --- ДОБАВЛЕНИЕ АДМИНА ---
+# --- ДОБАВЛЕНИЕ / УДАЛЕНИЕ (ОБРАБОТЧИКИ) ---
 @dp.callback_query(F.data == "add_admin")
-async def process_add_admin(callback: types.CallbackQuery, state: FSMContext):
+async def add_admin_cb(callback: types.CallbackQuery):
     if callback.from_user.id != OWNER_ID:
         await callback.answer("⛔ Нет прав", show_alert=True)
         return
-    
-    await callback.message.edit_text("Отправьте Telegram ID пользователя, которого хотите сделать админом:")
-    await state.set_state(AdminStates.waiting_for_add_id)
+    await callback.message.edit_text("Отправьте ID пользователя, которого хотите сделать админом:")
 
-@dp.message(AdminStates.waiting_for_add_id)
-async def process_add_admin_id(message: types.Message, state: FSMContext):
-    if message.from_user.id != OWNER_ID:
-        return
-    
-    try:
-        new_admin_id = int(message.text)
-    except ValueError:
-        await message.answer("⚠️ ID должен быть числом. Попробуйте снова.")
-        return
-
-    async with aiohttp.ClientSession() as session:
-        async with session.post(f"{API_URL}/add-admin", json={"user_id": new_admin_id, "owner_id": OWNER_ID}) as resp:
-            if resp.status == 200:
-                await message.answer(f"✅ Пользователь с ID {new_admin_id} теперь администратор!")
-            else:
-                await message.answer(f"❌ Ошибка. Код: {resp.status}")
-    
-    await state.clear()
-
-# --- УДАЛЕНИЕ АДМИНА ---
 @dp.callback_query(F.data == "remove_admin")
-async def process_remove_admin(callback: types.CallbackQuery, state: FSMContext):
+async def remove_admin_cb(callback: types.CallbackQuery):
     if callback.from_user.id != OWNER_ID:
         await callback.answer("⛔ Нет прав", show_alert=True)
         return
-    
-    # Получаем список админов
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f"{API_URL}/get-admins") as resp:
-                if resp.status == 200:
-                    admins = await resp.json()
-                    if not admins:
-                        await callback.message.edit_text("Список админов пуст.")
-                        return
-                    
-                    text = "Текущие админы:\n" + "\n".join([f"• {id}" for id in admins])
-                    text += "\n\nОтправьте ID пользователя, которого хотите удалить из админов:"
-                    await callback.message.edit_text(text)
-                    await state.set_state(AdminStates.waiting_for_remove_id)
-                else:
-                    await callback.message.edit_text("❌ Ошибка загрузки списка.")
-    except Exception as e:
-        await callback.message.edit_text(f"❌ Ошибка: {e}")
+    await callback.message.edit_text("Отправьте ID пользователя, которого хотите удалить из админов:")
 
-@dp.message(AdminStates.waiting_for_remove_id)
-async def process_remove_admin_id(message: types.Message, state: FSMContext):
-    if message.from_user.id != OWNER_ID:
-        return
-    
-    try:
-        rem_admin_id = int(message.text)
-    except ValueError:
-        await message.answer("⚠️ ID должен быть числом. Попробуйте снова.")
-        return
-
-    async with aiohttp.ClientSession() as session:
-        async with session.post(f"{API_URL}/remove-admin", json={"user_id": rem_admin_id, "owner_id": OWNER_ID}) as resp:
-            if resp.status == 200:
-                await message.answer(f"🗑 Пользователь с ID {rem_admin_id} больше не администратор.")
-            else:
-                await message.answer(f"❌ Ошибка. Код: {resp.status}")
-    
-    await state.clear()
-
+# --- ЗАПУСК ---
 async def main():
     print("Бот запущен!")
     await dp.start_polling(bot)
