@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Header
-from fastAPI.responses import StreamingResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import os
