@@ -26,6 +26,20 @@
         .tab-content { width: 25%; height: 100%; overflow-y: auto; padding-bottom: 90px; overscroll-behavior-y: contain; }
         .tab-content::-webkit-scrollbar { display: none; }
 
+        /* Жесткое скрытие файлового инпута, чтобы он не ломал WebView */
+        #csvFileInput {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; margin: 90px 16px 16px 16px; background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative; z-index: 100; animation: slideDown 0.5s ease; }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .user-info { display: flex; align-items: center; gap: 12px; cursor: pointer; }
@@ -314,7 +328,7 @@
                 <button type="button" class="admin-action-btn" onclick="downloadCSV()" style="flex: 1; padding: 12px;">📥 Экспорт</button>
                 <button type="button" class="admin-action-btn" onclick="downloadCSVTemplate()" style="flex: 1; padding: 12px;">📄 Шаблон</button>
                 <button type="button" class="admin-action-btn" onclick="triggerImport()" style="flex: 1; padding: 12px; background: var(--success-color); color: white;">📤 Импорт</button>
-                <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSVImport(event)">
+                <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVImport(event)">
             </div>
 
             <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 8px;">Существующие товары:</div>
@@ -569,14 +583,32 @@
             });
         }
 
-        // --- ЭКСПОРТ / ИМПОРТ ---
+        // --- БЕЗОПАСНЫЙ ЭКСПОРТ И ИМПОРТ ---
+        function downloadFile(content, fileName, mimeType) {
+            const blob = new Blob(["\uFEFF" + content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.downloadFile) {
+                window.Telegram.WebApp.downloadFile({ url: url, file_name: fileName });
+                setTimeout(() => URL.revokeObjectURL(url), 10000);
+            } else {
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 1000);
+            }
+            showToast('📥 Файл сформирован');
+        }
+
         function downloadCSVTemplate() {
             const csv = "Название;Бренд;Цена;Количество;Категория\nПример вкуса;Пример бренда;10.5;100;Жидкость";
-            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "sttp_template.csv";
-            link.click();
+            downloadFile(csv, "sttp_template.csv", "text/csv;charset=utf-8;");
         }
 
         function downloadCSV() {
@@ -585,16 +617,16 @@
             allProducts.forEach(p => {
                 csv += `${p.title};${p.brand};${p.price};${p.stock};${p.type}\n`;
             });
-            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `sttp_export_${new Date().toISOString().slice(0,10)}.csv`;
-            link.click();
-            showToast('📥 Экспорт готов');
+            downloadFile(csv, `sttp_export_${new Date().toISOString().slice(0,10)}.csv`, "text/csv;charset=utf-8;");
         }
 
         function triggerImport() {
-            document.getElementById('csvFileInput').click();
+            const fileInput = document.getElementById('csvFileInput');
+            if (fileInput) {
+                fileInput.click();
+            } else {
+                showToast('❌ Ошибка: инпут не найден');
+            }
         }
 
         function handleCSVImport(event) {
@@ -635,8 +667,6 @@
                     }
                 } catch (err) {
                     showToast('❌ Ошибка обработки файла');
-                } finally {
-                    event.target.value = ''; // Сброс инпута безопасно
                 }
             };
             reader.readAsText(file, 'UTF-8');
