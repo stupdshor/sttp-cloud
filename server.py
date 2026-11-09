@@ -47,6 +47,7 @@ def get_db_connection():
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
+    
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS products (
             id SERIAL PRIMARY KEY, title TEXT NOT NULL, brand TEXT,
@@ -64,12 +65,17 @@ def init_db():
     cursor.execute("INSERT INTO settings (key, value) VALUES ('banner_title', 'STTP SHOP') ON CONFLICT DO NOTHING")
     cursor.execute("INSERT INTO settings (key, value) VALUES ('banner_subtitle', 'Ждем ваших заказов 🔥') ON CONFLICT DO NOTHING")
 
-    cursor.execute('SELECT COUNT(*) FROM products')
-    if cursor.fetchone()['count'] == 0:
-        start_brands = ["Annima Love", "Bjorn", "Catswill", "Duall", "Elfliq", "Hotspot", "Isterika", "Monster", "OGGO prime", "Podonki", "Rick and Morty", "SKL", "Анархия V2", "Злая монашка", "Призрак 69", "Самоубийца"]
-        for brand in start_brands:
-            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES ('Новый вкус', %s, 0.0, 0, 'Жидкость')", (brand,))
-            
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS orders (
+            id SERIAL PRIMARY KEY,
+            customer_name TEXT,
+            address TEXT,
+            total_price REAL,
+            status TEXT DEFAULT 'Новый',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            items_json TEXT
+        )
+    ''')
     conn.commit()
     cursor.close()
     conn.close()
@@ -77,7 +83,6 @@ def init_db():
 try: init_db()
 except Exception as e: print(f"Ошибка инициализации БД: {e}")
 
-# --- МОДЕЛИ ---
 class OrderItem(BaseModel):
     product_id: int
     quantity: int
@@ -85,6 +90,7 @@ class Order(BaseModel):
     items: List[OrderItem]
     name: str
     phone: str
+    address: str
 class ProductRequest(BaseModel):
     title: str
     brand: str
@@ -109,8 +115,10 @@ class ImportProduct(BaseModel):
 class ContentRequest(BaseModel):
     banner_title: str
     banner_subtitle: str
+class OrderStatusRequest(BaseModel):
+    order_id: int
+    new_status: str
 
-# --- ЭКСПОРТ ФАЙЛОВ (ДЛЯ БРАУЗЕРА) ---
 @app.get("/api/download/export")
 def export_csv():
     conn = get_db_connection()
@@ -119,15 +127,12 @@ def export_csv():
     rows = cursor.fetchall()
     cursor.close()
     conn.close()
-
     output = io.StringIO()
-    output.write('\ufeff') # BOM для Excel
+    output.write('\ufeff')
     writer = csv.writer(output, delimiter=';')
     writer.writerow(['Название', 'Бренд', 'Цена', 'Количество', 'Категория'])
-    
     for row in rows:
         writer.writerow([row['title'], row['brand'], row['price'], row['stock'], row['type']])
-
     response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
     response.headers["Content-Disposition"] = "attachment; filename=sttp_export.csv"
     return response
@@ -139,12 +144,10 @@ def download_template():
     writer = csv.writer(output, delimiter=';')
     writer.writerow(['Название', 'Бренд', 'Цена', 'Количество', 'Категория'])
     writer.writerow(['Пример вкуса', 'Пример бренда', '10.5', '100', 'Жидкость'])
-    
     response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
     response.headers["Content-Disposition"] = "attachment; filename=sttp_template.csv"
     return response
 
-# --- API ---
 @app.get("/api/products")
 def get_products():
     conn = get_db_connection()
@@ -159,13 +162,40 @@ def get_products():
 def create_order(order: Order):
     conn = get_db_connection()
     cursor = conn.cursor()
+    items_info = []
+    total_price = 0
     for item in order.items:
-        cursor.execute("SELECT stock FROM products WHERE id = %s", (item.product_id,))
+        cursor.execute("SELECT title, price, stock FROM products WHERE id = %s", (item.product_id,))
         row = cursor.fetchone()
         if not row or row['stock'] < item.quantity:
             conn.close()
             raise HTTPException(status_code=400, detail="Недостаточно товара")
+        total_price += row['price'] * item.quantity
+        items_info.append({"title": row['title'], "qty": item.quantity, "price": row['price']})
         cursor.execute("UPDATE products SET stock = stock - %s WHERE id = %s", (item.quantity, item.product_id))
+    items_json = json.dumps(items_info, ensure_ascii=False)
+    cursor.execute("INSERT INTO orders (customer_name, address, total_price, items_json) VALUES (%s, %s, %s, %s)", (order.name, order.address, total_price, items_json))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"status": "ok"}
+
+@app.get("/api/orders")
+def get_orders():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM orders ORDER BY created_at DESC")
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return rows
+
+@app.post("/api/update-order-status")
+def update_order_status(req: OrderStatusRequest, x_init_data: str = Header(None)):
+    check_admin_rights(x_init_data)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE orders SET status = %s WHERE id = %s", (req.new_status, req.order_id))
     conn.commit()
     cursor.close()
     conn.close()
@@ -193,10 +223,7 @@ def get_content():
     cursor.close()
     conn.close()
     res = {row['key']: row['value'] for row in rows}
-    return {
-        "banner_title": res.get('banner_title', 'STTP SHOP'),
-        "banner_subtitle": res.get('banner_subtitle', 'Ждем ваших заказов 🔥')
-    }
+    return {"banner_title": res.get('banner_title', 'STTP SHOP'), "banner_subtitle": res.get('banner_subtitle', 'Ждем ваших заказов 🔥')}
 
 @app.post("/api/content")
 def update_content(req: ContentRequest, x_init_data: str = Header(None)):
@@ -234,8 +261,7 @@ def import_products(products: List[ImportProduct], x_init_data: str = Header(Non
         if existing:
             cursor.execute("UPDATE products SET price = %s, stock = stock + %s WHERE id = %s", (p.price, p.stock, existing['id']))
         else:
-            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES (%s, %s, %s, %s, %s)", 
-                           (p.title, p.brand, p.price, p.stock, p.type))
+            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES (%s, %s, %s, %s, %s)", (p.title, p.brand, p.price, p.stock, p.type))
         count += 1
     conn.commit()
     cursor.close()
@@ -288,6 +314,23 @@ def toggle_station(req: ToggleStationRequest, x_init_data: str = Header(None)):
     conn.close()
     return {"status": "ok"}
 
+@app.post("/api/seed-brands")
+def seed_brands(x_init_data: str = Header(None)):
+    check_admin_rights(x_init_data)
+    start_brands = ["Annima Love", "Bjorn", "Catswill", "Duall", "Elfliq", "Hotspot", "Isterika", "Monster", "OGGO prime", "Podonki", "Rick and Morty", "SKL", "Анархия V2", "Злая монашка", "Призрак 69", "Самоубийца"]
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    added_count = 0
+    for brand in start_brands:
+        cursor.execute("SELECT id FROM products WHERE brand = %s LIMIT 1", (brand,))
+        if not cursor.fetchone():
+            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES ('Новый вкус', %s, 0.0, 0, 'Жидкость')", (brand,))
+            added_count += 1
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"status": "ok", "added": added_count}
+
 @app.get("/api/check-admin")
 def check_admin(x_init_data: str = Header(None)):
     try:
@@ -295,12 +338,33 @@ def check_admin(x_init_data: str = Header(None)):
         return {"is_admin": True, "user_id": user_id}
     except: return {"is_admin": False}
 
+@app.get("/api/get-admins")
+def get_admins():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id FROM admins")
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return [row['user_id'] for row in rows]
+
 @app.post("/api/add-admin")
 def add_admin(req: dict):
     if req.get("owner_id") != 1340303313: raise HTTPException(status_code=403)
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("INSERT INTO admins (user_id) VALUES (%s) ON CONFLICT DO NOTHING", (req["user_id"],))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"status": "ok"}
+
+@app.post("/api/remove-admin")
+def remove_admin(req: dict):
+    if req.get("owner_id") != 1340303313: raise HTTPException(status_code=403)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM admins WHERE user_id = %s", (req["user_id"],))
     conn.commit()
     cursor.close()
     conn.close()
@@ -315,54 +379,6 @@ def check_user(req: dict):
     cursor.close()
     conn.close()
     return {"is_admin": is_admin}
-
-# --- ДОБАВЛЕНИЕ СТАРТОВЫХ БРЕНДОВ ---
-@app.post("/api/seed-brands")
-def seed_brands(x_init_data: str = Header(None)):
-    check_admin_rights(x_init_data)
-    start_brands = [
-        "Annima Love", "Bjorn", "Catswill", "Duall", "Elfliq", 
-        "Hotspot", "Isterika", "Monster", "OGGO prime", "Podonki", 
-        "Rick and Morty", "SKL", "Анархия V2", "Злая монашка", 
-        "Призрак 69", "Самоубийца"
-    ]
-    
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    added_count = 0
-    
-    for brand in start_brands:
-        # Проверяем, есть ли уже такой бренд (хотя бы один товар)
-        cursor.execute("SELECT id FROM products WHERE brand = %s LIMIT 1", (brand,))
-        if not cursor.fetchone():
-            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES ('Новый вкус', %s, 0.0, 0, 'Жидкость')", (brand,))
-            added_count += 1
-            
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return {"status": "ok", "added": added_count}
-
-# --- ПОЛУЧЕНИЕ СПИСКА АДМИНОВ ---
-@app.get("/api/get-admins")
-def get_admins():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT user_id FROM admins")
-    rows = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return [row['user_id'] for row in rows]
-
-@app.get("/api/get-admins")
-def get_admins():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT user_id FROM admins")
-    rows = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return [row['user_id'] for row in rows]
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
