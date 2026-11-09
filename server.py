@@ -13,6 +13,7 @@ from urllib.parse import parse_qsl
 from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import chardet
 
 app = FastAPI()
 
@@ -29,7 +30,6 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 def get_db_connection():
     url = DATABASE_URL.replace("postgres://", "postgresql://")
-    # Принудительно ставим кодировку UTF-8 для соединения
     return psycopg2.connect(url, cursor_factory=RealDictCursor, options="-c client_encoding=UTF8")
 
 def init_db():
