@@ -93,7 +93,17 @@
         .cart-item-info { flex-grow: 1; cursor: pointer; }
         .cart-item-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #f8fafc; }
         .cart-item-price { font-size: 15px; font-weight: 800; color: #fff; }
-        .delete-btn { background: rgba(239, 68, 68, 0.15); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--danger-color); }
+        
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); 
+            width: 36px; height: 36px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: #ef4444; transition: all 0.2s;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+            flex-shrink: 0;
+        }
+        .delete-btn:active { transform: scale(0.85); background: rgba(239, 68, 68, 0.4); }
+        .delete-btn svg { width: 18px; height: 18px; fill: currentColor; }
         
         .cart-total { display: flex; justify-content: space-between; padding: 24px 16px; font-size: 20px; font-weight: 800; border-top: 1px solid var(--glass-border); margin-top: 16px; color: #fff; }
         .checkout-btn { width: 100%; background: var(--success-color); color: white; border: none; padding: 18px; border-radius: 16px; font-weight: 800; font-size: 16px; cursor: pointer; margin-top: 10px; box-shadow: 0 0 20px var(--success-glow); }
@@ -311,7 +321,6 @@
             <button class="admin-tab-btn" onclick="switchAdminTab('content', this)">Контент</button>
         </div>
 
-        <!-- Вкладка ТОВАРЫ -->
         <div class="admin-tab-content active" id="admin-tab-products">
             <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
                 <button type="button" class="admin-action-btn" onclick="downloadCSV()" style="flex: 1; padding: 12px;">📥 Экспорт</button>
@@ -341,21 +350,18 @@
             <button class="checkout-btn" onclick="submitNewProduct()">Добавить товар</button>
         </div>
 
-        <!-- Вкладка ЗАКАЗЫ -->
         <div class="admin-tab-content" id="admin-tab-orders">
             <h3>Управление заказами</h3>
             <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Все оформленные заказы:</div>
             <div class="admin-orders-list" id="adminOrdersList"></div>
         </div>
 
-        <!-- Вкладка АДРЕСА -->
         <div class="admin-tab-content" id="admin-tab-stations">
             <h3>Управление станциями</h3>
             <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Включите или выключите станции:</div>
             <div class="admin-stations-list" id="adminStationsList"></div>
         </div>
 
-        <!-- Вкладка КОНТЕНТ -->
         <div class="admin-tab-content" id="admin-tab-content">
             <h3>Управление контентом</h3>
             <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Настройте баннер на главной странице:</div>
@@ -594,12 +600,12 @@
             });
         }
 
-        // --- ЗАГРУЗКА ЗАКАЗОВ ---
         async function loadAdminOrders() {
             const list = document.getElementById('adminOrdersList');
             list.innerHTML = 'Загрузка...';
             try {
                 const res = await fetch(`${API_URL}/orders`);
+                if (!res.ok) throw new Error('Ошибка сети');
                 const orders = await res.json();
                 list.innerHTML = '';
                 
@@ -609,18 +615,25 @@
                 }
 
                 orders.forEach(o => {
-                    const date = new Date(o.created_at).toLocaleString('ru-RU', {day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit'});
+                    let date = "Неизвестно";
+                    try {
+                        date = new Date(o.created_at).toLocaleString('ru-RU', {day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit'});
+                    } catch(e) {}
+
                     let statusClass = 'status-new';
                     if (o.status === 'В доставке') statusClass = 'status-delivery';
                     if (o.status === 'Выполнен') statusClass = 'status-done';
                     if (o.status === 'Отменен') statusClass = 'status-cancel';
 
-                    // Парсим JSON с товарами (выводим кратко)
-                    let itemsText = "";
+                    let itemsText = "Товары не указаны";
                     try {
-                        const items = JSON.parse(o.items_json);
-                        itemsText = items.map(i => `${i.title} (${i.qty}шт)`).join(', ');
-                    } catch(e) {}
+                        if (o.items_json) {
+                            const items = JSON.parse(o.items_json);
+                            if (Array.isArray(items)) {
+                                itemsText = items.map(i => `${i.title} (${i.qty}шт)`).join(', ');
+                            }
+                        }
+                    } catch(e) { console.log("Ошибка парсинга items_json", e); }
 
                     const div = document.createElement('div');
                     div.className = 'admin-order-item';
@@ -645,7 +658,8 @@
                     list.appendChild(div);
                 });
             } catch (e) {
-                list.innerHTML = 'Ошибка загрузки заказов';
+                console.error(e);
+                list.innerHTML = '<div style="text-align:center; color:var(--danger-color); padding: 20px;">Ошибка загрузки заказов</div>';
             }
         }
 
@@ -666,7 +680,6 @@
             }
         }
 
-        // --- ТОВАРЫ И ПРОЧЕЕ ---
         async function seedBrands() {
             if (!confirm("Добавить стандартные бренды в базу?")) return;
             try {
@@ -1105,7 +1118,6 @@
             const now = new Date();
             const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
             
-            // Формируем текст для менеджера
             let text = `Здравствуйте! Хочу оформить заказ:\n\n📍 Локация: ${addr}\n🕒 Время: ${timeStr}\n\n🛒 Товары:\n`;
             let total = 0;
             cart.forEach(item => { 
@@ -1115,7 +1127,6 @@
             });
             text += `\n💰 Итого: ${total.toFixed(2)} BYN`;
 
-            // Отправляем в БД
             const orderData = { 
                 items: cart.map(item => ({ product_id: item.id, quantity: item.quantity })), 
                 name: user ? user.first_name : "Клиент", 
