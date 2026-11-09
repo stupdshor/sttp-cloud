@@ -35,7 +35,6 @@ def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Добавили поле line_name (Название/Линейка)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS products (
             id SERIAL PRIMARY KEY, 
@@ -252,12 +251,13 @@ def import_products(products: List[ImportProduct]):
     cursor = conn.cursor()
     count = 0
     for p in products:
-        cursor.execute("SELECT id FROM products WHERE type = %s AND brand = %s AND flavor = %s AND strength = %s", 
-                       (p.type, p.brand, p.flavor, p.strength))
+        # Ищем дубликаты, игнорируя регистр (LOWER)
+        cursor.execute("SELECT id FROM products WHERE LOWER(type) = LOWER(%s) AND LOWER(brand) = LOWER(%s) AND LOWER(flavor) = LOWER(%s)", 
+                       (p.type, p.brand, p.flavor))
         existing = cursor.fetchone()
         if existing:
-            cursor.execute("UPDATE products SET line_name = %s, price = %s, stock = stock + %s WHERE id = %s", 
-                           (p.line_name, p.price, p.stock, existing['id']))
+            cursor.execute("UPDATE products SET line_name = %s, price = %s, stock = stock + %s, strength = %s WHERE id = %s", 
+                           (p.line_name, p.price, p.stock, p.strength, existing['id']))
         else:
             cursor.execute("INSERT INTO products (type, brand, line_name, flavor, strength, price, stock) VALUES (%s, %s, %s, %s, %s, %s, %s)", 
                            (p.type, p.brand, p.line_name, p.flavor, p.strength, p.price, p.stock))
