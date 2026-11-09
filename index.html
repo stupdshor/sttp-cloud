@@ -297,9 +297,14 @@
             <div class="qty-val" id="sheetQtyVal">1</div>
             <button class="qty-btn" onclick="changeSheetQty(1)">+</button>
         </div>
-        <div class="sheet-bottom">
-            <div class="sheet-price" id="sheetPrice">0.00 BYN</div>
-            <button class="sheet-add-btn" id="sheetAddBtn" onclick="addToCartFromSheet()">В корзину</button>
+        <div class="sheet-bottom" style="flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div class="sheet-price" id="sheetPrice">0.00 BYN</div>
+                <button class="sheet-add-btn" id="sheetAddBtn" onclick="addToCartFromSheet()">В корзину</button>
+            </div>
+            <button onclick="contactWholesale()" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--hint-color); font-size: 13px; font-weight: 600; cursor: pointer;">
+                🤝 Купить оптом
+            </button>
         </div>
     </div>
 
@@ -678,6 +683,13 @@
             } catch (e) {
                 showToast('❌ Ошибка сети');
             }
+        }
+
+        function contactWholesale() {
+            if (!currentProductInSheet) return;
+            const text = `Здравствуйте! Хочу узнать условия опта на товар: "${currentProductInSheet.title}" (${currentProductInSheet.brand}).`;
+            const url = `https://t.me/${SUPPORT_TG}?text=${encodeURIComponent(text)}`;
+            tg.openTelegramLink(url);
         }
 
         async function seedBrands() {
