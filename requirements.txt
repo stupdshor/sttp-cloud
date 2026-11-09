@@ -4,4 +4,4 @@ psycopg2-binary
 aiogram
 aiohttp
 flask
-python-dotenv
+chardet
