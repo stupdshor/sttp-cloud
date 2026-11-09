@@ -150,13 +150,22 @@
         .admin-tab-content { display: none; flex-direction: column; flex-grow: 1; overflow-y: auto; }
         .admin-tab-content.active { display: flex; }
         
-        .admin-product-list, .admin-stations-list { flex-grow: 1; overflow-y: auto; margin-bottom: 15px; background: rgba(0,0,0,0.2); border-radius: 14px; padding: 10px; }
-        .admin-product-item, .admin-station-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .admin-product-item:last-child, .admin-station-item:last-child { border-bottom: none; }
+        .admin-product-list, .admin-stations-list, .admin-orders-list { flex-grow: 1; overflow-y: auto; margin-bottom: 15px; background: rgba(0,0,0,0.2); border-radius: 14px; padding: 10px; }
+        .admin-product-item, .admin-station-item, .admin-order-item { display: flex; flex-direction: column; justify-content: space-between; padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .admin-order-item { gap: 8px; }
+        .admin-order-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #fff; margin-bottom: 4px;}
+        .admin-order-details { font-size: 12px; color: var(--hint-color); margin-bottom: 4px;}
+        .admin-order-actions { display: flex; gap: 6px; margin-top: 5px; }
+        .admin-product-item:last-child, .admin-station-item:last-child, .admin-order-item:last-child { border-bottom: none; }
         .admin-product-info { font-size: 13px; color: #fff; }
         .admin-product-actions { display: flex; gap: 6px; }
         .admin-action-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
         .admin-delete-btn { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+        .status-badge { padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; }
+        .status-new { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .status-delivery { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+        .status-done { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .status-cancel { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
         
         .toggle-switch { position: relative; display: inline-block; width: 46px; height: 26px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
@@ -297,10 +306,12 @@
     <div class="admin-panel" id="adminPanel">
         <div class="admin-tabs">
             <button class="admin-tab-btn active" onclick="switchAdminTab('products', this)">Товары</button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('orders', this)">Заказы</button>
             <button class="admin-tab-btn" onclick="switchAdminTab('stations', this)">Адреса</button>
             <button class="admin-tab-btn" onclick="switchAdminTab('content', this)">Контент</button>
         </div>
 
+        <!-- Вкладка ТОВАРЫ -->
         <div class="admin-tab-content active" id="admin-tab-products">
             <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
                 <button type="button" class="admin-action-btn" onclick="downloadCSV()" style="flex: 1; padding: 12px;">📥 Экспорт</button>
@@ -330,12 +341,21 @@
             <button class="checkout-btn" onclick="submitNewProduct()">Добавить товар</button>
         </div>
 
+        <!-- Вкладка ЗАКАЗЫ -->
+        <div class="admin-tab-content" id="admin-tab-orders">
+            <h3>Управление заказами</h3>
+            <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Все оформленные заказы:</div>
+            <div class="admin-orders-list" id="adminOrdersList"></div>
+        </div>
+
+        <!-- Вкладка АДРЕСА -->
         <div class="admin-tab-content" id="admin-tab-stations">
             <h3>Управление станциями</h3>
             <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Включите или выключите станции:</div>
             <div class="admin-stations-list" id="adminStationsList"></div>
         </div>
 
+        <!-- Вкладка КОНТЕНТ -->
         <div class="admin-tab-content" id="admin-tab-content">
             <h3>Управление контентом</h3>
             <div style="font-size: 13px; color: var(--hint-color); margin-bottom: 12px;">Настройте баннер на главной странице:</div>
@@ -513,7 +533,6 @@
             const user = tg.initDataUnsafe?.user;
             if (!user) return;
             
-            // Мгновенная проверка для Владельца
             if (user.id === 1340303313) {
                 isAdmin = true;
                 addAdminButton();
@@ -545,7 +564,9 @@
             btn.classList.add('active');
             document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById(`admin-tab-${tabName}`).classList.add('active');
+            
             if (tabName === 'stations') loadAdminStations();
+            if (tabName === 'orders') loadAdminOrders();
         }
 
         function openAdminPanel() {
@@ -573,6 +594,79 @@
             });
         }
 
+        // --- ЗАГРУЗКА ЗАКАЗОВ ---
+        async function loadAdminOrders() {
+            const list = document.getElementById('adminOrdersList');
+            list.innerHTML = 'Загрузка...';
+            try {
+                const res = await fetch(`${API_URL}/orders`);
+                const orders = await res.json();
+                list.innerHTML = '';
+                
+                if (orders.length === 0) {
+                    list.innerHTML = '<div style="text-align:center; color:var(--hint-color); padding: 20px;">Заказов пока нет</div>';
+                    return;
+                }
+
+                orders.forEach(o => {
+                    const date = new Date(o.created_at).toLocaleString('ru-RU', {day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit'});
+                    let statusClass = 'status-new';
+                    if (o.status === 'В доставке') statusClass = 'status-delivery';
+                    if (o.status === 'Выполнен') statusClass = 'status-done';
+                    if (o.status === 'Отменен') statusClass = 'status-cancel';
+
+                    // Парсим JSON с товарами (выводим кратко)
+                    let itemsText = "";
+                    try {
+                        const items = JSON.parse(o.items_json);
+                        itemsText = items.map(i => `${i.title} (${i.qty}шт)`).join(', ');
+                    } catch(e) {}
+
+                    const div = document.createElement('div');
+                    div.className = 'admin-order-item';
+                    div.innerHTML = `
+                        <div class="admin-order-header">
+                            <span>Заказ #${o.id} — ${o.total_price} BYN</span>
+                            <span class="status-badge ${statusClass}">${o.status}</span>
+                        </div>
+                        <div class="admin-order-details">
+                            👤 ${o.customer_name} | 📍 ${o.address} | 🕒 ${date}<br>
+                            🛒 ${itemsText}
+                        </div>
+                        <div class="admin-order-actions">
+                            <select onchange="changeOrderStatus(${o.id}, this.value)" style="flex:1; padding: 6px; border-radius: 8px; background: rgba(255,255,255,0.1); color: white; border: none; outline: none;">
+                                <option value="Новый" ${o.status === 'Новый' ? 'selected' : ''}>Новый</option>
+                                <option value="В доставке" ${o.status === 'В доставке' ? 'selected' : ''}>В доставке</option>
+                                <option value="Выполнен" ${o.status === 'Выполнен' ? 'selected' : ''}>Выполнен</option>
+                                <option value="Отменен" ${o.status === 'Отменен' ? 'selected' : ''}>Отменен</option>
+                            </select>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            } catch (e) {
+                list.innerHTML = 'Ошибка загрузки заказов';
+            }
+        }
+
+        async function changeOrderStatus(orderId, newStatus) {
+            try {
+                const res = await fetch(`${API_URL}/update-order-status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
+                    body: JSON.stringify({ order_id: orderId, new_status: newStatus })
+                });
+                if (res.ok) {
+                    showToast(`✅ Статус заказа #${orderId} обновлен`);
+                } else {
+                    showToast('❌ Ошибка обновления статуса');
+                }
+            } catch (e) {
+                showToast('❌ Ошибка сети');
+            }
+        }
+
+        // --- ТОВАРЫ И ПРОЧЕЕ ---
         async function seedBrands() {
             if (!confirm("Добавить стандартные бренды в базу?")) return;
             try {
@@ -1006,20 +1100,45 @@
             if (cart.length === 0) return;
             const btn = document.getElementById('checkoutBtn');
             btn.disabled = true; btn.innerText = "Отправка...";
+            
             const addr = localStorage.getItem('vape_addr') || "Не выбрана";
             const now = new Date();
             const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            
+            // Формируем текст для менеджера
             let text = `Здравствуйте! Хочу оформить заказ:\n\n📍 Локация: ${addr}\n🕒 Время: ${timeStr}\n\n🛒 Товары:\n`;
             let total = 0;
-            cart.forEach(item => { const itemTotal = item.price * item.quantity; total += itemTotal; text += `• ${item.type} "${item.title}" - ${item.quantity} шт. = ${itemTotal.toFixed(2)} BYN\n`; });
+            cart.forEach(item => { 
+                const itemTotal = item.price * item.quantity; 
+                total += itemTotal; 
+                text += `• ${item.type} "${item.title}" - ${item.quantity} шт. = ${itemTotal.toFixed(2)} BYN\n`; 
+            });
             text += `\n💰 Итого: ${total.toFixed(2)} BYN`;
-            const orderData = { items: cart.map(item => ({ product_id: item.id, quantity: item.quantity })), name: user ? user.first_name : "Клиент", phone: "Telegram" };
+
+            // Отправляем в БД
+            const orderData = { 
+                items: cart.map(item => ({ product_id: item.id, quantity: item.quantity })), 
+                name: user ? user.first_name : "Клиент", 
+                phone: "Telegram",
+                address: addr
+            };
+
             try {
                 const response = await fetch(`${API_URL}/order`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) });
                 if (!response.ok) throw new Error("Ошибка при списании");
+                
                 cart = []; updateCartBadge(); renderCart(); showToast('🎉 Заказ оформлен!'); fetchProducts(); 
-                setTimeout(() => { const url = `https://t.me/${SUPPORT_TG}?text=${encodeURIComponent(text)}`; tg.openTelegramLink(url); updateCarousel(0); }, 1000);
-            } catch (error) { showToast(`❌ ${error.message}`); btn.disabled = false; btn.innerText = "Оформить заказ"; }
+                
+                setTimeout(() => { 
+                    const url = `https://t.me/${SUPPORT_TG}?text=${encodeURIComponent(text)}`; 
+                    tg.openTelegramLink(url); 
+                    updateCarousel(0); 
+                }, 1000);
+            } catch (error) { 
+                showToast(`❌ ${error.message}`); 
+                btn.disabled = false; 
+                btn.innerText = "Оформить заказ"; 
+            }
         }
 
         function openAddressModal() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.add('active'); document.getElementById('addressModal').classList.add('active'); loadAdminStations().then(renderClientStations); }
