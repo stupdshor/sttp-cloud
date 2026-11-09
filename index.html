@@ -353,7 +353,7 @@
             <div class="sidebar-name" id="sidebarName">Гость</div>
             <div class="sidebar-status">Покупатель STTP</div>
         </div>
-        <div class="sidebar-menu">
+        <div class="sidebar-menu" id="sidebarMenu">
             <button class="sidebar-item" onclick="showToast('🚧 История заказов в разработке')"><span>📦</span> Мои заказы</button>
             <button class="sidebar-item" onclick="showToast('🚧 Бонусный счет в разработке')"><span>🎁</span> Мои бонусы</button>
             <button class="sidebar-item" onclick="openAddressModalFromProfile()"><span>📍</span> Мои адреса</button>
@@ -510,20 +510,34 @@
         }
 
         async function checkAdminStatus() {
-            if (!tg.initDataUnsafe?.user) return;
+            const user = tg.initDataUnsafe?.user;
+            if (!user) return;
+            
+            // Мгновенная проверка для Владельца
+            if (user.id === 1340303313) {
+                isAdmin = true;
+                addAdminButton();
+                return;
+            }
+
             try {
                 const resp = await fetch(`${API_URL}/check-admin`, { headers: { 'X-Init-Data': tg.initData } });
                 const data = await resp.json();
                 isAdmin = data.is_admin;
-                if (isAdmin) {
-                    const menu = document.querySelector('.sidebar-menu');
-                    const adminBtn = document.createElement('button');
-                    adminBtn.className = 'sidebar-item';
-                    adminBtn.innerHTML = '<span>⚙️</span> Админ-панель';
-                    adminBtn.onclick = () => openAdminPanel();
-                    menu.prepend(adminBtn);
-                }
+                if (isAdmin) addAdminButton();
             } catch (e) {}
+        }
+
+        function addAdminButton() {
+            const menu = document.getElementById('sidebarMenu');
+            if (!document.getElementById('adminBtnSidebar')) {
+                const adminBtn = document.createElement('button');
+                adminBtn.id = 'adminBtnSidebar';
+                adminBtn.className = 'sidebar-item';
+                adminBtn.innerHTML = '<span>⚙️</span> Админ-панель';
+                adminBtn.onclick = () => openAdminPanel();
+                menu.prepend(adminBtn);
+            }
         }
 
         function switchAdminTab(tabName, btn) {
@@ -559,9 +573,8 @@
             });
         }
 
-        // --- ЗАЛИВКА БРЕНДОВ ---
         async function seedBrands() {
-            if (!confirm("Добавить стандартные бренды в базу? (Те, которых нет)")) return;
+            if (!confirm("Добавить стандартные бренды в базу?")) return;
             try {
                 const res = await fetch(`${API_URL}/seed-brands`, {
                     method: 'POST',
@@ -571,26 +584,19 @@
                 if (res.ok) {
                     showToast(`✅ Добавлено брендов: ${data.added}`);
                     fetchProducts().then(renderAdminList);
-                } else {
-                    showToast("❌ Ошибка сервера");
-                }
-            } catch (e) {
-                showToast("❌ Ошибка сети");
-            }
+                } else showToast("❌ Ошибка");
+            } catch (e) { showToast("❌ Ошибка сети"); }
         }
 
-        // --- ЭКСПОРТ ЧЕРЕЗ СЕРВЕР ---
         function downloadCSVTemplate() {
             const url = `${API_URL}/download/template`;
-            if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.openLink(url); } 
-            else { window.open(url, '_blank'); }
+            tg.openLink(url);
             showToast('📥 Шаблон открыт');
         }
 
         function downloadCSV() {
             const url = `${API_URL}/download/export`;
-            if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.openLink(url); } 
-            else { window.open(url, '_blank'); }
+            tg.openLink(url);
             showToast('📥 Экспорт открыт');
         }
 
@@ -620,8 +626,7 @@
                             });
                         }
                     }
-                    
-                    if (products.length === 0) { showToast('⚠️ Файл пуст или неверный формат'); return; }
+                    if (products.length === 0) { showToast('⚠️ Файл пуст'); return; }
 
                     const res = await fetch(`${API_URL}/import-products`, {
                         method: 'POST',
@@ -632,12 +637,8 @@
                         const data = await res.json();
                         showToast(`✅ Импортировано: ${data.imported} товаров`);
                         fetchProducts().then(renderAdminList);
-                    } else {
-                        showToast('❌ Ошибка импорта');
-                    }
-                } catch (err) {
-                    showToast('❌ Ошибка обработки файла');
-                }
+                    } else showToast('❌ Ошибка импорта');
+                } catch (err) { showToast('❌ Ошибка файла'); }
             };
             reader.readAsText(file, 'UTF-8');
         }
@@ -651,7 +652,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
                 body: JSON.stringify({ product_id: id, new_price: parseFloat(newPrice), new_stock: parseInt(newStock) })
-            }).then(res => { if (res.ok) { showToast("✅ Товар обновлен!"); fetchProducts().then(renderAdminList); } });
+            }).then(res => { if (res.ok) { showToast("✅ Обновлено!"); fetchProducts().then(renderAdminList); } });
         }
 
         function deleteProduct(id) {
@@ -669,7 +670,7 @@
             const price = parseFloat(document.getElementById('admin-price').value);
             const stock = parseInt(document.getElementById('admin-stock').value);
             const type = document.getElementById('admin-type').value;
-            if (!title || !brand || isNaN(price) || isNaN(stock)) { showToast("⚠️ Заполните все поля"); return; }
+            if (!title || !brand || isNaN(price) || isNaN(stock)) { showToast("⚠️ Заполните поля"); return; }
             try {
                 const response = await fetch(`${API_URL}/add-product`, {
                     method: 'POST',
@@ -692,7 +693,7 @@
                 const resp = await fetch(`${API_URL}/stations`);
                 disabledStations = await resp.json();
                 renderAdminStations();
-            } catch (e) { showToast("❌ Ошибка загрузки станций"); }
+            } catch (e) { showToast("❌ Ошибка станций"); }
         }
 
         function renderAdminStations() {
@@ -728,7 +729,7 @@
                 });
                 if (isDisabled) disabledStations.push(stationName);
                 else disabledStations = disabledStations.filter(s => s !== stationName);
-            } catch (e) { showToast("❌ Ошибка сохранения"); }
+            } catch (e) { showToast("❌ Ошибка"); }
         }
 
         async function fetchProducts() {
@@ -1025,7 +1026,7 @@
         function openAddressModalFromProfile() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.add('active'); document.getElementById('addressModal').classList.add('active'); loadAdminStations().then(renderClientStations); }
         function submitCourierAddress() {
             const input = document.getElementById('courierAddressInput').value;
-            if(!input) { showToast('⚠️ Введите адрес доставки'); return; }
+            if(!input) { showToast('⚠️ Введите адрес'); return; }
             document.getElementById('addressBtn').innerHTML = `🚚 Доставка`; showToast(`🚚 Курьер приедет по адресу: ${input}`);
             localStorage.setItem('vape_addr', 'Доставка: ' + input); setTimeout(() => closeAllModals(), 500);
         }
@@ -1046,7 +1047,7 @@
                     div.className = 'address-item' + (isDisabled ? ' disabled-station' : '');
                     if (savedAddr === station) div.classList.add('active');
                     div.onclick = () => {
-                        if (isDisabled) { showToast('⚠️ По этой станции доставка временно не осуществляется'); return; }
+                        if (isDisabled) { showToast('⚠️ Доставка не осуществляется'); return; }
                         document.querySelectorAll('.address-item').forEach(i => i.classList.remove('active')); div.classList.add('active');
                         document.getElementById('addressBtn').innerHTML = `📍 ${station}`; localStorage.setItem('vape_addr', station);
                         showToast(`📍 Станция: ${station}`); setTimeout(() => closeAllModals(), 500);
