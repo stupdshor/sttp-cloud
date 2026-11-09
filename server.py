@@ -70,38 +70,47 @@ def init_db():
 try: init_db()
 except Exception as e: print(f"Ошибка инициализации БД: {e}")
 
+# --- МОДЕЛИ ---
 class OrderItem(BaseModel):
     product_id: int
     quantity: int
+
 class Order(BaseModel):
     items: List[OrderItem]
     name: str
     phone: str
     address: str
+
 class ProductRequest(BaseModel):
     title: str
     brand: str
     price: float
     stock: int
     type: str
+
 class DeleteRequest(BaseModel):
     product_id: int
+
 class EditRequest(BaseModel):
     product_id: int
     new_price: float
     new_stock: int
+
 class ToggleStationRequest(BaseModel):
     station_name: str
     is_disabled: bool
+
 class ImportProduct(BaseModel):
     title: str
     brand: str
     price: float
     stock: int
     type: str
+
 class ContentRequest(BaseModel):
     banner_title: str
     banner_subtitle: str
+
 class OrderStatusRequest(BaseModel):
     order_id: int
     new_status: str
@@ -154,14 +163,24 @@ def create_order(order: Order):
     items_info = []
     total_price = 0
     for item in order.items:
-        cursor.execute("SELECT title, price, stock FROM products WHERE id = %s", (item.product_id,))
+        cursor.execute("SELECT id, title, price, stock FROM products WHERE id = %s", (item.product_id,))
         row = cursor.fetchone()
         if not row or row['stock'] < item.quantity:
             conn.close()
             raise HTTPException(status_code=400, detail="Недостаточно товара")
+        
         total_price += row['price'] * item.quantity
-        items_info.append({"title": row['title'], "qty": item.quantity, "price": row['price']})
+        
+        # Сохраняем ID товара для точного возврата
+        items_info.append({
+            "id": row['id'], 
+            "title": row['title'], 
+            "qty": item.quantity, 
+            "price": row['price']
+        })
+        
         cursor.execute("UPDATE products SET stock = stock - %s WHERE id = %s", (item.quantity, item.product_id))
+        
     items_json = json.dumps(items_info, ensure_ascii=False)
     cursor.execute("INSERT INTO orders (customer_name, address, total_price, items_json) VALUES (%s, %s, %s, %s)", (order.name, order.address, total_price, items_json))
     conn.commit()
@@ -178,6 +197,44 @@ def get_orders():
     cursor.close()
     conn.close()
     return rows
+
+@app.post("/api/update-order-status")
+def update_order_status(req: OrderStatusRequest):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT status, items_json FROM orders WHERE id = %s", (req.order_id,))
+    order = cursor.fetchone()
+    
+    if not order:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Заказ не найден")
+        
+    current_status = order['status']
+    items = json.loads(order['items_json'])
+    
+    # Если статус меняется НА "Отменен" - возвращаем товары по ID
+    if req.new_status == "Отменен" and current_status != "Отменен":
+        for item in items:
+            if "id" in item:
+                cursor.execute("UPDATE products SET stock = stock + %s WHERE id = %s", (item['qty'], item['id']))
+            else:
+                cursor.execute("UPDATE products SET stock = stock + %s WHERE title = %s", (item['qty'], item['title']))
+            
+    # Если статус меняется С "Отменен" на любой другой - снова списываем товары по ID
+    elif req.new_status != "Отменен" and current_status == "Отменен":
+        for item in items:
+            if "id" in item:
+                cursor.execute("UPDATE products SET stock = stock - %s WHERE id = %s", (item['qty'], item['id']))
+            else:
+                cursor.execute("UPDATE products SET stock = stock - %s WHERE title = %s", (item['qty'], item['title']))
+
+    cursor.execute("UPDATE orders SET status = %s WHERE id = %s", (req.new_status, req.order_id))
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"status": "ok"}
 
 # --- АДМИНСКИЕ API (БЕЗ ПРОВЕРКИ ПОДПИСИ) ---
 @app.post("/api/add-product")
@@ -289,16 +346,6 @@ def get_content():
     conn.close()
     res = {row['key']: row['value'] for row in rows}
     return {"banner_title": res.get('banner_title', 'STTP SHOP'), "banner_subtitle": res.get('banner_subtitle', 'Ждем ваших заказов 🔥')}
-
-@app.post("/api/update-order-status")
-def update_order_status(req: OrderStatusRequest):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE orders SET status = %s WHERE id = %s", (req.new_status, req.order_id))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return {"status": "ok"}
 
 # --- ДЛЯ БОТА ---
 @app.get("/api/check-admin")
