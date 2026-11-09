@@ -765,8 +765,11 @@
             reader.onload = async function(e) {
                 try {
                     const text = e.target.result;
-                    const lines = text.split('\n').filter(line => line.trim() !== '');
+                    // Убираем BOM (невидимый символ в начале файла), который ломает первую колонку
+                    const cleanText = text.replace(/^\uFEFF/, '');
+                    const lines = cleanText.split('\n').filter(line => line.trim() !== '');
                     const products = [];
+                    
                     for (let i = 1; i < lines.length; i++) {
                         const parts = lines[i].split(';');
                         if (parts.length >= 7) {
