@@ -331,7 +331,6 @@
                 <button type="button" class="admin-action-btn" onclick="downloadCSV()" style="flex: 1; padding: 12px;">📥 Экспорт</button>
                 <button type="button" class="admin-action-btn" onclick="downloadCSVTemplate()" style="flex: 1; padding: 12px;">📄 Шаблон</button>
                 <button type="button" class="admin-action-btn" onclick="triggerImport()" style="flex: 1; padding: 12px; background: var(--success-color); color: white;">📤 Импорт</button>
-                <button type="button" class="admin-action-btn" onclick="seedBrands()" style="flex: 1; padding: 12px; background: #8b5cf6; color: white; min-width: 100%;">🌱 Залить бренды</button>
                 <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVImport(event)">
             </div>
 
@@ -341,17 +340,28 @@
             <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
 
             <h3 style="margin-bottom: 10px;">Добавить товар</h3>
-            <input type="text" class="form-input" id="admin-title" placeholder="Название (Вкус)">
-            <input type="text" class="form-input" id="admin-brand" placeholder="Бренд">
-            <input type="number" class="form-input" id="admin-price" placeholder="Цена (BYN)" step="0.01">
-            <input type="number" class="form-input" id="admin-stock" placeholder="Количество">
-            <select class="form-input" id="admin-type">
+            
+            <select class="form-input" id="admin-type" onchange="updateAdminForm()">
                 <option value="Жидкость">Жидкость</option>
                 <option value="Устройство">Устройство</option>
                 <option value="Расходник">Расходник</option>
                 <option value="Снюс">Снюс</option>
                 <option value="Одноразка">Одноразка</option>
             </select>
+
+            <input type="text" class="form-input" id="admin-brand" placeholder="Бренд">
+            
+            <div id="field-flavor-wrapper">
+                <input type="text" class="form-input" id="admin-flavor" placeholder="Вкус">
+            </div>
+
+            <div id="field-strength-wrapper" style="display: none;">
+                <input type="text" class="form-input" id="admin-strength" placeholder="Крепость (например, 60 мг)">
+            </div>
+
+            <input type="number" class="form-input" id="admin-price" placeholder="Цена (BYN)" step="0.01">
+            <input type="number" class="form-input" id="admin-stock" placeholder="Количество">
+            
             <button class="checkout-btn" onclick="submitNewProduct()">Добавить товар</button>
         </div>
 
@@ -588,14 +598,40 @@
             switchAdminTab('products', document.querySelector('.admin-tab-btn')); 
         }
 
+        function updateAdminForm() {
+            const type = document.getElementById('admin-type').value;
+            const flavorWrapper = document.getElementById('field-flavor-wrapper');
+            const flavorInput = document.getElementById('admin-flavor');
+            const strengthWrapper = document.getElementById('field-strength-wrapper');
+
+            if (type === 'Устройство') {
+                flavorInput.placeholder = "Цвет (например, Black)";
+                flavorWrapper.style.display = 'block';
+                strengthWrapper.style.display = 'none';
+            } else if (type === 'Расходник') {
+                flavorInput.placeholder = "Наименование (Модель + Ом)";
+                flavorWrapper.style.display = 'block';
+                strengthWrapper.style.display = 'none';
+            } else if (type === 'Снюс') {
+                flavorInput.placeholder = "Вкус (например, Мята)";
+                flavorWrapper.style.display = 'block';
+                strengthWrapper.style.display = 'block';
+            } else {
+                flavorInput.placeholder = "Вкус (например, Клубника-Банан)";
+                flavorWrapper.style.display = 'block';
+                strengthWrapper.style.display = 'none';
+            }
+        }
+
         function renderAdminList() {
             const list = document.getElementById('adminProductList');
             list.innerHTML = '';
             allProducts.forEach(p => {
                 const div = document.createElement('div');
                 div.className = 'admin-product-item';
+                const strength = p.strength ? ` (${p.strength})` : '';
                 div.innerHTML = `
-                    <div class="admin-product-info"><b>${p.title}</b> (${p.stock} шт. - ${p.price} BYN)</div>
+                    <div class="admin-product-info"><b>${p.brand} - ${p.flavor}${strength}</b><br><span style="font-size:11px; color:var(--hint-color);">${p.type} | ${p.stock} шт. | ${p.price} BYN</span></div>
                     <div class="admin-product-actions">
                         <button class="admin-action-btn" onclick="editProduct(${p.id}, ${p.price}, ${p.stock})">Изм.</button>
                         <button class="admin-action-btn admin-delete-btn" onclick="deleteProduct(${p.id})">Удал.</button>
@@ -692,21 +728,6 @@
             tg.openTelegramLink(url);
         }
 
-        async function seedBrands() {
-            if (!confirm("Добавить стандартные бренды в базу?")) return;
-            try {
-                const res = await fetch(`${API_URL}/seed-brands`, {
-                    method: 'POST',
-                    headers: { 'X-Init-Data': tg.initData }
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    showToast(`✅ Добавлено брендов: ${data.added}`);
-                    fetchProducts().then(renderAdminList);
-                } else showToast("❌ Ошибка");
-            } catch (e) { showToast("❌ Ошибка сети"); }
-        }
-
         function downloadCSVTemplate() {
             const url = `${API_URL}/download/template`;
             tg.openLink(url);
@@ -735,17 +756,18 @@
                     const products = [];
                     for (let i = 1; i < lines.length; i++) {
                         const parts = lines[i].split(';');
-                        if (parts.length >= 5) {
+                        if (parts.length >= 6) {
                             products.push({
-                                title: parts[0].trim(),
+                                type: parts[0].trim(),
                                 brand: parts[1].trim(),
-                                price: parseFloat(parts[2].replace(',', '.')) || 0,
-                                stock: parseInt(parts[3]) || 0,
-                                type: parts[4].trim()
+                                flavor: parts[2].trim(),
+                                strength: parts[3].trim() || null,
+                                price: parseFloat(parts[4].replace(',', '.')) || 0,
+                                stock: parseInt(parts[5]) || 0
                             });
                         }
                     }
-                    if (products.length === 0) { showToast('⚠️ Файл пуст'); return; }
+                    if (products.length === 0) { showToast('⚠️ Файл пуст или неверный формат'); return; }
 
                     const res = await fetch(`${API_URL}/import-products`, {
                         method: 'POST',
@@ -784,23 +806,27 @@
         }
 
         async function submitNewProduct() {
-            const title = document.getElementById('admin-title').value;
+            const type = document.getElementById('admin-type').value;
             const brand = document.getElementById('admin-brand').value;
+            const flavor = document.getElementById('admin-flavor').value;
+            const strength = document.getElementById('admin-strength').value || null;
             const price = parseFloat(document.getElementById('admin-price').value);
             const stock = parseInt(document.getElementById('admin-stock').value);
-            const type = document.getElementById('admin-type').value;
-            if (!title || !brand || isNaN(price) || isNaN(stock)) { showToast("⚠️ Заполните поля"); return; }
+
+            if (!brand || !flavor || isNaN(price) || isNaN(stock)) { showToast("⚠️ Заполните обязательные поля"); return; }
+
             try {
                 const response = await fetch(`${API_URL}/add-product`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Init-Data': tg.initData },
-                    body: JSON.stringify({ title, brand, price, stock, type })
+                    body: JSON.stringify({ type, brand, flavor, strength, price, stock })
                 });
                 if (!response.ok) throw new Error("Ошибка");
                 showToast("✅ Товар добавлен!");
                 document.activeElement.blur();
-                document.getElementById('admin-title').value = '';
                 document.getElementById('admin-brand').value = '';
+                document.getElementById('admin-flavor').value = '';
+                document.getElementById('admin-strength').value = '';
                 document.getElementById('admin-price').value = '';
                 document.getElementById('admin-stock').value = '';
                 fetchProducts().then(renderAdminList);
@@ -881,7 +907,7 @@
                     <div class="product-image-wrapper">
                         <img src="https://via.placeholder.com/300x300/0f172a/64748b?text=Photo" class="product-image">
                     </div>
-                    <div class="product-title">${prod.title}</div>
+                    <div class="product-title">${prod.flavor}</div>
                     <div class="product-brand">${prod.brand}</div>
                     <div class="card-bottom">
                         <div class="product-price">${prod.price.toFixed(2)} BYN</div>
@@ -985,8 +1011,8 @@
                 listContainer.style.display = 'flex';
                 document.getElementById('mainCategories').style.display = 'none';
                 const productsInBrand = allProducts.filter(p => p.type === currentCatalogCategory && p.brand === currentCatalogBrand);
-                const flavors = [...new Set(productsInBrand.map(p => p.title))].filter(Boolean);
-                if (flavors.length === 0) listContainer.innerHTML = '<div style="text-align:center; color:var(--hint-color); margin-top:20px;">Вкусов пока нет</div>';
+                const flavors = [...new Set(productsInBrand.map(p => p.flavor))].filter(Boolean);
+                if (flavors.length === 0) listContainer.innerHTML = '<div style="text-align:center; color:var(--hint-color); margin-top:20px;">Характеристик пока нет</div>';
                 else {
                     flavors.forEach(flavor => {
                         const div = document.createElement('div');
@@ -998,11 +1024,11 @@
                 }
             } else if (catalogViewState === 'products') {
                 backBtn.style.display = 'block';
-                document.getElementById('catalogLevelTitle').innerText = `Вкус: ${currentCatalogFlavor}`;
+                document.getElementById('catalogLevelTitle').innerText = `Характеристика: ${currentCatalogFlavor}`;
                 listContainer.style.display = 'none';
                 document.getElementById('mainCategories').style.display = 'none';
                 grid.style.display = 'grid';
-                const displayProducts = allProducts.filter(p => p.type === currentCatalogCategory && p.brand === currentCatalogBrand && p.title === currentCatalogFlavor);
+                const displayProducts = allProducts.filter(p => p.type === currentCatalogCategory && p.brand === currentCatalogBrand && p.flavor === currentCatalogFlavor);
                 renderProducts(displayProducts, 'catalog-grid');
             }
         }
@@ -1023,7 +1049,7 @@
             document.getElementById('catalogLevelTitle').style.display = 'none';
             backBtn.style.display = 'block';
             grid.style.display = 'grid';
-            const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query.toLowerCase()) || p.brand.toLowerCase().includes(query.toLowerCase()));
+            const filtered = allProducts.filter(p => p.flavor.toLowerCase().includes(query.toLowerCase()) || p.brand.toLowerCase().includes(query.toLowerCase()));
             renderProducts(filtered, 'catalog-grid');
         }
 
@@ -1031,7 +1057,7 @@
             editingCartIndex = cartIndex;
             currentProductInSheet = product;
             document.getElementById('sheetImg').src = "https://via.placeholder.com/300x300/0f172a/64748b?text=Photo";
-            document.getElementById('sheetTitle').innerText = product.title;
+            document.getElementById('sheetTitle').innerText = product.flavor;
             document.getElementById('sheetBrand').innerText = product.brand;
             currentSheetQty = cartIndex > -1 ? cart[cartIndex].quantity : 1;
             document.getElementById('sheetQtyVal').innerText = currentSheetQty;
@@ -1081,7 +1107,7 @@
             if (existingItem) existingItem.quantity += qty;
             else cart.push({ ...product, quantity: qty });
             updateCartBadge();
-            showToast(`✅ Добавлено: ${product.title}`);
+            showToast(`✅ Добавлено: ${product.flavor}`);
         }
 
         function updateCartBadge() {
@@ -1103,7 +1129,7 @@
             let total = 0;
             cart.forEach((item, index) => {
                 total += item.price * item.quantity;
-                const displayTitle = `${item.type} "${item.title}"`;
+                const displayTitle = `${item.type} "${item.flavor}"`;
                 container.innerHTML += `
                     <div class="cart-item">
                         <img src="https://via.placeholder.com/100x100/0f172a/64748b?text=Photo" class="cart-item-img">
@@ -1135,7 +1161,7 @@
             cart.forEach(item => { 
                 const itemTotal = item.price * item.quantity; 
                 total += itemTotal; 
-                text += `• ${item.type} "${item.title}" - ${item.quantity} шт. = ${itemTotal.toFixed(2)} BYN\n`; 
+                text += `• ${item.type} "${item.flavor}" - ${item.quantity} шт. = ${itemTotal.toFixed(2)} BYN\n`; 
             });
             text += `\n💰 Итого: ${total.toFixed(2)} BYN`;
 
