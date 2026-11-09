@@ -35,12 +35,13 @@ def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Новая структура товаров
+    # Добавили поле line_name (Название/Линейка)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS products (
             id SERIAL PRIMARY KEY, 
             type TEXT NOT NULL,
             brand TEXT,
+            line_name TEXT,
             flavor TEXT,
             strength TEXT,
             price REAL, 
@@ -90,6 +91,7 @@ class Order(BaseModel):
 class ProductRequest(BaseModel):
     type: str
     brand: str
+    line_name: Optional[str] = None
     flavor: str
     strength: Optional[str] = None
     price: float
@@ -110,6 +112,7 @@ class ToggleStationRequest(BaseModel):
 class ImportProduct(BaseModel):
     type: str
     brand: str
+    line_name: Optional[str] = None
     flavor: str
     strength: Optional[str] = None
     price: float
@@ -128,16 +131,16 @@ class OrderStatusRequest(BaseModel):
 def export_csv():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT type, brand, flavor, strength, price, stock FROM products ORDER BY type, brand")
+    cursor.execute("SELECT type, brand, line_name, flavor, strength, price, stock FROM products ORDER BY type, brand, line_name")
     rows = cursor.fetchall()
     cursor.close()
     conn.close()
     output = io.StringIO()
     output.write('\ufeff')
     writer = csv.writer(output, delimiter=';')
-    writer.writerow(['Категория', 'Бренд', 'Вкус/Цвет/Модель', 'Крепость', 'Цена', 'Количество'])
+    writer.writerow(['Категория', 'Бренд', 'Название', 'Характеристика', 'Крепость', 'Цена', 'Количество'])
     for row in rows:
-        writer.writerow([row['type'], row['brand'], row['flavor'], row['strength'], row['price'], row['stock']])
+        writer.writerow([row['type'], row['brand'], row['line_name'], row['flavor'], row['strength'], row['price'], row['stock']])
     response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
     response.headers["Content-Disposition"] = "attachment; filename=sttp_export.csv"
     return response
@@ -147,9 +150,9 @@ def download_template():
     output = io.StringIO()
     output.write('\ufeff')
     writer = csv.writer(output, delimiter=';')
-    writer.writerow(['Категория', 'Бренд', 'Вкус/Цвет/Модель', 'Крепость', 'Цена', 'Количество'])
-    writer.writerow(['Жидкость', 'Annima', 'Клубника-Банан', '', '15.0', '100'])
-    writer.writerow(['Снюс', 'Iceberg', 'Мята', '60 мг', '10.0', '50'])
+    writer.writerow(['Категория', 'Бренд', 'Название', 'Характеристика', 'Крепость', 'Цена', 'Количество'])
+    writer.writerow(['Жидкость', 'HotSpot', 'HOT SPOT FUEL 50mg', 'Брусника Лимон', '50 мг', '15.0', '10'])
+    writer.writerow(['Устройство', 'Vaporesso', 'Xros 3', 'Space Grey', '', '85.0', '5'])
     response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
     response.headers["Content-Disposition"] = "attachment; filename=sttp_template.csv"
     return response
@@ -172,7 +175,7 @@ def create_order(order: Order):
     items_info = []
     total_price = 0
     for item in order.items:
-        cursor.execute("SELECT id, type, brand, flavor, price, stock FROM products WHERE id = %s", (item.product_id,))
+        cursor.execute("SELECT id, type, brand, line_name, flavor, price, stock FROM products WHERE id = %s", (item.product_id,))
         row = cursor.fetchone()
         if not row or row['stock'] < item.quantity:
             conn.close()
@@ -236,8 +239,8 @@ def update_order_status(req: OrderStatusRequest):
 def add_product_admin(req: ProductRequest):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO products (type, brand, flavor, strength, price, stock) VALUES (%s, %s, %s, %s, %s, %s)", 
-                   (req.type, req.brand, req.flavor, req.strength, req.price, req.stock))
+    cursor.execute("INSERT INTO products (type, brand, line_name, flavor, strength, price, stock) VALUES (%s, %s, %s, %s, %s, %s, %s)", 
+                   (req.type, req.brand, req.line_name, req.flavor, req.strength, req.price, req.stock))
     conn.commit()
     cursor.close()
     conn.close()
@@ -253,10 +256,11 @@ def import_products(products: List[ImportProduct]):
                        (p.type, p.brand, p.flavor, p.strength))
         existing = cursor.fetchone()
         if existing:
-            cursor.execute("UPDATE products SET price = %s, stock = stock + %s WHERE id = %s", (p.price, p.stock, existing['id']))
+            cursor.execute("UPDATE products SET line_name = %s, price = %s, stock = stock + %s WHERE id = %s", 
+                           (p.line_name, p.price, p.stock, existing['id']))
         else:
-            cursor.execute("INSERT INTO products (type, brand, flavor, strength, price, stock) VALUES (%s, %s, %s, %s, %s, %s)", 
-                           (p.type, p.brand, p.flavor, p.strength, p.price, p.stock))
+            cursor.execute("INSERT INTO products (type, brand, line_name, flavor, strength, price, stock) VALUES (%s, %s, %s, %s, %s, %s, %s)", 
+                           (p.type, p.brand, p.line_name, p.flavor, p.strength, p.price, p.stock))
         count += 1
     conn.commit()
     cursor.close()
