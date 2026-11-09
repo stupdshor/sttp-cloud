@@ -35,10 +35,16 @@ def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
     
+    # Новая структура товаров
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS products (
-            id SERIAL PRIMARY KEY, title TEXT NOT NULL, brand TEXT,
-            price REAL, stock INTEGER, type TEXT
+            id SERIAL PRIMARY KEY, 
+            type TEXT NOT NULL,
+            brand TEXT,
+            flavor TEXT,
+            strength TEXT,
+            price REAL, 
+            stock INTEGER
         )
     ''')
     cursor.execute('CREATE TABLE IF NOT EXISTS admins (user_id BIGINT PRIMARY KEY)')
@@ -82,11 +88,12 @@ class Order(BaseModel):
     address: str
 
 class ProductRequest(BaseModel):
-    title: str
+    type: str
     brand: str
+    flavor: str
+    strength: Optional[str] = None
     price: float
     stock: int
-    type: str
 
 class DeleteRequest(BaseModel):
     product_id: int
@@ -101,11 +108,12 @@ class ToggleStationRequest(BaseModel):
     is_disabled: bool
 
 class ImportProduct(BaseModel):
-    title: str
+    type: str
     brand: str
+    flavor: str
+    strength: Optional[str] = None
     price: float
     stock: int
-    type: str
 
 class ContentRequest(BaseModel):
     banner_title: str
@@ -120,16 +128,16 @@ class OrderStatusRequest(BaseModel):
 def export_csv():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT title, brand, price, stock, type FROM products ORDER BY type, brand, title")
+    cursor.execute("SELECT type, brand, flavor, strength, price, stock FROM products ORDER BY type, brand")
     rows = cursor.fetchall()
     cursor.close()
     conn.close()
     output = io.StringIO()
     output.write('\ufeff')
     writer = csv.writer(output, delimiter=';')
-    writer.writerow(['Название', 'Бренд', 'Цена', 'Количество', 'Категория'])
+    writer.writerow(['Категория', 'Бренд', 'Вкус/Цвет/Модель', 'Крепость', 'Цена', 'Количество'])
     for row in rows:
-        writer.writerow([row['title'], row['brand'], row['price'], row['stock'], row['type']])
+        writer.writerow([row['type'], row['brand'], row['flavor'], row['strength'], row['price'], row['stock']])
     response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
     response.headers["Content-Disposition"] = "attachment; filename=sttp_export.csv"
     return response
@@ -139,8 +147,9 @@ def download_template():
     output = io.StringIO()
     output.write('\ufeff')
     writer = csv.writer(output, delimiter=';')
-    writer.writerow(['Название', 'Бренд', 'Цена', 'Количество', 'Категория'])
-    writer.writerow(['Пример вкуса', 'Пример бренда', '10.5', '100', 'Жидкость'])
+    writer.writerow(['Категория', 'Бренд', 'Вкус/Цвет/Модель', 'Крепость', 'Цена', 'Количество'])
+    writer.writerow(['Жидкость', 'Annima', 'Клубника-Банан', '', '15.0', '100'])
+    writer.writerow(['Снюс', 'Iceberg', 'Мята', '60 мг', '10.0', '50'])
     response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
     response.headers["Content-Disposition"] = "attachment; filename=sttp_template.csv"
     return response
@@ -163,7 +172,7 @@ def create_order(order: Order):
     items_info = []
     total_price = 0
     for item in order.items:
-        cursor.execute("SELECT id, title, price, stock FROM products WHERE id = %s", (item.product_id,))
+        cursor.execute("SELECT id, type, brand, flavor, price, stock FROM products WHERE id = %s", (item.product_id,))
         row = cursor.fetchone()
         if not row or row['stock'] < item.quantity:
             conn.close()
@@ -171,10 +180,9 @@ def create_order(order: Order):
         
         total_price += row['price'] * item.quantity
         
-        # Сохраняем ID товара для точного возврата
         items_info.append({
             "id": row['id'], 
-            "title": row['title'], 
+            "title": f"{row['brand']} {row['flavor']}", 
             "qty": item.quantity, 
             "price": row['price']
         })
@@ -202,47 +210,34 @@ def get_orders():
 def update_order_status(req: OrderStatusRequest):
     conn = get_db_connection()
     cursor = conn.cursor()
-    
     cursor.execute("SELECT status, items_json FROM orders WHERE id = %s", (req.order_id,))
     order = cursor.fetchone()
-    
     if not order:
         conn.close()
         raise HTTPException(status_code=404, detail="Заказ не найден")
-        
     current_status = order['status']
     items = json.loads(order['items_json'])
     
-    # Если статус меняется НА "Отменен" - возвращаем товары по ID
     if req.new_status == "Отменен" and current_status != "Отменен":
         for item in items:
-            if "id" in item:
-                cursor.execute("UPDATE products SET stock = stock + %s WHERE id = %s", (item['qty'], item['id']))
-            else:
-                cursor.execute("UPDATE products SET stock = stock + %s WHERE title = %s", (item['qty'], item['title']))
-            
-    # Если статус меняется С "Отменен" на любой другой - снова списываем товары по ID
+            cursor.execute("UPDATE products SET stock = stock + %s WHERE id = %s", (item['qty'], item['id']))
     elif req.new_status != "Отменен" and current_status == "Отменен":
         for item in items:
-            if "id" in item:
-                cursor.execute("UPDATE products SET stock = stock - %s WHERE id = %s", (item['qty'], item['id']))
-            else:
-                cursor.execute("UPDATE products SET stock = stock - %s WHERE title = %s", (item['qty'], item['title']))
+            cursor.execute("UPDATE products SET stock = stock - %s WHERE id = %s", (item['qty'], item['id']))
 
     cursor.execute("UPDATE orders SET status = %s WHERE id = %s", (req.new_status, req.order_id))
-    
     conn.commit()
     cursor.close()
     conn.close()
     return {"status": "ok"}
 
-# --- АДМИНСКИЕ API (БЕЗ ПРОВЕРКИ ПОДПИСИ) ---
+# --- АДМИНСКИЕ API ---
 @app.post("/api/add-product")
 def add_product_admin(req: ProductRequest):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES (%s, %s, %s, %s, %s)", 
-                   (req.title, req.brand, req.price, req.stock, req.type))
+    cursor.execute("INSERT INTO products (type, brand, flavor, strength, price, stock) VALUES (%s, %s, %s, %s, %s, %s)", 
+                   (req.type, req.brand, req.flavor, req.strength, req.price, req.stock))
     conn.commit()
     cursor.close()
     conn.close()
@@ -254,12 +249,14 @@ def import_products(products: List[ImportProduct]):
     cursor = conn.cursor()
     count = 0
     for p in products:
-        cursor.execute("SELECT id FROM products WHERE title = %s AND brand = %s", (p.title, p.brand))
+        cursor.execute("SELECT id FROM products WHERE type = %s AND brand = %s AND flavor = %s AND strength = %s", 
+                       (p.type, p.brand, p.flavor, p.strength))
         existing = cursor.fetchone()
         if existing:
             cursor.execute("UPDATE products SET price = %s, stock = stock + %s WHERE id = %s", (p.price, p.stock, existing['id']))
         else:
-            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES (%s, %s, %s, %s, %s)", (p.title, p.brand, p.price, p.stock, p.type))
+            cursor.execute("INSERT INTO products (type, brand, flavor, strength, price, stock) VALUES (%s, %s, %s, %s, %s, %s)", 
+                           (p.type, p.brand, p.flavor, p.strength, p.price, p.stock))
         count += 1
     conn.commit()
     cursor.close()
@@ -285,22 +282,6 @@ def edit_product(req: EditRequest):
     cursor.close()
     conn.close()
     return {"status": "ok"}
-
-@app.post("/api/seed-brands")
-def seed_brands():
-    start_brands = ["Annima Love", "Bjorn", "Catswill", "Duall", "Elfliq", "Hotspot", "Isterika", "Monster", "OGGO prime", "Podonki", "Rick and Morty", "SKL", "Анархия V2", "Злая монашка", "Призрак 69", "Самоубийца"]
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    added_count = 0
-    for brand in start_brands:
-        cursor.execute("SELECT id FROM products WHERE brand = %s LIMIT 1", (brand,))
-        if not cursor.fetchone():
-            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES ('Новый вкус', %s, 0.0, 0, 'Жидкость')", (brand,))
-            added_count += 1
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return {"status": "ok", "added": added_count}
 
 @app.post("/api/toggle-station")
 def toggle_station(req: ToggleStationRequest):
@@ -349,8 +330,7 @@ def get_content():
 
 # --- ДЛЯ БОТА ---
 @app.get("/api/check-admin")
-def check_admin():
-    return {"is_admin": True} # Заглушка, так как проверка подписи убрана
+def check_admin(): return {"is_admin": True}
 
 @app.get("/api/get-admins")
 def get_admins():
