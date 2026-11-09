@@ -29,7 +29,8 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 def get_db_connection():
     url = DATABASE_URL.replace("postgres://", "postgresql://")
-    return psycopg2.connect(url, cursor_factory=RealDictCursor)
+    # Принудительно ставим кодировку UTF-8 для соединения
+    return psycopg2.connect(url, cursor_factory=RealDictCursor, options="-c client_encoding=UTF8")
 
 def init_db():
     conn = get_db_connection()
@@ -251,7 +252,6 @@ def import_products(products: List[ImportProduct]):
     cursor = conn.cursor()
     count = 0
     for p in products:
-        # Ищем дубликаты, игнорируя регистр (LOWER)
         cursor.execute("SELECT id FROM products WHERE LOWER(type) = LOWER(%s) AND LOWER(brand) = LOWER(%s) AND LOWER(flavor) = LOWER(%s)", 
                        (p.type, p.brand, p.flavor))
         existing = cursor.fetchone()
