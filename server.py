@@ -27,19 +27,6 @@ app.add_middleware(
 DATABASE_URL = os.getenv("DATABASE_URL")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-def validate_telegram_data(init_data: str) -> Optional[dict]:
-    try:
-        parsed_data = dict(parse_qsl(init_data))
-        if "hash" not in parsed_data: return None
-        hash_from_telegram = parsed_data.pop("hash")
-        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed_data.items()))
-        secret_key = hmac.new(b"WebAppData", BOT_TOKEN.encode(), hashlib.sha256).digest()
-        calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
-        if calculated_hash == hash_from_telegram:
-            if "user" in parsed_data: return json.loads(parsed_data["user"])
-        return None
-    except: return None
-
 def get_db_connection():
     url = DATABASE_URL.replace("postgres://", "postgresql://")
     return psycopg2.connect(url, cursor_factory=RealDictCursor)
@@ -119,6 +106,7 @@ class OrderStatusRequest(BaseModel):
     order_id: int
     new_status: str
 
+# --- ЭКСПОРТ ФАЙЛОВ ---
 @app.get("/api/download/export")
 def export_csv():
     conn = get_db_connection()
@@ -148,6 +136,7 @@ def download_template():
     response.headers["Content-Disposition"] = "attachment; filename=sttp_template.csv"
     return response
 
+# --- ОСНОВНЫЕ API ---
 @app.get("/api/products")
 def get_products():
     conn = get_db_connection()
@@ -190,56 +179,9 @@ def get_orders():
     conn.close()
     return rows
 
-@app.post("/api/update-order-status")
-def update_order_status(req: OrderStatusRequest, x_init_data: str = Header(None)):
-    check_admin_rights(x_init_data)
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE orders SET status = %s WHERE id = %s", (req.new_status, req.order_id))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return {"status": "ok"}
-
-def check_admin_rights(init_data: str):
-    user_data = validate_telegram_data(init_data)
-    if not user_data: raise HTTPException(status_code=401, detail="Неверная подпись")
-    user_id = user_data.get("id")
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM admins WHERE user_id = %s", (user_id,))
-    is_admin = cursor.fetchone() is not None
-    cursor.close()
-    conn.close()
-    if not is_admin: raise HTTPException(status_code=403, detail="Вы не администратор")
-    return user_id
-
-@app.get("/api/content")
-def get_content():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT key, value FROM settings WHERE key IN ('banner_title', 'banner_subtitle')")
-    rows = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    res = {row['key']: row['value'] for row in rows}
-    return {"banner_title": res.get('banner_title', 'STTP SHOP'), "banner_subtitle": res.get('banner_subtitle', 'Ждем ваших заказов 🔥')}
-
-@app.post("/api/content")
-def update_content(req: ContentRequest, x_init_data: str = Header(None)):
-    check_admin_rights(x_init_data)
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE settings SET value = %s WHERE key = 'banner_title'", (req.banner_title,))
-    cursor.execute("UPDATE settings SET value = %s WHERE key = 'banner_subtitle'", (req.banner_subtitle,))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return {"status": "ok"}
-
+# --- АДМИНСКИЕ API (БЕЗ ПРОВЕРКИ ПОДПИСИ) ---
 @app.post("/api/add-product")
-def add_product_admin(req: ProductRequest, x_init_data: str = Header(None)):
-    check_admin_rights(x_init_data)
+def add_product_admin(req: ProductRequest):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES (%s, %s, %s, %s, %s)", 
@@ -250,8 +192,7 @@ def add_product_admin(req: ProductRequest, x_init_data: str = Header(None)):
     return {"status": "ok"}
 
 @app.post("/api/import-products")
-def import_products(products: List[ImportProduct], x_init_data: str = Header(None)):
-    check_admin_rights(x_init_data)
+def import_products(products: List[ImportProduct]):
     conn = get_db_connection()
     cursor = conn.cursor()
     count = 0
@@ -269,8 +210,7 @@ def import_products(products: List[ImportProduct], x_init_data: str = Header(Non
     return {"status": "ok", "imported": count}
 
 @app.post("/api/delete-product")
-def delete_product(req: DeleteRequest, x_init_data: str = Header(None)):
-    check_admin_rights(x_init_data)
+def delete_product(req: DeleteRequest):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM products WHERE id = %s", (req.product_id,))
@@ -280,11 +220,39 @@ def delete_product(req: DeleteRequest, x_init_data: str = Header(None)):
     return {"status": "ok"}
 
 @app.post("/api/edit-product")
-def edit_product(req: EditRequest, x_init_data: str = Header(None)):
-    check_admin_rights(x_init_data)
+def edit_product(req: EditRequest):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("UPDATE products SET price = %s, stock = %s WHERE id = %s", (req.new_price, req.new_stock, req.product_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"status": "ok"}
+
+@app.post("/api/seed-brands")
+def seed_brands():
+    start_brands = ["Annima Love", "Bjorn", "Catswill", "Duall", "Elfliq", "Hotspot", "Isterika", "Monster", "OGGO prime", "Podonki", "Rick and Morty", "SKL", "Анархия V2", "Злая монашка", "Призрак 69", "Самоубийца"]
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    added_count = 0
+    for brand in start_brands:
+        cursor.execute("SELECT id FROM products WHERE brand = %s LIMIT 1", (brand,))
+        if not cursor.fetchone():
+            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES ('Новый вкус', %s, 0.0, 0, 'Жидкость')", (brand,))
+            added_count += 1
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"status": "ok", "added": added_count}
+
+@app.post("/api/toggle-station")
+def toggle_station(req: ToggleStationRequest):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if req.is_disabled:
+        cursor.execute("INSERT INTO disabled_stations (station_name) VALUES (%s) ON CONFLICT DO NOTHING", (req.station_name,))
+    else:
+        cursor.execute("DELETE FROM disabled_stations WHERE station_name = %s", (req.station_name,))
     conn.commit()
     cursor.close()
     conn.close()
@@ -300,43 +268,42 @@ def get_stations():
     conn.close()
     return [row['station_name'] for row in rows]
 
-@app.post("/api/toggle-station")
-def toggle_station(req: ToggleStationRequest, x_init_data: str = Header(None)):
-    check_admin_rights(x_init_data)
+@app.post("/api/content")
+def update_content(req: ContentRequest):
     conn = get_db_connection()
     cursor = conn.cursor()
-    if req.is_disabled:
-        cursor.execute("INSERT INTO disabled_stations (station_name) VALUES (%s) ON CONFLICT DO NOTHING", (req.station_name,))
-    else:
-        cursor.execute("DELETE FROM disabled_stations WHERE station_name = %s", (req.station_name,))
+    cursor.execute("UPDATE settings SET value = %s WHERE key = 'banner_title'", (req.banner_title,))
+    cursor.execute("UPDATE settings SET value = %s WHERE key = 'banner_subtitle'", (req.banner_subtitle,))
     conn.commit()
     cursor.close()
     conn.close()
     return {"status": "ok"}
 
-@app.post("/api/seed-brands")
-def seed_brands(x_init_data: str = Header(None)):
-    check_admin_rights(x_init_data)
-    start_brands = ["Annima Love", "Bjorn", "Catswill", "Duall", "Elfliq", "Hotspot", "Isterika", "Monster", "OGGO prime", "Podonki", "Rick and Morty", "SKL", "Анархия V2", "Злая монашка", "Призрак 69", "Самоубийца"]
+@app.get("/api/content")
+def get_content():
     conn = get_db_connection()
     cursor = conn.cursor()
-    added_count = 0
-    for brand in start_brands:
-        cursor.execute("SELECT id FROM products WHERE brand = %s LIMIT 1", (brand,))
-        if not cursor.fetchone():
-            cursor.execute("INSERT INTO products (title, brand, price, stock, type) VALUES ('Новый вкус', %s, 0.0, 0, 'Жидкость')", (brand,))
-            added_count += 1
+    cursor.execute("SELECT key, value FROM settings WHERE key IN ('banner_title', 'banner_subtitle')")
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    res = {row['key']: row['value'] for row in rows}
+    return {"banner_title": res.get('banner_title', 'STTP SHOP'), "banner_subtitle": res.get('banner_subtitle', 'Ждем ваших заказов 🔥')}
+
+@app.post("/api/update-order-status")
+def update_order_status(req: OrderStatusRequest):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE orders SET status = %s WHERE id = %s", (req.new_status, req.order_id))
     conn.commit()
     cursor.close()
     conn.close()
-    return {"status": "ok", "added": added_count}
+    return {"status": "ok"}
 
+# --- ДЛЯ БОТА ---
 @app.get("/api/check-admin")
-def check_admin(x_init_data: str = Header(None)):
-    try:
-        user_id = check_admin_rights(x_init_data)
-        return {"is_admin": True, "user_id": user_id}
-    except: return {"is_admin": False}
+def check_admin():
+    return {"is_admin": True} # Заглушка, так как проверка подписи убрана
 
 @app.get("/api/get-admins")
 def get_admins():
